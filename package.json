@@ -15,6 +15,7 @@
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "check-demo": "tsx scripts/check-demo.ts",
+    "check-secrets": "tsx scripts/check-secrets.ts",
     "seed": "tsx scripts/seed-demo.ts"
   },
   "devDependencies": {

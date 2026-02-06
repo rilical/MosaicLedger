@@ -2,8 +2,31 @@ import Link from 'next/link';
 import { SettingsDrawer } from '../../components/SettingsDrawer';
 import { Badge } from '../../components/ui';
 import { envFlags } from '../../lib/flags';
+import { SignOutButton } from '../../components/Auth/SignOutButton';
+import { hasSupabaseEnv } from '../../lib/env';
+import { supabaseServer } from '../../lib/supabase/server';
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+async function ensureProfile(): Promise<void> {
+  if (envFlags.demoMode || envFlags.judgeMode) return;
+  if (!hasSupabaseEnv()) return;
+
+  try {
+    const supabase = await supabaseServer();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // RLS allows the user to upsert their own row.
+    await supabase.from('user_profiles').upsert({ user_id: user.id }, { onConflict: 'user_id' });
+  } catch {
+    // Profile creation is non-blocking for hackathon MVP.
+  }
+}
+
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  await ensureProfile();
+
   return (
     <div className="appShell">
       <nav className="sideNav" aria-label="Primary">
@@ -20,18 +43,22 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <span>Mosaic</span>
             <Badge>v0</Badge>
           </Link>
-          <span className="navLink" style={{ opacity: 0.6 }}>
+          <Link className="navLink" href="/app/recurring?source=demo">
             <span>Recurring</span>
-            <Badge>soon</Badge>
-          </span>
-          <span className="navLink" style={{ opacity: 0.6 }}>
+            <Badge>v0</Badge>
+          </Link>
+          <Link className="navLink" href="/app/plan?source=demo">
             <span>Plan</span>
-            <Badge>soon</Badge>
-          </span>
-          <span className="navLink" style={{ opacity: 0.6 }}>
+            <Badge>v0</Badge>
+          </Link>
+          <Link className="navLink" href="/app/export?source=demo">
             <span>Export</span>
             <Badge>soon</Badge>
-          </span>
+          </Link>
+          <Link className="navLink" href="/app/settings">
+            <span>Settings</span>
+            <Badge>v0</Badge>
+          </Link>
         </div>
 
         <div style={{ marginTop: 16 }}>
@@ -52,6 +79,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <Link className="btn btnGhost" href="/login">
               Login
             </Link>
+            <SignOutButton />
             <SettingsDrawer />
           </div>
         </div>

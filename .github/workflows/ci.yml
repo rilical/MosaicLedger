@@ -12,7 +12,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
       - name: Enable corepack
         run: corepack enable
       - name: Install
@@ -21,6 +20,8 @@ jobs:
         run: pnpm lint
       - name: Typecheck
         run: pnpm typecheck
+      - name: Secret boundary check
+        run: pnpm check-secrets
       - name: Test
         run: pnpm test
       - name: Demo check
