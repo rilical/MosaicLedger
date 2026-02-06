@@ -19,6 +19,8 @@ This file is updated in every PR.
   present, `/app/*` routes are protected via middleware when demo/judge modes are off, and a starter
   RLS schema is added under `supabase/schema.sql`. Demo Mode remains the default and must continue
   to work with zero keys.
+- BANK-002/003 (branch: `codex/bank-002-003-plaid-server`): adds server-only Plaid client scaffold
+  plus `/api/plaid/health` and `/api/plaid/link-token` with judge/demo fallback tokens.
 
 ## Known Risks / TODO
 
