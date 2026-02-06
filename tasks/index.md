@@ -31,3 +31,11 @@ Status legend: `TODO` | `DOING` | `BLOCKED` | `REVIEW` | `DONE`
 | AUTH-003 | DOING  | Magic-link login implemented (enabled only when Supabase env exists). |
 | AUTH-004 | DOING  | `/app/*` protection via middleware when demo/judge are off.           |
 | AUTH-005 | DOING  | Starter schema + RLS policies in `supabase/schema.sql`.               |
+
+## Bank Connector (BANK)
+
+| ID       | Status | Notes                                                         |
+| -------- | ------ | ------------------------------------------------------------- |
+| BANK-001 | TODO   | Create Plaid account + sandbox keys.                          |
+| BANK-002 | DOING  | Server-only Plaid client module + `/api/plaid/health`.        |
+| BANK-003 | DOING  | `/api/plaid/link-token` (judge/demo mode returns fake token). |
