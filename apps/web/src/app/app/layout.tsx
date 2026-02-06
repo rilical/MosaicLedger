@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { SettingsDrawer } from '../../components/SettingsDrawer';
 import { Badge } from '../../components/ui';
 import { envFlags } from '../../lib/flags';
+import { SignOutButton } from '../../components/Auth/SignOutButton';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -52,6 +53,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <Link className="btn btnGhost" href="/login">
               Login
             </Link>
+            <SignOutButton />
             <SettingsDrawer />
           </div>
         </div>

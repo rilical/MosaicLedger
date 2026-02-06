@@ -1,7 +1,10 @@
 import Link from 'next/link';
 import { Button, Card, CardBody, CardHeader, CardTitle } from '../../components/ui';
+import { LoginForm } from '../../components/Auth/LoginForm';
+import { hasSupabaseEnv } from '../../lib/env';
 
 export default function LoginPage() {
+  const supabaseConfigured = hasSupabaseEnv();
   return (
     <main className="container" style={{ maxWidth: 520 }}>
       <Card>
@@ -9,25 +12,24 @@ export default function LoginPage() {
           <CardTitle>Login</CardTitle>
         </CardHeader>
         <CardBody>
-          <div style={{ display: 'grid', gap: 12 }}>
-            <div>
-              <div style={{ fontWeight: 650, marginBottom: 6 }}>Email</div>
-              <input className="input" type="email" placeholder="you@domain.com" />
-              <div className="small" style={{ marginTop: 8 }}>
-                Magic link auth is the intended flow (Supabase), but the demo path does not require
-                any keys.
+          {supabaseConfigured ? (
+            <LoginForm />
+          ) : (
+            <div style={{ display: 'grid', gap: 12 }}>
+              <div className="small">
+                Supabase env vars are not configured yet. Demo path is enabled so you can still ship
+                a fail-safe hackathon demo.
+              </div>
+              <div className="buttonRow">
+                <Button variant="primary" type="button" disabled>
+                  Send magic link (needs Supabase env)
+                </Button>
+                <Link className="btn" href="/app">
+                  Continue to demo
+                </Link>
               </div>
             </div>
-
-            <div className="buttonRow">
-              <Button variant="primary" type="button" disabled>
-                Send magic link (scaffold)
-              </Button>
-              <Link className="btn" href="/app">
-                Continue to demo
-              </Link>
-            </div>
-          </div>
+          )}
         </CardBody>
       </Card>
     </main>
