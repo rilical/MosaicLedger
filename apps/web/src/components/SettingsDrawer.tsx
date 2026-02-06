@@ -6,6 +6,19 @@ import { FLAG_KEYS, type FlagKey } from '../lib/flags';
 import { Drawer } from './ui/Drawer';
 import { Badge, Button, Tooltip } from './ui';
 
+function forgetThisDevice() {
+  try {
+    const keys: string[] = [];
+    for (let i = 0; i < window.localStorage.length; i++) {
+      const k = window.localStorage.key(i);
+      if (k && k.startsWith('mosaicledger.')) keys.push(k);
+    }
+    for (const k of keys) window.localStorage.removeItem(k);
+  } catch {
+    // ignore
+  }
+}
+
 function labelFor(key: FlagKey): string {
   switch (key) {
     case 'judgeMode':
@@ -80,9 +93,20 @@ export function SettingsDrawer() {
           ))}
 
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
-            <Button variant="ghost" onClick={resetFlags}>
-              Reset
-            </Button>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <Button variant="ghost" onClick={resetFlags}>
+                Reset
+              </Button>
+              <Button
+                variant="danger"
+                onClick={() => {
+                  forgetThisDevice();
+                  resetFlags();
+                }}
+              >
+                Forget device
+              </Button>
+            </div>
             <Button variant="primary" onClick={() => setOpen(false)}>
               Done
             </Button>

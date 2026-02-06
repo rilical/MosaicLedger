@@ -21,6 +21,8 @@ jobs:
         run: pnpm lint
       - name: Typecheck
         run: pnpm typecheck
+      - name: Secret boundary check
+        run: pnpm check-secrets
       - name: Test
         run: pnpm test
       - name: Demo check
