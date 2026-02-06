@@ -31,3 +31,4 @@ Status legend: `TODO` | `DOING` | `BLOCKED` | `REVIEW` | `DONE`
 | AUTH-003 | DOING  | Magic-link login implemented (enabled only when Supabase env exists). |
 | AUTH-004 | DOING  | `/app/*` protection via middleware when demo/judge are off.           |
 | AUTH-005 | DOING  | Starter schema + RLS policies in `supabase/schema.sql`.               |
+| AUTH-006 | DOING  | `analysis_runs` table + `/api/engine/analyze` + cached latest render. |
