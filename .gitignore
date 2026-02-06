@@ -11,3 +11,6 @@ coverage/
 
 # Expo / React Native
 .expo/
+
+# TypeScript incremental artifacts
+*.tsbuildinfo
