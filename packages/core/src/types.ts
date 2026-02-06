@@ -1,0 +1,49 @@
+export type NormalizedTransaction = {
+  id: string;
+  date: string; // YYYY-MM-DD
+  amount: number; // positive spend
+  merchantRaw: string;
+  merchant: string; // canonicalized
+  category: string;
+  source: 'csv' | 'bank';
+};
+
+export type RecurringCharge = {
+  id: string;
+  merchant: string;
+  cadence: 'weekly' | 'biweekly' | 'monthly';
+  nextDate: string;
+  expectedAmount: number;
+  confidence: number; // 0..1
+};
+
+export type Summary = {
+  transactions: NormalizedTransaction[];
+  byCategory: Record<string, number>;
+  byMerchant: Record<string, number>;
+  recurring: RecurringCharge[];
+  totalSpend: number;
+};
+
+export type GoalInput =
+  | {
+      goalType: 'save_by_date';
+      saveAmount: number;
+      byDate: string; // YYYY-MM-DD
+    }
+  | {
+      goalType: 'monthly_cap';
+      category: string;
+      capAmount: number;
+    };
+
+export type ActionRecommendation = {
+  id: string;
+  actionType: 'cancel' | 'cap' | 'substitute';
+  title: string;
+  target: { kind: 'merchant' | 'category'; value: string };
+  expectedMonthlySavings: number;
+  effortScore: number; // 0..1 (lower = easier)
+  confidence: number; // 0..1
+  explanation: string;
+};
