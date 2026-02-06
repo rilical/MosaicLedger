@@ -19,6 +19,9 @@ This file is updated in every PR.
   present, `/app/*` routes are protected via middleware when demo/judge modes are off, and a starter
   RLS schema is added under `supabase/schema.sql`. Demo Mode remains the default and must continue
   to work with zero keys.
+- AUTH-006 (branch: `codex/auth-006-artifacts`): added `analysis_runs` table (JSON artifacts),
+  `/api/engine/analyze` (GET latest, POST recompute/store), and optional cached rendering for
+  `/app/mosaic` when Supabase is configured and demo/judge are disabled.
 - BANK-002/003 (branch: `codex/bank-002-003-plaid-server`): adds server-only Plaid client scaffold
   plus `/api/plaid/health` and `/api/plaid/link-token` with judge/demo fallback tokens.
 

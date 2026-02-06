@@ -1,10 +1,8 @@
-import { getDemoTransactions } from '@mosaicledger/banking';
-import {
-  normalizeRawTransactions,
-  recommendActions,
-  summarizeTransactions,
-} from '@mosaicledger/core';
-import { buildTreemapTiles } from '@mosaicledger/mosaic';
+import { computeDemoArtifacts } from '../../../lib/analysis/compute';
+import { getLatestAnalysisRun, insertAnalysisRun } from '../../../lib/analysis/storage';
+import { hasSupabaseEnv } from '../../../lib/env';
+import { envFlags } from '../../../lib/flags';
+import { supabaseServer } from '../../../lib/supabase/server';
 import { MosaicView } from '../../../components/MosaicView';
 import { RecurringPanel } from '../../../components/RecurringPanel';
 import { ActionsPanel } from '../../../components/ActionsPanel';
@@ -14,17 +12,31 @@ export default async function MosaicPage(props: { searchParams: Promise<{ source
   const sp = await props.searchParams;
   const source = sp.source ?? 'demo';
 
-  // Demo-safe default: always render local fixtures unless explicitly overridden later.
-  const raw = source === 'demo' ? getDemoTransactions() : getDemoTransactions();
-  const txns = normalizeRawTransactions(raw, { source: 'demo' });
+  // Demo-safe default: render local fixtures. If a user is authenticated and schema exists,
+  // cache the latest run for fast reloads.
+  let artifacts = computeDemoArtifacts();
+  let hasCache = false;
 
-  const summary = summarizeTransactions(txns);
-  const tiles = buildTreemapTiles(summary.byCategory);
-  const actions = recommendActions(summary, {
-    goalType: 'save_by_date',
-    saveAmount: 200,
-    byDate: '2026-04-01',
-  });
+  if (source === 'demo' && !envFlags.demoMode && !envFlags.judgeMode && hasSupabaseEnv()) {
+    try {
+      const supabase = await supabaseServer();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        const latest = await getLatestAnalysisRun(supabase, user.id);
+        if (latest) {
+          artifacts = latest;
+          hasCache = true;
+        } else {
+          await insertAnalysisRun(supabase, user.id, artifacts);
+        }
+      }
+    } catch {
+      // Ignore caching failures (schema not applied yet, etc).
+    }
+  }
 
   return (
     <div style={{ display: 'grid', gap: 16 }}>
@@ -41,10 +53,11 @@ export default async function MosaicPage(props: { searchParams: Promise<{ source
             Mosaic
           </div>
           <div className="small">
-            {txns.length} transactions · ${summary.totalSpend.toFixed(2)} spend
+            {artifacts.summary.transactionCount} transactions · $
+            {artifacts.summary.totalSpend.toFixed(2)} spend
           </div>
         </div>
-        <Badge tone="good">Demo Data</Badge>
+        <Badge tone="good">{hasCache ? 'Cached' : 'Demo Data'}</Badge>
       </div>
 
       <div className="grid">
@@ -53,7 +66,7 @@ export default async function MosaicPage(props: { searchParams: Promise<{ source
             <CardTitle>Month Mosaic</CardTitle>
           </CardHeader>
           <CardBody>
-            <MosaicView tiles={tiles} />
+            <MosaicView tiles={artifacts.mosaic.tiles} />
           </CardBody>
         </Card>
 
@@ -63,7 +76,7 @@ export default async function MosaicPage(props: { searchParams: Promise<{ source
               <CardTitle>Recurring</CardTitle>
             </CardHeader>
             <CardBody>
-              <RecurringPanel recurring={summary.recurring} />
+              <RecurringPanel recurring={artifacts.recurring} />
             </CardBody>
           </Card>
 
@@ -72,7 +85,7 @@ export default async function MosaicPage(props: { searchParams: Promise<{ source
               <CardTitle>Next Actions</CardTitle>
             </CardHeader>
             <CardBody>
-              <ActionsPanel actions={actions.slice(0, 5)} />
+              <ActionsPanel actions={artifacts.actionPlan.slice(0, 5)} />
             </CardBody>
           </Card>
         </div>

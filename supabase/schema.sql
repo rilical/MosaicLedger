@@ -106,3 +106,33 @@ on public.user_overrides
 for update
 using (auth.uid() = user_id);
 
+
+-- 4) Analysis artifacts (cached outputs)
+create table if not exists public.analysis_runs (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  created_at timestamptz not null default now(),
+
+  source text not null default 'engine',
+  -- For hackathon: store outputs as JSON. Split tables can come later.
+  summary_json jsonb not null,
+  mosaic_json jsonb not null,
+  recurring_json jsonb not null,
+  action_plan_json jsonb not null
+);
+
+create index if not exists analysis_runs_user_created_idx on public.analysis_runs (user_id, created_at desc);
+
+alter table public.analysis_runs enable row level security;
+
+drop policy if exists "analysis_runs_select_own" on public.analysis_runs;
+create policy "analysis_runs_select_own"
+on public.analysis_runs
+for select
+using (auth.uid() = user_id);
+
+drop policy if exists "analysis_runs_insert_own" on public.analysis_runs;
+create policy "analysis_runs_insert_own"
+on public.analysis_runs
+for insert
+with check (auth.uid() = user_id);
