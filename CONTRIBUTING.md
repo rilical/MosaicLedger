@@ -14,11 +14,13 @@
 
 - Install: `corepack enable && pnpm install`
 - Dev: `pnpm dev`
+- Lint: `pnpm lint`
 - Typecheck: `pnpm typecheck`
 - Tests: `pnpm test`
 - Format: `pnpm format`
+- Demo guard: `pnpm check-demo`
 
 ## Demo stability rules
 
-- The demo must work without external keys by using the sample dataset.
+- The demo must work without external keys by using the demo dataset.
 - Do not log raw CSV rows or sensitive values.

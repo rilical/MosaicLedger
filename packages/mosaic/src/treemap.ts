@@ -1,5 +1,4 @@
 import { hierarchy, treemap } from 'd3-hierarchy';
-import type { HierarchyRectangularNode } from 'd3-hierarchy';
 import { colorForLabel } from './colors';
 
 export type TreemapTile = {
@@ -33,7 +32,7 @@ export function buildTreemapTiles(byCategory: Record<string, number>): TreemapTi
 
   // d3's types model the treemap output as HierarchyRectangularNode, but the transform isn't captured.
   const layout = treemap<Datum>().size([1000, 650]).padding(10).round(true);
-  const rootRect = layout(root as any) as HierarchyRectangularNode<Datum>;
+  const rootRect = layout(root);
 
   const tiles: TreemapTile[] = [];
   for (const node of rootRect.leaves()) {

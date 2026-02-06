@@ -6,7 +6,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && mkdir -p dist/demo && cp src/demo/*.json dist/demo/",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "echo 'no tests'"
   },

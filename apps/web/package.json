@@ -10,6 +10,7 @@
     "test": "echo 'no tests'"
   },
   "dependencies": {
+    "@mosaicledger/banking": "workspace:*",
     "@mosaicledger/core": "workspace:*",
     "@mosaicledger/mosaic": "workspace:*",
     "next": "15.1.6",

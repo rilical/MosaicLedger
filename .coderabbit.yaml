@@ -1,0 +1,16 @@
+reviews:
+  profile: chill
+  high_level_summary: true
+  review_status: true
+
+auto_review:
+  enabled: true
+  drafts: true
+
+chat:
+  art: false
+
+path_filters:
+  - '!**/*.lock'
+  - '!**/dist/**'
+  - '!**/.next/**'

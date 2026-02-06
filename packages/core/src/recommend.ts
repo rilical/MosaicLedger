@@ -2,6 +2,7 @@ import type { ActionRecommendation, GoalInput, Summary } from './types';
 import { stableId } from './normalize';
 
 export function recommendActions(summary: Summary, goal: GoalInput): ActionRecommendation[] {
+  void goal; // Placeholder: goal-aware ranking comes next. Keep engine deterministic.
   const actions: ActionRecommendation[] = [];
 
   // Template 1: cancel recurring subscriptions (best low-effort wins)

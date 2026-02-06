@@ -5,7 +5,7 @@ export type NormalizedTransaction = {
   merchantRaw: string;
   merchant: string; // canonicalized
   category: string;
-  source: 'csv' | 'bank';
+  source: 'csv' | 'bank' | 'demo';
 };
 
 export type RecurringCharge = {

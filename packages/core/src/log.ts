@@ -16,8 +16,11 @@ function shouldLog(cur: LogLevel, want: LogLevel) {
 }
 
 function redact(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(redact);
+  }
   if (value && typeof value === 'object') {
-    const copy: Record<string, unknown> = Array.isArray(value) ? {} : { ...(value as any) };
+    const copy: Record<string, unknown> = { ...(value as Record<string, unknown>) };
     // Redact common sensitive fields.
     for (const k of ['merchantRaw', 'amount', 'name', 'description', 'raw', 'row']) {
       if (k in copy) copy[k] = '[REDACTED]';

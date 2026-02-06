@@ -10,13 +10,19 @@
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
-    "check-demo": "tsx scripts/check-demo.ts"
+    "check-demo": "tsx scripts/check-demo.ts",
+    "seed": "tsx scripts/seed-demo.ts"
   },
   "devDependencies": {
+    "@eslint/js": "^9.19.0",
+    "eslint": "^9.19.0",
     "prettier": "^3.3.3",
     "tsx": "^4.19.2",
+    "typescript-eslint": "^8.22.0",
     "typescript": "^5.7.3"
   }
 }

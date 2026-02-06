@@ -16,6 +16,8 @@ export type BankProvider = {
   >;
 };
 
+export * from './demo';
+
 // Scaffold: Plaid-first shape. Actual implementation is deferred until keys/compliance decisions are set.
 export function createPlaidProvider(_env: {
   PLAID_CLIENT_ID?: string;

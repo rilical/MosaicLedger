@@ -12,16 +12,22 @@ MosaicLedger is a visual-first budget planner that turns transactions into an ex
 
 ## 60-90s demo script
 
-1. Upload a CSV (or click "Load sample") to assemble the mosaic.
-2. Click a category tile to drill down (category -> merchants -> transactions).
-3. Open Recurring to see detected subscriptions and predicted next charges.
-4. Set a savings goal and view the top 5 actions with quantified monthly impact.
-5. (Optional) Trigger a round-up transfer (simulated by default, XRPL testnet later).
-6. Export the mosaic as SVG/PNG.
+1. Open `http://localhost:3000/app`.
+2. Click `Use Demo Data` (always works, no keys).
+3. Hover the Mosaic mural to see tile-level spend detail.
+4. Open Recurring to see detected subscriptions and predicted next charges.
+5. View the top ranked actions with quantified monthly impact.
+6. (Optional) Toggle Judge Mode / Demo Mode in Settings to harden the live demo.
+
+## Dev utilities
+
+- `pnpm check-demo`: CI-grade verification that demo data generates tiles + recurring.
+- `pnpm seed`: generate `data/seed/demoDerived.json` (ignored) for quick local inspection.
 
 ## Repo layout
 
 - `apps/web`: Next.js UI
+- `tasks/index.md`: single task board for parallel work
 - `packages/core`: parsing, normalization, categorization, recurring detection, recommendations
 - `packages/mosaic`: treemap layout + export helpers
 - `packages/banking`: bank API adapters (Plaid-first scaffold)

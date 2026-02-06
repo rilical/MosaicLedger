@@ -16,7 +16,9 @@ jobs:
       - name: Enable corepack
         run: corepack enable
       - name: Install
-        run: pnpm install --frozen-lockfile=false
+        run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: pnpm lint
       - name: Typecheck
         run: pnpm typecheck
       - name: Test

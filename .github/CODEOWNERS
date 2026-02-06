@@ -1,0 +1,16 @@
+# Update owners to real GitHub handles/teams for your hackathon roster.
+#
+# Notes:
+# - Keep ownership aligned to module boundaries so parallel PRs don't collide.
+# - Avoid enabling "Require review from Code Owners" until these owners are correct.
+
+* @omarghabyen
+
+/apps/web/ @omarghabyen
+/packages/core/ @omarghabyen
+/packages/mosaic/ @omarghabyen
+/packages/banking/ @omarghabyen
+/packages/mcp-server/ @omarghabyen
+/packages/xrpl/ @omarghabyen
+/docs/ @omarghabyen
+
