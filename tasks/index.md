@@ -21,3 +21,13 @@ Status legend: `TODO` | `DOING` | `BLOCKED` | `REVIEW` | `DONE`
 - Bank API sync: implement server-only `/api/plaid/*` routes with strict demo fallback.
 - Data persistence: Supabase schema + minimal writes of normalized txns + artifacts.
 - Mosaic drill-down: category -> merchant -> transaction drawer without navigation.
+
+## Auth & Database (AUTH)
+
+| ID       | Status | Notes                                                                 |
+| -------- | ------ | --------------------------------------------------------------------- |
+| AUTH-001 | TODO   | Create Supabase project + enable email auth + set redirect URLs.      |
+| AUTH-002 | DOING  | Supabase env template + client/server helpers scaffolded.             |
+| AUTH-003 | DOING  | Magic-link login implemented (enabled only when Supabase env exists). |
+| AUTH-004 | DOING  | `/app/*` protection via middleware when demo/judge are off.           |
+| AUTH-005 | DOING  | Starter schema + RLS policies in `supabase/schema.sql`.               |

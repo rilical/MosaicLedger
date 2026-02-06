@@ -15,7 +15,10 @@ This file is updated in every PR.
 
 ## Latest Changes
 
-- (Write what changed, in one paragraph, per PR.)
+- AUTH scaffold (branch: `codex/auth-scaffold`): Supabase magic-link login is wired when env vars are
+  present, `/app/*` routes are protected via middleware when demo/judge modes are off, and a starter
+  RLS schema is added under `supabase/schema.sql`. Demo Mode remains the default and must continue
+  to work with zero keys.
 
 ## Known Risks / TODO
 
