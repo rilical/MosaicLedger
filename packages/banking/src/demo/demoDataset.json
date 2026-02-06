@@ -39,9 +39,16 @@
   { "date": "2026-01-06", "name": "UBER TRIP", "amount": 18.42, "category": "Transport" },
   { "date": "2026-01-08", "name": "DOORDASH", "amount": 32.18, "category": "Dining" },
   { "date": "2026-01-10", "name": "AMAZON MKTPLACE PMTS", "amount": 47.12, "category": "Shopping" },
+  {
+    "date": "2026-01-11",
+    "name": "AMAZON MKTPLACE PMTS",
+    "amount": -12.34,
+    "category": "Shopping"
+  },
   { "date": "2026-01-12", "name": "COMCAST CABLE", "amount": 79.99, "category": "Utilities" },
   { "date": "2026-01-14", "name": "STARBUCKS 04567", "amount": 5.95, "category": "Dining" },
   { "date": "2026-01-17", "name": "DOORDASH", "amount": 28.66, "category": "Dining" },
+  { "date": "2026-01-18", "name": "TRANSFER TO SAVINGS", "amount": 200.0, "category": "Transfer" },
   { "date": "2026-01-20", "name": "GYM MEMBERSHIP", "amount": 35.0, "category": "Health" },
   { "date": "2026-01-22", "name": "GIANT EAGLE #1234", "amount": 92.61, "category": "Groceries" },
   { "date": "2026-01-24", "name": "RENT PAYMENT", "amount": 1200.0, "category": "Housing" },

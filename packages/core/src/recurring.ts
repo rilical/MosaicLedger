@@ -28,6 +28,7 @@ function addDays(date: string, days: number): string {
 export function detectRecurring(transactions: NormalizedTransaction[]): RecurringCharge[] {
   const byMerchant = new Map<string, NormalizedTransaction[]>();
   for (const t of transactions) {
+    if (t.amount <= 0) continue; // ignore refunds/credits for recurring detection
     const arr = byMerchant.get(t.merchant) ?? [];
     arr.push(t);
     byMerchant.set(t.merchant, arr);

@@ -1,15 +1,19 @@
-import { getDemoTransactions } from '@mosaicledger/banking';
-import { normalizeRawTransactions, summarizeTransactions } from '@mosaicledger/core';
+'use client';
+
+import * as React from 'react';
 import { RecurringPanel } from '../../../components/RecurringPanel';
 import { Badge, Card, CardBody, CardHeader, CardTitle } from '../../../components/ui';
+import { AnalysisControls } from '../../../components/Analysis/AnalysisControls';
+import {
+  useAnalysisSettings,
+  toAnalyzeRequest,
+} from '../../../components/Analysis/useAnalysisSettings';
+import { useAnalysis } from '../../../components/Analysis/useAnalysis';
 
-export default async function RecurringPage(props: { searchParams: Promise<{ source?: string }> }) {
-  const sp = await props.searchParams;
-  const source = sp.source ?? 'demo';
-
-  const raw = source === 'demo' ? getDemoTransactions() : getDemoTransactions();
-  const txns = normalizeRawTransactions(raw, { source: 'demo' });
-  const summary = summarizeTransactions(txns);
+export default function RecurringPage() {
+  const { settings, setSettings } = useAnalysisSettings();
+  const req = React.useMemo(() => toAnalyzeRequest(settings), [settings]);
+  const { artifacts, loading, error, recompute } = useAnalysis(req);
 
   return (
     <div style={{ display: 'grid', gap: 16, maxWidth: 980 }}>
@@ -18,17 +22,32 @@ export default async function RecurringPage(props: { searchParams: Promise<{ sou
           <div className="h1" style={{ fontSize: 20 }}>
             Recurring
           </div>
-          <div className="small">{summary.recurring.length} detected recurring charges</div>
+          <div className="small">
+            {(artifacts?.recurring ?? []).length} detected recurring charges
+          </div>
         </div>
-        <Badge tone="good">Demo Data</Badge>
+        <Badge tone={error ? 'warn' : 'good'}>{error ? 'Error' : 'Live'}</Badge>
       </div>
+
+      <AnalysisControls
+        settings={settings}
+        setSettings={setSettings}
+        loading={loading}
+        onRecompute={() => void recompute()}
+      />
+
+      {error ? (
+        <div className="small" style={{ color: 'rgba(234,179,8,0.95)' }}>
+          {error}
+        </div>
+      ) : null}
 
       <Card>
         <CardHeader>
           <CardTitle>Detected Subscriptions</CardTitle>
         </CardHeader>
         <CardBody>
-          <RecurringPanel recurring={summary.recurring} />
+          <RecurringPanel recurring={artifacts?.recurring ?? []} />
         </CardBody>
       </Card>
     </div>
