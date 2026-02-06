@@ -60,7 +60,6 @@ export function parseTransactionsCsv(csv: string): NormalizedTransaction[] {
     const category = (iCat === -1 ? '' : (cols[iCat] ?? '')).trim();
 
     if (!date || !merchantRaw || !Number.isFinite(amount)) continue;
-    if (amount <= 0) continue; // spend-only for MVP
 
     const merchant = normalizeMerchantName(merchantRaw);
 

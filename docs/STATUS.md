@@ -24,6 +24,10 @@ This file is updated in every PR.
   `/app/mosaic` when Supabase is configured and demo/judge are disabled.
 - BANK-002/003 (branch: `codex/bank-002-003-plaid-server`): adds server-only Plaid client scaffold
   plus `/api/plaid/health` and `/api/plaid/link-token` with judge/demo fallback tokens.
+- DATA-004/005 (branch: `codex/data-004-005-range-filters`): adds range selection (This month / Last
+  month / Custom) and deterministic transaction exclusions (refunds + transfer-like) that apply to
+  Mosaic, Recurring, and Plan. Settings persist in `localStorage`, and `/api/engine/analyze` is
+  triggered on changes. Demo check now pre-builds shared packages before running.
 
 ## Known Risks / TODO
 

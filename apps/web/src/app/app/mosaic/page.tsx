@@ -1,42 +1,21 @@
-import { computeDemoArtifacts } from '../../../lib/analysis/compute';
-import { getLatestAnalysisRun, insertAnalysisRun } from '../../../lib/analysis/storage';
-import { hasSupabaseEnv } from '../../../lib/env';
-import { envFlags } from '../../../lib/flags';
-import { supabaseServer } from '../../../lib/supabase/server';
+'use client';
+
+import * as React from 'react';
 import { MosaicView } from '../../../components/MosaicView';
 import { RecurringPanel } from '../../../components/RecurringPanel';
 import { ActionsPanel } from '../../../components/ActionsPanel';
 import { Badge, Card, CardBody, CardHeader, CardTitle } from '../../../components/ui';
+import { AnalysisControls } from '../../../components/Analysis/AnalysisControls';
+import {
+  useAnalysisSettings,
+  toAnalyzeRequest,
+} from '../../../components/Analysis/useAnalysisSettings';
+import { useAnalysis } from '../../../components/Analysis/useAnalysis';
 
-export default async function MosaicPage(props: { searchParams: Promise<{ source?: string }> }) {
-  const sp = await props.searchParams;
-  const source = sp.source ?? 'demo';
-
-  // Demo-safe default: render local fixtures. If a user is authenticated and schema exists,
-  // cache the latest run for fast reloads.
-  let artifacts = computeDemoArtifacts();
-  let hasCache = false;
-
-  if (source === 'demo' && !envFlags.demoMode && !envFlags.judgeMode && hasSupabaseEnv()) {
-    try {
-      const supabase = await supabaseServer();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (user) {
-        const latest = await getLatestAnalysisRun(supabase, user.id);
-        if (latest) {
-          artifacts = latest;
-          hasCache = true;
-        } else {
-          await insertAnalysisRun(supabase, user.id, artifacts);
-        }
-      }
-    } catch {
-      // Ignore caching failures (schema not applied yet, etc).
-    }
-  }
+export default function MosaicPage() {
+  const { settings, setSettings } = useAnalysisSettings();
+  const req = React.useMemo(() => toAnalyzeRequest(settings), [settings]);
+  const { artifacts, loading, error, recompute } = useAnalysis(req);
 
   return (
     <div style={{ display: 'grid', gap: 16 }}>
@@ -53,12 +32,28 @@ export default async function MosaicPage(props: { searchParams: Promise<{ source
             Mosaic
           </div>
           <div className="small">
-            {artifacts.summary.transactionCount} transactions · $
-            {artifacts.summary.totalSpend.toFixed(2)} spend
+            {artifacts
+              ? `${artifacts.summary.transactionCount} transactions · $${artifacts.summary.totalSpend.toFixed(
+                  2,
+                )} spend`
+              : 'Computing…'}
           </div>
         </div>
-        <Badge tone="good">{hasCache ? 'Cached' : 'Demo Data'}</Badge>
+        <Badge tone={error ? 'warn' : 'good'}>{error ? 'Error' : 'Live'}</Badge>
       </div>
+
+      <AnalysisControls
+        settings={settings}
+        setSettings={setSettings}
+        loading={loading}
+        onRecompute={() => void recompute()}
+      />
+
+      {error ? (
+        <div className="small" style={{ color: 'rgba(234,179,8,0.95)' }}>
+          {error}
+        </div>
+      ) : null}
 
       <div className="grid">
         <Card>
@@ -66,7 +61,7 @@ export default async function MosaicPage(props: { searchParams: Promise<{ source
             <CardTitle>Month Mosaic</CardTitle>
           </CardHeader>
           <CardBody>
-            <MosaicView tiles={artifacts.mosaic.tiles} />
+            <MosaicView tiles={artifacts?.mosaic.tiles ?? []} />
           </CardBody>
         </Card>
 
@@ -76,7 +71,7 @@ export default async function MosaicPage(props: { searchParams: Promise<{ source
               <CardTitle>Recurring</CardTitle>
             </CardHeader>
             <CardBody>
-              <RecurringPanel recurring={artifacts.recurring} />
+              <RecurringPanel recurring={artifacts?.recurring ?? []} />
             </CardBody>
           </Card>
 
@@ -85,7 +80,7 @@ export default async function MosaicPage(props: { searchParams: Promise<{ source
               <CardTitle>Next Actions</CardTitle>
             </CardHeader>
             <CardBody>
-              <ActionsPanel actions={artifacts.actionPlan.slice(0, 5)} />
+              <ActionsPanel actions={(artifacts?.actionPlan ?? []).slice(0, 5)} />
             </CardBody>
           </Card>
         </div>

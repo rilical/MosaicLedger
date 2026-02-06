@@ -27,16 +27,24 @@ Status legend: `TODO` | `DOING` | `BLOCKED` | `REVIEW` | `DONE`
 | ID       | Status | Notes                                                                 |
 | -------- | ------ | --------------------------------------------------------------------- |
 | AUTH-001 | TODO   | Create Supabase project + enable email auth + set redirect URLs.      |
-| AUTH-002 | DOING  | Supabase env template + client/server helpers scaffolded.             |
-| AUTH-003 | DOING  | Magic-link login implemented (enabled only when Supabase env exists). |
-| AUTH-004 | DOING  | `/app/*` protection via middleware when demo/judge are off.           |
-| AUTH-005 | DOING  | Starter schema + RLS policies in `supabase/schema.sql`.               |
-| AUTH-006 | DOING  | `analysis_runs` table + `/api/engine/analyze` + cached latest render. |
+| AUTH-002 | DONE   | Supabase env template + client/server helpers scaffolded.             |
+| AUTH-003 | DONE   | Magic-link login implemented (enabled only when Supabase env exists). |
+| AUTH-004 | DONE   | `/app/*` protection via middleware when demo/judge are off.           |
+| AUTH-005 | DONE   | Starter schema + RLS policies in `supabase/schema.sql`.               |
+| AUTH-006 | DONE   | `analysis_runs` table + `/api/engine/analyze` + cached latest render. |
+
+## Data (DATA)
+
+| ID       | Status | Notes                                                                 |
+| -------- | ------ | --------------------------------------------------------------------- |
+| DATA-004 | REVIEW | Date range selector (This month / Last month / Custom) + persistence. |
+| DATA-005 | REVIEW | Transaction exclusions (refunds/transfers) wired into analysis + UI.  |
+| DATA-006 | TODO   | Category override pipeline (persist + apply on next analysis run).    |
 
 ## Bank Connector (BANK)
 
 | ID       | Status | Notes                                                         |
 | -------- | ------ | ------------------------------------------------------------- |
 | BANK-001 | TODO   | Create Plaid account + sandbox keys.                          |
-| BANK-002 | DOING  | Server-only Plaid client module + `/api/plaid/health`.        |
-| BANK-003 | DOING  | `/api/plaid/link-token` (judge/demo mode returns fake token). |
+| BANK-002 | DONE   | Server-only Plaid client module + `/api/plaid/health`.        |
+| BANK-003 | DONE   | `/api/plaid/link-token` (judge/demo mode returns fake token). |

@@ -1,19 +1,15 @@
-import { getDemoTransactions } from '../packages/banking/src/index.ts';
-import { normalizeRawTransactions, summarizeTransactions } from '../packages/core/src/index.ts';
-import { buildTreemapTiles } from '../packages/mosaic/src/index.ts';
+import { computeDemoArtifacts } from '../apps/web/src/lib/analysis/compute';
 
 async function main() {
-  const raw = getDemoTransactions();
-  const txns = normalizeRawTransactions(raw, { source: 'demo' });
-  const summary = summarizeTransactions(txns);
-  const tiles = buildTreemapTiles(summary.byCategory);
+  const artifacts = computeDemoArtifacts();
+  const tiles = artifacts.mosaic.tiles;
 
   if (tiles.length === 0) {
     console.error('DEMO CHECK FAILED: no tiles generated');
     process.exit(1);
   }
 
-  if (summary.recurring.length === 0) {
+  if (artifacts.recurring.length === 0) {
     console.error('DEMO CHECK FAILED: expected at least 1 recurring pattern');
     process.exit(1);
   }
