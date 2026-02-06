@@ -37,9 +37,17 @@ Status legend: `TODO` | `DOING` | `BLOCKED` | `REVIEW` | `DONE`
 
 | ID       | Status | Notes                                                                 |
 | -------- | ------ | --------------------------------------------------------------------- |
-| DATA-004 | REVIEW | Date range selector (This month / Last month / Custom) + persistence. |
-| DATA-005 | REVIEW | Transaction exclusions (refunds/transfers) wired into analysis + UI.  |
+| DATA-004 | DONE   | Date range selector (This month / Last month / Custom) + persistence. |
+| DATA-005 | DONE   | Transaction exclusions (refunds/transfers) wired into analysis + UI.  |
 | DATA-006 | TODO   | Category override pipeline (persist + apply on next analysis run).    |
+
+## Plan (PLAN)
+
+| ID       | Status | Notes                                                                |
+| -------- | ------ | -------------------------------------------------------------------- |
+| PLAN-007 | REVIEW | Explainability: expandable "Why this?" + optional AI rewrite toggle. |
+| PLAN-008 | REVIEW | Budget table per category + accept cap as goal (localStorage).       |
+| PLAN-009 | REVIEW | Scenario compare (before/after) + action toggles (deterministic).    |
 
 ## Bank Connector (BANK)
 
