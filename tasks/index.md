@@ -32,3 +32,11 @@ Status legend: `TODO` | `DOING` | `BLOCKED` | `REVIEW` | `DONE`
 | AUTH-004 | DOING  | `/app/*` protection via middleware when demo/judge are off.           |
 | AUTH-005 | DOING  | Starter schema + RLS policies in `supabase/schema.sql`.               |
 | AUTH-006 | DOING  | `analysis_runs` table + `/api/engine/analyze` + cached latest render. |
+
+## Bank Connector (BANK)
+
+| ID       | Status | Notes                                                         |
+| -------- | ------ | ------------------------------------------------------------- |
+| BANK-001 | TODO   | Create Plaid account + sandbox keys.                          |
+| BANK-002 | DOING  | Server-only Plaid client module + `/api/plaid/health`.        |
+| BANK-003 | DOING  | `/api/plaid/link-token` (judge/demo mode returns fake token). |
