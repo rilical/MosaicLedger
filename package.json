@@ -3,7 +3,6 @@
   "private": true,
   "main": "index.js",
   "workspaces": [
-    "apps/*",
     "packages/*"
   ],
   "packageManager": "pnpm@9.15.4",
