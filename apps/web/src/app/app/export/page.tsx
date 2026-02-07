@@ -124,13 +124,10 @@ export default function ExportPage() {
 
   return (
     <div style={{ display: 'grid', gap: 16, maxWidth: 980 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
-        <div>
-          <div className="h1" style={{ fontSize: 20 }}>
-            Export
-          </div>
-          <div className="small">Poster export (SVG/PNG) of your Mosaic + Plan summary</div>
-        </div>
+      <div
+        style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}
+      >
+        <div className="small">Poster export (SVG/PNG) of your Mosaic + Plan summary</div>
         <Badge tone={error ? 'warn' : 'good'}>{error ? 'Error' : 'Ready'}</Badge>
       </div>
 
@@ -190,10 +187,16 @@ export default function ExportPage() {
                 style={{
                   border: '1px solid var(--border)',
                   borderRadius: 16,
-                  overflow: 'hidden',
+                  overflow: 'auto',
                   background: 'rgba(0,0,0,0.16)',
+                  maxWidth: '100%',
                 }}
-                dangerouslySetInnerHTML={{ __html: svg }}
+                dangerouslySetInnerHTML={{
+                  __html: svg.replace(
+                    /width="1000" height="980"/,
+                    'width="100%" height="auto" style="max-width:100%;display:block"',
+                  ),
+                }}
               />
             ) : (
               <div className="small">Run an analysis to generate an export preview.</div>

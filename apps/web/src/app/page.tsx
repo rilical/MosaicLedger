@@ -61,44 +61,6 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-
-      <section className="section">
-        <div className="sectionHeader">
-          <h2 className="sectionTitle">Why MosaicLedger</h2>
-          <Badge tone="good">Built for judges</Badge>
-        </div>
-        <div className="featureGrid">
-          <div className="featureCard">
-            <div style={{ fontWeight: 600, marginBottom: 6 }}>Deterministic core</div>
-            <div className="small">Every number is reproducible. AI never touches math.</div>
-          </div>
-          <div className="featureCard">
-            <div style={{ fontWeight: 600, marginBottom: 6 }}>Recurring clarity</div>
-            <div className="small">Forecasted charges and confidence scores in a single view.</div>
-          </div>
-          <div className="featureCard">
-            <div style={{ fontWeight: 600, marginBottom: 6 }}>Actionable plans</div>
-            <div className="small">Ranked next steps with monthly savings and effort scores.</div>
-          </div>
-        </div>
-      </section>
-
-      <section className="section">
-        <div className="heroCard" style={{ display: 'grid', gap: 10 }}>
-          <div className="sectionTitle">Ready to assemble your story?</div>
-          <div className="small">
-            Jump into the live demo and explore the mosaic, recurring charges, and action plan.
-          </div>
-          <div className="buttonRow">
-            <Link className="btn btnPrimary" href="/app">
-              Launch demo
-            </Link>
-            <Link className="btn btnGhost" href="/app/settings">
-              Open settings
-            </Link>
-          </div>
-        </div>
-      </section>
     </main>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { createPortal } from 'react-dom';
 
 type DrawerProps = {
   open: boolean;
@@ -11,6 +12,11 @@ type DrawerProps = {
 
 export function Drawer(props: DrawerProps) {
   const { open, onOpenChange, title, children } = props;
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   React.useEffect(() => {
     if (!open) return;
@@ -21,9 +27,9 @@ export function Drawer(props: DrawerProps) {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [open, onOpenChange]);
 
-  if (!open) return null;
+  if (!open || !mounted || typeof document === 'undefined') return null;
 
-  return (
+  const content = (
     <div className="drawerOverlay" role="presentation" onMouseDown={() => onOpenChange(false)}>
       <aside
         className="drawer"
@@ -42,4 +48,6 @@ export function Drawer(props: DrawerProps) {
       </aside>
     </div>
   );
+
+  return createPortal(content, document.body);
 }

@@ -27,7 +27,6 @@ export default function ConnectPage() {
   return (
     <div className="pageStack" style={{ maxWidth: 980 }}>
       <div className="pageHeader">
-        <h1 className="pageTitle">Connect</h1>
         <div className="pageMeta">
           <div className="pageTagline">Pick a data source to start the demo flow.</div>
           <Badge tone="good">Demo-first</Badge>

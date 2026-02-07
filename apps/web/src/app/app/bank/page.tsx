@@ -117,7 +117,6 @@ export default function BankConnectPage() {
   return (
     <div className="pageStack" style={{ maxWidth: 980 }}>
       <div className="pageHeader">
-        <h1 className="pageTitle">Connect Bank</h1>
         <div className="pageMeta">
           <div className="pageTagline">
             Link your bank account via Plaid to import real transactions.

@@ -168,7 +168,7 @@ export function ActionsPanel(props: {
             </details>
 
             {onAskWhy ? (
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 4 }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: 4 }}>
                 <button
                   className="btn btnGhost"
                   type="button"

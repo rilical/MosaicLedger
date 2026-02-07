@@ -88,7 +88,6 @@ export default function PlanPage() {
   return (
     <div className="pageStack" style={{ maxWidth: 980 }}>
       <div className="pageHeader">
-        <h1 className="pageTitle">Plan</h1>
         <div className="pageMeta">
           <div className="pageTagline">Ranked next actions with quantified monthly savings</div>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
