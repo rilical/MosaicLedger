@@ -3,6 +3,7 @@
 ## Visa Track Segment (30s) (VISA-012)
 
 1. Start at `/app` and click **Use Demo Data** (fail-safe path for judging).
+   - Optional alt: click **Connect Capital One Nessie** to show a “bank-like” mock integration (if Plaid is flaky).
 2. Go to **Recurring**:
    - Call out: “We detect recurring charges and predict the next date.”
    - Crisp metric: “Next 30 days upcoming recurring total is shown here.”

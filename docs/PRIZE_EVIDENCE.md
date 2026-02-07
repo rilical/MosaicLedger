@@ -14,7 +14,7 @@ Keep it honest: only claim what the app can do in the current branch/commit.
 **Env vars**
 
 - `NESSIE_API_KEY` (required for live Nessie)
-- `NESSIE_BASE_URL` (optional, defaults to `https://api.nessieisreal.com`; also supports `https://api.reimaginebanking.com`)
+- `NESSIE_BASE_URL` (optional; common hosts: `http://api.reimaginebanking.com` and `https://api.nessieisreal.com`)
 - `NESSIE_CUSTOMER_ID` (optional; recommended for GET-only keys)
 - `NESSIE_ACCOUNT_ID` (optional; recommended for GET-only keys)
 
@@ -27,7 +27,7 @@ Keep it honest: only claim what the app can do in the current branch/commit.
 
 **App proof**
 
-- Connect screen shows a button: `Use Capital One Nessie`.
+- Connect screen shows a button: `Connect Capital One Nessie`.
 - Mosaic/Plan header shows: `Source: Nessie (Capital One)` after a successful run.
 - Health page shows Nessie config presence (never prints the key).
 
@@ -37,7 +37,7 @@ Keep it honest: only claim what the app can do in the current branch/commit.
 
 **Screenshot checklist**
 
-- Connect page with `Use Capital One Nessie` visible.
+- Connect page with `Connect Capital One Nessie` visible.
 - Mosaic page with `Source: Nessie (Capital One)` badge visible.
 - Optional: `/health` showing `Capital One Nessie (optional)` status line.
 
