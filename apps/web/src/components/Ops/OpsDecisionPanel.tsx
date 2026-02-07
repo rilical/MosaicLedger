@@ -14,12 +14,14 @@ export function OpsDecisionPanel(props: {
   findings: OpsFinding[];
   range: { start: string; end: string };
   aiEnabled: boolean;
+  capitalOneSignals?: { billsUpcoming30dCount: number } | null;
 }) {
-  const { dashboard, findings, range, aiEnabled } = props;
+  const { dashboard, findings, range, aiEnabled, capitalOneSignals } = props;
   const [status, setStatus] = React.useState<'idle' | 'loading'>('idle');
   const [text, setText] = React.useState<string>('');
   const [usedAI, setUsedAI] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [useAI, setUseAI] = React.useState<boolean>(aiEnabled);
 
   async function run(style: 'exec' | 'concise') {
     setStatus('loading');
@@ -30,11 +32,12 @@ export function OpsDecisionPanel(props: {
         method: 'POST',
         headers: {
           'content-type': 'application/json',
-          ...(aiEnabled ? { 'x-ml-force-ai': '1' } : {}),
+          ...(useAI ? { 'x-ml-force-ai': '1' } : {}),
         },
         body: JSON.stringify({
           dashboard,
           range,
+          capitalOneSignals: capitalOneSignals ?? undefined,
           topFindings: top.map((f) => ({
             analyst: f.analyst,
             kind: f.kind,
@@ -73,7 +76,7 @@ export function OpsDecisionPanel(props: {
             >
               {status === 'loading'
                 ? 'Generating…'
-                : aiEnabled
+                : useAI
                   ? 'Generate Decision Brief (AI)'
                   : 'Generate Decision Brief'}
             </Button>
@@ -84,15 +87,24 @@ export function OpsDecisionPanel(props: {
             >
               Concise
             </Button>
+            <Button
+              variant={useAI ? 'primary' : 'ghost'}
+              onClick={() => setUseAI((v) => !v)}
+              disabled={status === 'loading'}
+            >
+              AI: {useAI ? 'ON' : 'OFF'}
+            </Button>
           </div>
           <div className="buttonRow">
-            <Badge tone={aiEnabled ? 'neutral' : 'good'}>
-              {aiEnabled ? 'AI opt-in' : 'AI off'}
-            </Badge>
+            <Badge tone={useAI ? 'neutral' : 'good'}>{useAI ? 'AI on' : 'AI off'}</Badge>
             {text ? (
-              <Badge tone={usedAI ? 'warn' : 'neutral'}>
-                {usedAI ? 'AI narrative' : 'Deterministic'}
-              </Badge>
+              useAI && !usedAI ? (
+                <Badge tone="warn">AI unavailable</Badge>
+              ) : (
+                <Badge tone={usedAI ? 'warn' : 'neutral'}>
+                  {usedAI ? 'AI narrative' : 'Deterministic'}
+                </Badge>
+              )
             ) : null}
           </div>
         </div>
@@ -101,6 +113,12 @@ export function OpsDecisionPanel(props: {
           This turns risk/compliance/recon signals into concrete back-office decisions: what to
           review, what to reconcile, and what to escalate. AI is optional and must not invent
           numbers.
+          {capitalOneSignals ? (
+            <div style={{ marginTop: 8 }}>
+              Capital One signals: <b>{capitalOneSignals.billsUpcoming30dCount}</b> bills due in the
+              next 30 days.
+            </div>
+          ) : null}
         </div>
 
         {error ? (

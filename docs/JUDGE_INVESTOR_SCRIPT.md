@@ -26,7 +26,7 @@ The core engine is **deterministic**: numbers (totals, tiles, recurring, actions
   - **`packages/core`** — Transaction normalization, categorization, filters, date utils, **recurring detection**, **summary**, **action recommendations**. Single source of truth for types and engine math.
   - **`packages/mosaic`** — Treemap layout (d3-hierarchy), tile colors, **poster export** (SVG/PNG).
   - **`packages/banking`** — Demo dataset (JSON), Plaid fixture for tests; bank API adapters (Plaid-first).
-  - **`packages/xrpl`** — XRPL round-up scaffolding (optional).
+  - **`packages/xrpl`** — XRPL round-ups + receipts (optional; simulate-only by default, real Testnet send when env is configured).
   - **`packages/mcp-server`** — MCP tool server (scaffold).
 - **Backend:** Next.js API routes under `apps/web/src/app/api/`. Optional **Supabase** (auth, DB for analysis runs and Plaid item/transaction storage). **Plaid** for bank linking when enabled.
 - **Data flow:** User picks a source (demo or bank) → **POST /api/engine/analyze** with range/filters/goal → server runs `computeDemoArtifacts` or `computeBankArtifacts` (same pipeline, different input) → returns **artifacts** (summary, mosaic tiles, recurring, actionPlan). UI never invents fields; it consumes these contracts.

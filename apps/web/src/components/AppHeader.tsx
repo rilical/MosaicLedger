@@ -8,6 +8,11 @@ import { SignOutButton } from './Auth/SignOutButton';
 import { useFlags } from '../lib/flags-client';
 
 const sectionMeta: Array<{ match: string; title: string; subtitle: string }> = [
+  {
+    match: '/app/capital-one',
+    title: 'Capital One',
+    subtitle: 'ATMs, branches, bills, and payments (Nessie).',
+  },
   { match: '/app/mosaic', title: 'Mosaic', subtitle: 'Primary UI is the Mosaic mural.' },
   { match: '/app/recurring', title: 'Recurring', subtitle: 'Recurring detection and forecasts.' },
   { match: '/app/plan', title: 'Plan', subtitle: 'Ranked actions with quantified savings.' },

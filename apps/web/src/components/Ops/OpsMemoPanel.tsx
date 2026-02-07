@@ -18,6 +18,7 @@ export function OpsMemoPanel(props: {
   const [memo, setMemo] = React.useState<string>('');
   const [usedAI, setUsedAI] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [useAI, setUseAI] = React.useState<boolean>(aiEnabled);
 
   async function run(style: 'friendly' | 'concise') {
     setStatus('loading');
@@ -27,7 +28,7 @@ export function OpsMemoPanel(props: {
         method: 'POST',
         headers: {
           'content-type': 'application/json',
-          ...(aiEnabled ? { 'x-ml-force-ai': '1' } : {}),
+          ...(useAI ? { 'x-ml-force-ai': '1' } : {}),
         },
         body: JSON.stringify({ briefs, range, style }),
       });
@@ -55,31 +56,40 @@ export function OpsMemoPanel(props: {
           <div className="buttonRow">
             <Button
               variant="primary"
-              onClick={() => run('friendly')}
+              onClick={() => void run('friendly')}
               disabled={status === 'loading' || briefs.length === 0}
             >
               {status === 'loading'
                 ? 'Generating…'
-                : aiEnabled
+                : useAI
                   ? 'Generate Ops Memo (AI)'
                   : 'Generate Ops Memo'}
             </Button>
             <Button
               variant="ghost"
-              onClick={() => run('concise')}
+              onClick={() => void run('concise')}
               disabled={status === 'loading' || briefs.length === 0}
             >
               Concise
             </Button>
+            <Button
+              variant={useAI ? 'primary' : 'ghost'}
+              onClick={() => setUseAI((v) => !v)}
+              disabled={status === 'loading'}
+            >
+              AI: {useAI ? 'ON' : 'OFF'}
+            </Button>
           </div>
           <div className="buttonRow">
-            <Badge tone={aiEnabled ? 'neutral' : 'good'}>
-              {aiEnabled ? 'AI opt-in' : 'AI off'}
-            </Badge>
+            <Badge tone={useAI ? 'neutral' : 'good'}>{useAI ? 'AI on' : 'AI off'}</Badge>
             {memo ? (
-              <Badge tone={usedAI ? 'warn' : 'neutral'}>
-                {usedAI ? 'AI rewrite' : 'Deterministic'}
-              </Badge>
+              useAI && !usedAI ? (
+                <Badge tone="warn">AI unavailable</Badge>
+              ) : (
+                <Badge tone={usedAI ? 'warn' : 'neutral'}>
+                  {usedAI ? 'AI rewrite' : 'Deterministic'}
+                </Badge>
+              )
             ) : null}
           </div>
         </div>

@@ -6,6 +6,16 @@ import { FLAG_KEYS, type FlagKey } from '../lib/flags';
 import { Drawer } from './ui/Drawer';
 import { Badge, Button } from './ui';
 
+const FLAG_ORDER: FlagKey[] = [
+  'judgeMode',
+  'demoMode',
+  'aiEnabled',
+  'debugTraces',
+  'plaidEnabled',
+  'nessieEnabled',
+  'xrplEnabled',
+];
+
 function forgetThisDevice() {
   try {
     const keys: string[] = [];
@@ -87,30 +97,85 @@ export function SettingsDrawer() {
   return (
     <>
       <Button variant="ghost" onClick={() => setOpen(true)}>
-        Runtime Flags
+        Judge Controls
       </Button>
       <Drawer open={open} onOpenChange={setOpen} title="Runtime Flags">
         <div style={{ display: 'grid', gap: 12 }}>
-          {FLAG_KEYS.map((k) => (
-            <div key={k} className="flagRow">
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ fontWeight: 650 }}>{labelFor(k)}</div>
-                  <Badge tone={flags[k] ? 'good' : 'neutral'}>{flags[k] ? 'ON' : 'OFF'}</Badge>
-                </div>
-                <div className="small">{helpFor(k)}</div>
-              </div>
+          <CardQuickActions
+            onJudgePreset={() => {
+              // Recommended judging posture: demo-safe, deterministic first.
+              setFlag('judgeMode', true);
+              setFlag('demoMode', true);
+              setFlag('aiEnabled', false);
+              setFlag('debugTraces', false);
+            }}
+            onOpenEvidence={() => {
+              window.location.href = '/app/evidence';
+            }}
+            onOpenDemo={() => {
+              window.location.href = '/app/mosaic?source=demo';
+            }}
+          />
 
-              <label className="switch" aria-label={`Toggle ${labelFor(k)}`}>
-                <input
-                  type="checkbox"
-                  checked={Boolean(flags[k])}
-                  onChange={(e) => setFlag(k, e.target.checked)}
-                />
-                <span className="switchTrack" />
-              </label>
-            </div>
-          ))}
+          <div style={{ display: 'grid', gap: 10 }}>
+            {FLAG_ORDER.filter((k) => FLAG_KEYS.includes(k)).map((k) => (
+              <div key={k} className="flagRow">
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ fontWeight: 650 }}>{labelFor(k)}</div>
+                    <Badge tone={flags[k] ? 'good' : 'neutral'}>{flags[k] ? 'ON' : 'OFF'}</Badge>
+                  </div>
+                  <div className="small">{helpFor(k)}</div>
+                </div>
+
+                <label className="switch" aria-label={`Toggle ${labelFor(k)}`}>
+                  <input
+                    type="checkbox"
+                    checked={Boolean(flags[k])}
+                    onChange={(e) => setFlag(k, e.target.checked)}
+                  />
+                  <span className="switchTrack" />
+                </label>
+              </div>
+            ))}
+
+            <details
+              style={{
+                border: '1px solid rgba(255,255,255,0.10)',
+                borderRadius: 16,
+                padding: 12,
+                background: 'rgba(255,255,255,0.03)',
+              }}
+            >
+              <summary className="small" style={{ cursor: 'pointer', userSelect: 'none' }}>
+                Advanced toggles
+              </summary>
+              <div style={{ display: 'grid', gap: 10, marginTop: 12 }}>
+                {FLAG_KEYS.filter((k) => !FLAG_ORDER.includes(k)).map((k) => (
+                  <div key={k} className="flagRow">
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ fontWeight: 650 }}>{labelFor(k)}</div>
+                        <Badge tone={flags[k] ? 'good' : 'neutral'}>
+                          {flags[k] ? 'ON' : 'OFF'}
+                        </Badge>
+                      </div>
+                      <div className="small">{helpFor(k)}</div>
+                    </div>
+
+                    <label className="switch" aria-label={`Toggle ${labelFor(k)}`}>
+                      <input
+                        type="checkbox"
+                        checked={Boolean(flags[k])}
+                        onChange={(e) => setFlag(k, e.target.checked)}
+                      />
+                      <span className="switchTrack" />
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </details>
+          </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
             <div style={{ display: 'flex', gap: 10 }}>
@@ -169,5 +234,43 @@ export function SettingsDrawer() {
         </div>
       </Drawer>
     </>
+  );
+}
+
+function CardQuickActions(props: {
+  onJudgePreset: () => void;
+  onOpenEvidence: () => void;
+  onOpenDemo: () => void;
+}) {
+  return (
+    <div
+      style={{
+        border: '1px solid rgba(255,255,255,0.10)',
+        borderRadius: 16,
+        padding: 12,
+        background: 'rgba(255,255,255,0.03)',
+        display: 'grid',
+        gap: 10,
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+        <div style={{ fontWeight: 650 }}>Judge preset</div>
+        <Badge tone="good">Recommended</Badge>
+      </div>
+      <div className="small">
+        Applies a demo-safe preset: Judge Mode ON, Demo Mode ON, AI OFF, Traces OFF.
+      </div>
+      <div className="buttonRow">
+        <Button variant="primary" onClick={props.onJudgePreset}>
+          Apply preset
+        </Button>
+        <Button variant="ghost" onClick={props.onOpenDemo}>
+          Open demo mosaic
+        </Button>
+        <Button variant="ghost" onClick={props.onOpenEvidence}>
+          Open evidence screen
+        </Button>
+      </div>
+    </div>
   );
 }

@@ -10,8 +10,12 @@ import { useFlags } from '../../../lib/flags-client';
 type ReceiptState =
   | { status: 'idle' }
   | { status: 'loading' }
-  | { status: 'done'; receipt: RoundupResult }
+  | { status: 'done'; receipt: RoundupResult; explorerUrl?: string }
   | { status: 'error'; error: string };
+
+type XrplHealth =
+  | { ok: true; configured: boolean; rpcHost: string | null; destinationConfigured: boolean }
+  | { ok: false; error?: string };
 
 function formatMoney(n: number): string {
   if (!Number.isFinite(n)) return '$0.00';
@@ -36,6 +40,8 @@ function computeRoundupUsdFromDemo(): { spendUsd: number; roundupUsd: number; tx
 export default function XrplPage() {
   const { flags } = useFlags();
   const [receipt, setReceipt] = React.useState<ReceiptState>({ status: 'idle' });
+  const [health, setHealth] = React.useState<XrplHealth | null>(null);
+  const [mode, setMode] = React.useState<'simulate' | 'send'>('simulate');
 
   const roundups = React.useMemo(() => computeRoundupUsdFromDemo(), []);
   const amountXrp = React.useMemo(() => {
@@ -43,16 +49,51 @@ export default function XrplPage() {
     return roundups.roundupUsd;
   }, [roundups.roundupUsd]);
 
+  React.useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const resp = await fetch('/api/xrpl/health', { method: 'GET' });
+        const json = (await resp.json()) as unknown;
+        if (!alive) return;
+        if (
+          json &&
+          typeof json === 'object' &&
+          'ok' in json &&
+          typeof (json as { ok: unknown }).ok === 'boolean'
+        ) {
+          setHealth(json as XrplHealth);
+        } else {
+          setHealth({ ok: false, error: 'invalid_response' });
+        }
+      } catch {
+        if (!alive) return;
+        setHealth({ ok: false, error: 'health_failed' });
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   const send = React.useCallback(async () => {
     setReceipt({ status: 'loading' });
     try {
+      const memo = [
+        'mosaicledger_roundup',
+        `txns=${roundups.txCount}`,
+        `spend_usd=${roundups.spendUsd.toFixed(2)}`,
+        `roundup_usd=${roundups.roundupUsd.toFixed(2)}`,
+        `ts=${new Date().toISOString()}`,
+      ].join('|');
+
       const resp = await fetch('/api/xrpl/send-roundup', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           amountXrp,
-          memo: 'mosaicledger_roundup_demo',
-          mode: 'simulate',
+          memo,
+          mode,
         }),
       });
       const json = (await resp.json()) as unknown;
@@ -61,7 +102,9 @@ export default function XrplPage() {
       const ok = Boolean((json as { ok?: unknown }).ok);
       const rec = (json as { receipt?: unknown }).receipt;
       if (!ok || !rec || typeof rec !== 'object') throw new Error('XRPL failed');
-      setReceipt({ status: 'done', receipt: rec as RoundupResult });
+      const ex = (json as { explorerUrl?: unknown }).explorerUrl;
+      const explorerUrl = typeof ex === 'string' ? ex : undefined;
+      setReceipt({ status: 'done', receipt: rec as RoundupResult, explorerUrl });
     } catch (e: unknown) {
       const msg =
         e && typeof e === 'object' && 'message' in e
@@ -69,7 +112,7 @@ export default function XrplPage() {
           : 'XRPL failed';
       setReceipt({ status: 'error', error: msg });
     }
-  }, [amountXrp]);
+  }, [amountXrp, mode, roundups.roundupUsd, roundups.spendUsd, roundups.txCount]);
 
   if (!flags.xrplEnabled) {
     return (
@@ -95,9 +138,11 @@ export default function XrplPage() {
   return (
     <div className="pageStack" style={{ maxWidth: 980 }}>
       <div className="pageHeader">
-        <h1 className="pageTitle">XRPL Round-ups (Demo)</h1>
+        <h1 className="pageTitle">XRPL Round-ups</h1>
         <div className="pageMeta">
-          <div className="pageTagline">Compute micro-savings, then simulate a receipt</div>
+          <div className="pageTagline">
+            Compute micro-savings. Simulate a receipt, or send a real Payment to XRPL Testnet.
+          </div>
         </div>
       </div>
 
@@ -144,12 +189,48 @@ export default function XrplPage() {
                 onClick={() => void send()}
                 disabled={receipt.status === 'loading'}
               >
-                {receipt.status === 'loading' ? 'Simulating…' : 'Simulate Receipt'}
+                {receipt.status === 'loading'
+                  ? mode === 'send'
+                    ? 'Sending…'
+                    : 'Simulating…'
+                  : mode === 'send'
+                    ? 'Send to XRPL Testnet'
+                    : 'Simulate Receipt'}
+              </button>
+              <button
+                className="btn btnGhost"
+                type="button"
+                onClick={() => setMode((m) => (m === 'simulate' ? 'send' : 'simulate'))}
+                disabled={receipt.status === 'loading'}
+              >
+                Mode: {mode === 'simulate' ? 'SIMULATE' : 'TESTNET'}
               </button>
               <div className="small" style={{ opacity: 0.9 }}>
-                Seeds never touch the browser. This page is optional and cannot block the core demo.
+                Seeds never touch the browser. If Testnet is not configured, this will error and you
+                can switch back to Simulate.
               </div>
             </div>
+
+            {health ? (
+              <div className="small" style={{ opacity: 0.92 }}>
+                XRPL status:{' '}
+                {health.ok ? (
+                  health.configured ? (
+                    <>
+                      <b>configured</b> (RPC: {health.rpcHost ?? 'unknown'}
+                      {health.destinationConfigured ? ', destination set' : ', destination = self'})
+                    </>
+                  ) : (
+                    <>
+                      <b>simulate-only</b> (configure server-side XRPL credentials to enable Testnet
+                      sends)
+                    </>
+                  )
+                ) : (
+                  <b>unknown</b>
+                )}
+              </div>
+            ) : null}
 
             {receipt.status === 'error' ? (
               <div className="small" style={{ color: 'rgba(234,179,8,0.95)' }}>
@@ -173,6 +254,14 @@ export default function XrplPage() {
                     <div style={{ fontVariantNumeric: 'tabular-nums' }}>
                       Tx hash: <b>{receipt.receipt.txHash}</b>
                     </div>
+                    {receipt.explorerUrl ? (
+                      <div>
+                        Explorer:{' '}
+                        <a href={receipt.explorerUrl} target="_blank" rel="noreferrer">
+                          Open on XRPL Testnet
+                        </a>
+                      </div>
+                    ) : null}
                   </div>
                 </CardBody>
               </Card>

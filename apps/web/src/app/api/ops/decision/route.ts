@@ -8,6 +8,7 @@ type OpsDecisionRequest = {
   range?: { start?: string; end?: string };
   topFindings?: unknown[];
   style?: 'exec' | 'concise';
+  capitalOneSignals?: unknown;
 };
 
 type OpsDashboardLike = {
@@ -58,8 +59,9 @@ function formatDecisionDeterministic(params: {
   dashboard: OpsDashboardLike;
   range?: { start?: string; end?: string };
   topFindings: FindingLike[];
+  capitalOneSignals?: { billsUpcoming30dCount?: number } | null;
 }): string {
-  const { dashboard, range, topFindings } = params;
+  const { dashboard, range, topFindings, capitalOneSignals } = params;
   const k = dashboard.kpis ?? {};
   const forecast = dashboard.forecast30d ?? {};
 
@@ -88,6 +90,10 @@ function formatDecisionDeterministic(params: {
   lines.push(
     `- 30d projection: ${formatUsd(projectedSpend)} spend, ${Math.round(projectedHi)} high-risk, ${Math.round(projectedMed)} medium-risk`,
   );
+  if (capitalOneSignals?.billsUpcoming30dCount != null) {
+    const n = safeNumber(capitalOneSignals.billsUpcoming30dCount) ?? 0;
+    lines.push(`- Capital One signals: ${Math.round(n)} bills due in the next 30 days`);
+  }
   lines.push('');
 
   lines.push('Top Decisions (do these first)');
@@ -153,6 +159,10 @@ export async function POST(request: Request) {
     dashboard: dashboard as OpsDashboardLike,
     range,
     topFindings: topFindings as FindingLike[],
+    capitalOneSignals:
+      body.capitalOneSignals && typeof body.capitalOneSignals === 'object'
+        ? (body.capitalOneSignals as { billsUpcoming30dCount?: number })
+        : null,
   });
 
   const apiKey = process.env.OPENAI_API_KEY;

@@ -16,6 +16,11 @@ import { envFlags } from '../../../lib/flags';
 import { hasSupabaseEnv, parseBooleanEnv } from '../../../lib/env';
 import { supabaseServer } from '../../../lib/supabase/server';
 import { computeOpsDashboard } from '../../../lib/ops/dashboard';
+import { hasNessieEnv, nessieServerClient } from '../../../lib/nessie/serverClient';
+
+type CapitalOneSignals = {
+  billsUpcoming30dCount: number;
+};
 
 function latestDate(dates: string[]): string | null {
   let max: string | null = null;
@@ -39,6 +44,56 @@ function defaultRangeFromDemo(): DateRange {
   const max = latestDate(dates) ?? new Date().toISOString().slice(0, 10);
   // Demo-friendly: show the last 30 days of available data.
   return { start: addDays(max, -29), end: max };
+}
+
+async function loadCapitalOneSignals(): Promise<CapitalOneSignals | null> {
+  // Never let sponsor calls block the judge path.
+  if (envFlags.demoMode || envFlags.judgeMode) return null;
+  if (!hasNessieEnv()) return null;
+
+  let accountId = process.env.NESSIE_ACCOUNT_ID?.trim() || null;
+  if (!accountId && hasSupabaseEnv()) {
+    try {
+      const sb = await supabaseServer();
+      const {
+        data: { user },
+      } = await sb.auth.getUser();
+      if (user) {
+        const { data: row } = await sb
+          .from('nessie_customers')
+          .select('nessie_account_id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        const r = row as unknown as { nessie_account_id?: unknown } | null;
+        if (r && typeof r.nessie_account_id === 'string') accountId = r.nessie_account_id;
+      }
+    } catch {
+      // ignore
+    }
+  }
+  if (!accountId) return null;
+
+  try {
+    const nessie = nessieServerClient();
+    const billsResp = await nessie.listBillsByAccount(accountId);
+    if (!billsResp.ok) return null;
+    const bills = Array.isArray(billsResp.data) ? billsResp.data : [];
+    const now = new Date().toISOString().slice(0, 10);
+    const end = (() => {
+      const d = new Date(now + 'T00:00:00Z');
+      d.setUTCDate(d.getUTCDate() + 30);
+      return d.toISOString().slice(0, 10);
+    })();
+
+    const billsUpcoming30dCount = bills.filter((b) => {
+      const d = String(b.upcoming_payment_date || b.payment_date || '').slice(0, 10);
+      return d >= now && d <= end;
+    }).length;
+
+    return { billsUpcoming30dCount };
+  } catch {
+    return null;
+  }
 }
 
 async function loadTransactions(
@@ -159,6 +214,7 @@ export default async function OpsPage(props: {
   const mosaicTiles: TreemapTile[] = buildTreemap(analysis.tiles, 'ops');
   const aiEnabled = parseBooleanEnv(process.env.NEXT_PUBLIC_AI_ENABLED, false);
   const dashboard = computeOpsDashboard({ txns, findings: analysis.findings, range });
+  const capitalOneSignals = await loadCapitalOneSignals();
 
   return (
     <div className="pageStack" style={{ maxWidth: 1100 }}>
@@ -219,6 +275,7 @@ export default async function OpsPage(props: {
         findings={analysis.findings}
         range={range}
         aiEnabled={aiEnabled}
+        capitalOneSignals={capitalOneSignals}
       />
 
       <div

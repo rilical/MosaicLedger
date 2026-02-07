@@ -39,10 +39,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </div>
         <AppNav demoMode={envFlags.demoMode} />
 
-        <div style={{ marginTop: 16 }}>
-          <div className="small">
-            Tip: judges should open Settings and toggle Judge Mode + Demo Mode if anything external
-            flakes.
+        <div style={{ marginTop: 16, display: 'grid', gap: 10 }}>
+          <Link className="btn btnPrimary" href="/app/evidence">
+            Judge Checklist
+          </Link>
+          <div className="small" style={{ opacity: 0.9 }}>
+            If anything external flakes, use Judge Controls to force the always-works path.
           </div>
         </div>
       </nav>
