@@ -98,11 +98,9 @@ export default async function HealthPage() {
       detail: plaidSync.detail,
     },
     {
-      name: 'Dedalus (optional)',
-      status: process.env.DEDALUS_API_KEY ? 'ok' : 'warn',
-      detail: process.env.DEDALUS_API_KEY
-        ? 'DEDALUS_API_KEY present.'
-        : 'Missing DEDALUS_API_KEY (optional).',
+      name: 'Coach (offline)',
+      status: 'ok',
+      detail: 'Offline Coach enabled (no Dedalus dependency).',
     },
     {
       name: 'Capital One Nessie (optional)',
