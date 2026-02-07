@@ -1023,11 +1023,7 @@ export default function DashboardPage() {
                       <div style={{ display: 'grid', gap: 10 }}>
                         <div className="buttonRow" style={{ alignItems: 'center' }}>
                           <div style={{ fontWeight: 700 }}>Map preview</div>
-                          <Button
-                            variant="ghost"
-                            onClick={() => setShowPlacesMap((s) => !s)}
-                            disabled={overview.state === 'loading'}
-                          >
+                          <Button variant="ghost" onClick={() => setShowPlacesMap((s) => !s)}>
                             {showPlacesMap ? 'Hide map' : 'Show map'}
                           </Button>
                         </div>
