@@ -33,7 +33,23 @@ const REQUIRED_TABLES: TableSpec[] = [
   },
 ];
 
-async function checkTable(spec: TableSpec): Promise<SchemaCheckItem> {
+const OPTIONAL_TABLES: Array<TableSpec & { note: string }> = [
+  {
+    table: 'nessie_customers',
+    columns: ['user_id', 'nessie_customer_id', 'nessie_account_id', 'created_at'],
+    note: 'Needed for the Capital One Nessie connector (stable per-user binding).',
+  },
+  {
+    table: 'transactions_normalized',
+    columns: ['user_id', 'source', 'txn_id', 'date', 'amount', 'merchant_raw', 'merchant'],
+    note: 'Needed for the Capital One Nessie connector (cached normalized transactions).',
+  },
+];
+
+async function checkTable(
+  spec: TableSpec,
+  opts?: { missingStatus?: SchemaStatus; note?: string },
+): Promise<SchemaCheckItem> {
   const cols = spec.columns.join(',');
   try {
     const sb = supabaseAdmin();
@@ -42,10 +58,14 @@ async function checkTable(spec: TableSpec): Promise<SchemaCheckItem> {
     if (error) {
       // PostgREST tends to return a structured error for missing relations/columns.
       const code = error.code ?? 'unknown';
+      const missingStatus: SchemaStatus = opts?.missingStatus ?? 'fail';
+      const note = opts?.note ? ` ${opts.note}` : '';
       return {
         name: `Table: ${spec.table}`,
-        status: 'fail',
-        detail: `Missing or incompatible (expected columns: ${cols}; error: ${code}). Apply supabase/schema.sql.`,
+        status: missingStatus,
+        detail: `${
+          missingStatus === 'warn' ? 'Optional table missing or incompatible.' : 'Missing or incompatible.'
+        } (expected columns: ${cols}; error: ${code}). Apply supabase/schema.sql.${note}`,
       };
     }
     return {
@@ -96,6 +116,10 @@ export async function checkSchema(): Promise<SchemaCheckItem[]> {
   for (const spec of REQUIRED_TABLES) {
     // Run sequentially: keeps Supabase requests small and avoids rate limits.
     out.push(await checkTable(spec));
+  }
+
+  for (const spec of OPTIONAL_TABLES) {
+    out.push(await checkTable(spec, { missingStatus: 'warn', note: spec.note }));
   }
 
   return out;
