@@ -1,0 +1,41 @@
+name: PR Labels
+
+on:
+  pull_request_target:
+    types: [opened, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ensure labels exist + apply needs-review
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const issue_number = context.payload.pull_request.number;
+
+            async function ensureLabel(name, color, description) {
+              try {
+                await github.rest.issues.getLabel({ owner, repo, name });
+              } catch (e) {
+                if (e.status !== 404) throw e;
+                await github.rest.issues.createLabel({ owner, repo, name, color, description });
+              }
+            }
+
+            await ensureLabel('needs-review', 'fbca04', 'PR opened; needs review');
+            await ensureLabel('safe-to-merge', '0e8a16', 'All CI checks passed (automation)');
+
+            // Draft PRs should not be marked safe-to-merge.
+            if (context.payload.pull_request.draft) {
+              await github.rest.issues.addLabels({ owner, repo, issue_number, labels: ['needs-review'] });
+              return;
+            }
+
+            await github.rest.issues.addLabels({ owner, repo, issue_number, labels: ['needs-review'] });

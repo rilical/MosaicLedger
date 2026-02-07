@@ -84,3 +84,4 @@ Status legend: `TODO` | `DOING` | `BLOCKED` | `REVIEW` | `DONE`
 | QA-022 | DOING  | /health integration statuses + Plaid last sync       |
 | QA-019 | DOING  | CI dependency audit job (non-blocking)               |
 | QA-021 | DOING  | Release checklist + Expo reset button                |
+| QA-018 | DOING  | PR template + labels automation + branch protection  |

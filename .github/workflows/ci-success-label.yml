@@ -1,0 +1,58 @@
+name: CI Success Label
+
+on:
+  workflow_run:
+    workflows: ['CI']
+    types: [completed]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  label:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Apply safe-to-merge label to PRs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const sha = context.payload.workflow_run.head_sha;
+
+            // Find PRs associated with this commit SHA.
+            const prs = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              owner,
+              repo,
+              commit_sha: sha,
+            });
+
+            for (const pr of prs.data) {
+              if (pr.draft) continue;
+
+              const issue_number = pr.number;
+              // Apply safe-to-merge, remove needs-review.
+              try {
+                await github.rest.issues.addLabels({
+                  owner,
+                  repo,
+                  issue_number,
+                  labels: ['safe-to-merge'],
+                });
+              } catch (e) {
+                // ignore
+              }
+
+              try {
+                await github.rest.issues.removeLabel({
+                  owner,
+                  repo,
+                  issue_number,
+                  name: 'needs-review',
+                });
+              } catch (e) {
+                // ignore
+              }
+            }
