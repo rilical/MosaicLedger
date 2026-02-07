@@ -15,6 +15,9 @@ This file is updated in every PR.
 
 ## Latest Changes
 
+- QA-017/QA-022 (branch: `codex/qa-017-022-health-schema-integrations`): expanded `/health` with
+  schema checks (table/column presence) and integration statuses (Supabase/Plaid/XRPL/Dedalus/AI),
+  including a best-effort Plaid "last sync" timestamp.
 - QA-016 (branch: `codex/qa-016-fuzz-tests`): adds fuzz/edge-case tests for transaction
   normalization + filters + summaries to ensure totals stay finite and consistent under weird
   inputs.

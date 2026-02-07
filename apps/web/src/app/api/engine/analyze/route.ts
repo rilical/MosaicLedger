@@ -58,7 +58,7 @@ export async function POST(request: Request) {
   let artifacts;
   const { data: plaidItems } = await supabase
     .from('plaid_items')
-    .select('access_token')
+    .select('id,access_token')
     .eq('user_id', user.id)
     .eq('status', 'active')
     .order('created_at', { ascending: false })
@@ -86,6 +86,16 @@ export async function POST(request: Request) {
     }));
 
     artifacts = computeBankArtifacts(raw, body);
+
+    // Best-effort: record a "last sync" timestamp. Do not block the response if this fails.
+    try {
+      await supabase
+        .from('plaid_items')
+        .update({ updated_at: new Date().toISOString() })
+        .eq('id', (firstItem as { id?: unknown }).id as string);
+    } catch {
+      // ignore
+    }
   } else {
     // Fallback to demo data if no bank linked.
     artifacts = computeDemoArtifacts(body);
