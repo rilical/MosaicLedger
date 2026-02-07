@@ -11,6 +11,7 @@ import type {
 } from '@mosaicledger/contracts';
 import type { ActionRecommendation, RecurringCharge } from '@mosaicledger/core';
 import { MosaicView } from '../../components/MosaicView';
+import { PlacesMap } from '../../components/PlacesMap';
 import { AnalysisControls } from '../../components/Analysis/AnalysisControls';
 import type { AnalysisSettings } from '../../components/Analysis/types';
 import {
@@ -281,6 +282,7 @@ export default function DashboardPage() {
     lng: '-79.9436',
     rad: '2',
   });
+  const [showPlacesMap, setShowPlacesMap] = React.useState(false);
 
   React.useEffect(() => {
     try {
@@ -1016,6 +1018,31 @@ export default function DashboardPage() {
                             </div>
                           );
                         })()}
+                      </div>
+
+                      <div style={{ display: 'grid', gap: 10 }}>
+                        <div className="buttonRow" style={{ alignItems: 'center' }}>
+                          <div style={{ fontWeight: 700 }}>Map preview</div>
+                          <Button
+                            variant="ghost"
+                            onClick={() => setShowPlacesMap((s) => !s)}
+                            disabled={overview.state === 'loading'}
+                          >
+                            {showPlacesMap ? 'Hide map' : 'Show map'}
+                          </Button>
+                        </div>
+                        {showPlacesMap ? (
+                          <PlacesMap
+                            centerLat={Number(loc.lat)}
+                            centerLng={Number(loc.lng)}
+                            branches={overview.resp.branches ?? []}
+                            atms={overview.resp.atms ?? []}
+                          />
+                        ) : (
+                          <div className="small" style={{ opacity: 0.85 }}>
+                            Optional: open an interactive map with nearby ATMs and branches.
+                          </div>
+                        )}
                       </div>
                     </div>
                   ) : (

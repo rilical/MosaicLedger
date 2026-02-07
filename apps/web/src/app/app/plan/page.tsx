@@ -191,10 +191,10 @@ export default function PlanPage() {
           <CardTitle>Decision Tree (Options)</CardTitle>
         </CardHeader>
         <CardBody>
-          <div className="small" style={{ marginBottom: 10 }}>
+          <div style={{ marginBottom: 16, fontSize: 15, fontWeight: 500, opacity: 0.95 }}>
             Deterministic comparison of common paths. Numbers come from the current action plan.
           </div>
-          <div style={{ display: 'grid', gap: 10 }}>
+          <div style={{ display: 'grid', gap: 12 }}>
             {(() => {
               const cancelActions = actions.filter((a) => a.actionType === 'cancel');
               const capActions = actions.filter((a) => a.actionType === 'cap');
@@ -227,17 +227,19 @@ export default function PlanPage() {
                     display: 'flex',
                     justifyContent: 'space-between',
                     gap: 12,
-                    padding: 12,
+                    padding: 16,
                     border: '1px solid rgba(255,255,255,0.08)',
                     borderRadius: 12,
                   }}
                 >
                   <div>
-                    <div style={{ fontWeight: 650 }}>{p.title}</div>
+                    <div style={{ fontWeight: 650, fontSize: 16 }}>{p.title}</div>
                     <div className="small">{p.subtitle}</div>
                   </div>
                   <div style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
-                    <div>+{formatMoney(p.result.estimatedMonthlySavings)}/mo</div>
+                    <div style={{ fontSize: 16, fontWeight: 700 }}>
+                      +{formatMoney(p.result.estimatedMonthlySavings)}/mo
+                    </div>
                     <div className="small">After: {formatMoney(p.result.afterSpend)}</div>
                   </div>
                 </div>
@@ -273,8 +275,15 @@ export default function PlanPage() {
         </CardHeader>
         <CardBody>
           <div style={{ display: 'grid', gap: 10 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
-              <div className="small">
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                gap: 10,
+                alignItems: 'center',
+              }}
+            >
+              <div style={{ fontSize: 15, fontWeight: 600 }}>
                 Goal:{' '}
                 {goal.goalType === 'monthly_cap'
                   ? `Cap ${goal.category} at $${goal.capAmount.toFixed(0)}/mo`

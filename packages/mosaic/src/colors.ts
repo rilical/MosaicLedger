@@ -13,10 +13,11 @@ const palette = [
   '#c084fc',
 ];
 
-export function colorForLabel(label: string): string {
+export function colorForLabel(label: string | undefined | null): string {
+  const s = label == null || typeof label !== 'string' ? '' : label;
   let h = 0;
-  for (let i = 0; i < label.length; i++) {
-    h = Math.imul(31, h) + label.charCodeAt(i);
+  for (let i = 0; i < s.length; i++) {
+    h = Math.imul(31, h) + s.charCodeAt(i);
   }
   const idx = Math.abs(h) % palette.length;
   return palette[idx]!;
