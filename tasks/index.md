@@ -66,3 +66,9 @@ Status legend: `TODO` | `DOING` | `BLOCKED` | `REVIEW` | `DONE`
 | BANK-001 | TODO   | Create Plaid account + sandbox keys.                          |
 | BANK-002 | DONE   | Server-only Plaid client module + `/api/plaid/health`.        |
 | BANK-003 | DONE   | `/api/plaid/link-token` (judge/demo mode returns fake token). |
+
+## Deploy (DEPLOY)
+
+| ID         | Status | Notes                                                     |
+| ---------- | ------ | --------------------------------------------------------- |
+| DEPLOY-003 | REVIEW | `/health` page shows system state (no secrets; demo-safe) |
