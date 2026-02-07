@@ -12,10 +12,11 @@ export function simulateScenario(params: {
   selectedActions: ActionRecommendation[];
 }): ScenarioResult {
   const beforeSpend = Number(params.summary.totalSpend);
-  const savings = params.selectedActions.reduce(
-    (sum, a) => sum + Number(a.expectedMonthlySavings),
-    0,
-  );
+  // Guard against NaN poisoning: one bad action value shouldn't zero the scenario.
+  const savings = params.selectedActions.reduce((sum, a) => {
+    const v = Number(a.expectedMonthlySavings);
+    return sum + (Number.isFinite(v) ? v : 0);
+  }, 0);
 
   const estimatedMonthlySavings = Number.isFinite(savings) ? savings : 0;
   const afterSpend = Math.max(
