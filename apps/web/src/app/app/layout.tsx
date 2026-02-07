@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { AppNav } from '../../components/AppNav';
 import { AppHeader } from '../../components/AppHeader';
 import { envFlags } from '../../lib/flags';
@@ -28,7 +29,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <div className="appShell">
       <nav className="sideNav" aria-label="Primary">
-        <div className="navTitle">MosaicLedger</div>
+        <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <div className="navTitle" style={{ cursor: 'pointer' }}>
+            MosaicLedger
+          </div>
+        </Link>
         <div className="navSubtitle" style={{ marginBottom: 12 }}>
           Assembled, explainable budget planning.
         </div>

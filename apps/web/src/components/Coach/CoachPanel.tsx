@@ -591,7 +591,7 @@ export function CoachPanel({
                     </span>
                   ) : null}
                 </div>
-                <input
+                <textarea
                   className="input"
                   placeholder="e.g., What is my top savings action? What bills are coming up?"
                   value={question}
@@ -600,6 +600,13 @@ export function CoachPanel({
                     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) void ask();
                   }}
                   disabled={!artifacts || loading}
+                  rows={4}
+                  style={{
+                    resize: 'vertical',
+                    minHeight: '100px',
+                    fontFamily: 'inherit',
+                    lineHeight: 1.5,
+                  }}
                 />
                 <div style={{ display: 'flex', gap: 10 }}>
                   <Button

@@ -45,9 +45,9 @@ body::after {
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(1200px 800px at 20% 20%, rgba(56, 189, 248, 0.18), transparent 55%),
-    radial-gradient(900px 700px at 80% 30%, rgba(34, 197, 94, 0.14), transparent 55%),
-    radial-gradient(900px 700px at 40% 90%, rgba(244, 63, 94, 0.1), transparent 55%);
+    radial-gradient(1200px 1600px at 20% 20%, rgba(56, 189, 248, 0.18), transparent 55%),
+    radial-gradient(900px 1400px at 80% 30%, rgba(34, 197, 94, 0.14), transparent 55%),
+    radial-gradient(900px 1400px at 40% 90%, rgba(244, 63, 94, 0.1), transparent 55%);
   pointer-events: none;
   z-index: 0;
 }
@@ -227,10 +227,10 @@ a {
 .select {
   appearance: none;
   background:
-    linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.6) 50%) right 16px center / 8px
-      8px no-repeat,
-    linear-gradient(135deg, rgba(255, 255, 255, 0.6) 50%, transparent 50%) right 10px center / 8px
-      8px no-repeat,
+    linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.8) 50%) right 16px center / 6px
+      6px no-repeat,
+    linear-gradient(135deg, rgba(255, 255, 255, 0.8) 50%, transparent 50%) right 11px center / 6px
+      6px no-repeat,
     rgba(255, 255, 255, 0.06);
   padding-right: 36px;
 }
@@ -243,10 +243,10 @@ a {
 /* Darker background for selects so label text doesn’t blend with background */
 .input.select {
   background:
-    linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.6) 50%) right 16px center / 8px
-      8px no-repeat,
-    linear-gradient(135deg, rgba(255, 255, 255, 0.6) 50%, transparent 50%) right 10px center / 8px
-      8px no-repeat,
+    linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.8) 50%) right 16px center / 6px
+      6px no-repeat,
+    linear-gradient(135deg, rgba(255, 255, 255, 0.8) 50%, transparent 50%) right 11px center / 6px
+      6px no-repeat,
     rgba(0, 0, 0, 0.4);
   color: rgba(255, 255, 255, 0.95);
 }
@@ -654,6 +654,7 @@ a {
   font-family: 'Fraunces', 'Times New Roman', serif;
   font-weight: 700;
   letter-spacing: -0.01em;
+  font-size: 30px;
 }
 
 .landingHero {

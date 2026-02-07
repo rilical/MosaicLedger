@@ -178,6 +178,7 @@ export default function MosaicPage() {
                   variant="ghost"
                   onClick={() => {
                     setLevel('category');
+                    setSelectedCategory(null);
                     setSelectedMerchant(null);
                   }}
                 >
