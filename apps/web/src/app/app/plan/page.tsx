@@ -12,6 +12,7 @@ import { useAnalysis } from '../../../components/Analysis/useAnalysis';
 import { usePlanGoal } from '../../../components/Plan/usePlanGoal';
 import { useSubscriptionChoices } from '../../../lib/subscriptions/choices';
 import { CoachPanel } from '../../../components/Coach/CoachPanel';
+import { simulateScenario } from '@mosaicledger/core';
 
 function formatMoney(n: number): string {
   if (!Number.isFinite(n)) return '$0.00';
@@ -22,6 +23,8 @@ export default function PlanPage() {
   const { settings, setSettings } = useAnalysisSettings();
   const { goal, setGoal, resetGoal } = usePlanGoal();
   const { choices } = useSubscriptionChoices();
+  const [coachOpen, setCoachOpen] = React.useState(false);
+  const [coachPrefill, setCoachPrefill] = React.useState<string | null>(null);
 
   const req = React.useMemo(() => ({ ...toAnalyzeRequest(settings), goal }), [settings, goal]);
   const { artifacts, loading, error, recompute } = useAnalysis(req);
@@ -48,15 +51,12 @@ export default function PlanPage() {
     });
   }, [actions]);
 
-  const selectedSavings = React.useMemo(() => {
-    let sum = 0;
-    for (const a of actions) {
-      if (selected[a.id]) sum += a.expectedMonthlySavings;
-    }
-    return sum;
-  }, [actions, selected]);
+  const scenario = React.useMemo(() => {
+    const selectedActions = actions.filter((a) => selected[a.id]);
+    return simulateScenario({ summary: { totalSpend: beforeSpend }, selectedActions });
+  }, [actions, beforeSpend, selected]);
 
-  const afterSpend = Math.max(0, beforeSpend - selectedSavings);
+  const afterSpend = scenario.afterSpend;
 
   const selectTopN = React.useCallback(
     (n: number) => {
@@ -94,6 +94,12 @@ export default function PlanPage() {
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
             <CoachPanel
               artifacts={artifacts}
+              open={coachOpen}
+              onOpenChange={(next) => {
+                setCoachOpen(next);
+                if (!next) setCoachPrefill(null);
+              }}
+              prefillQuestion={coachPrefill}
               onJumpToAction={(actionId) => {
                 const el = document.getElementById(`action_${actionId}`);
                 if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -140,7 +146,7 @@ export default function PlanPage() {
               </div>
               <div>
                 <div style={{ fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
-                  {formatMoney(selectedSavings)}
+                  {formatMoney(scenario.estimatedMonthlySavings)}
                 </div>
                 <div className="small">Estimated monthly savings</div>
               </div>
@@ -165,6 +171,87 @@ export default function PlanPage() {
                 All
               </button>
             </div>
+          </div>
+        </CardBody>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Decision Tree (Options)</CardTitle>
+        </CardHeader>
+        <CardBody>
+          <div className="small" style={{ marginBottom: 10 }}>
+            Deterministic comparison of common paths. Numbers come from the current action plan.
+          </div>
+          <div style={{ display: 'grid', gap: 10 }}>
+            {(() => {
+              const cancelActions = actions.filter((a) => a.actionType === 'cancel');
+              const capActions = actions.filter((a) => a.actionType === 'cap');
+              const substituteActions = actions.filter((a) => a.actionType === 'substitute');
+
+              const sCancel = simulateScenario({
+                summary: { totalSpend: beforeSpend },
+                selectedActions: cancelActions,
+              });
+              const sCap = simulateScenario({
+                summary: { totalSpend: beforeSpend },
+                selectedActions: capActions,
+              });
+              const sSub = simulateScenario({
+                summary: { totalSpend: beforeSpend },
+                selectedActions: substituteActions,
+              });
+
+              const Row = (p: {
+                title: string;
+                subtitle: string;
+                result: {
+                  estimatedMonthlySavings: number;
+                  afterSpend: number;
+                  selectedActionCount: number;
+                };
+              }) => (
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    gap: 12,
+                    padding: 12,
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: 12,
+                  }}
+                >
+                  <div>
+                    <div style={{ fontWeight: 650 }}>{p.title}</div>
+                    <div className="small">{p.subtitle}</div>
+                  </div>
+                  <div style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                    <div>+{formatMoney(p.result.estimatedMonthlySavings)}/mo</div>
+                    <div className="small">After: {formatMoney(p.result.afterSpend)}</div>
+                  </div>
+                </div>
+              );
+
+              return (
+                <>
+                  <Row
+                    title="Cancel subscriptions"
+                    subtitle={`${cancelActions.length} cancel actions`}
+                    result={sCancel}
+                  />
+                  <Row
+                    title="Cap categories"
+                    subtitle={`${capActions.length} cap actions`}
+                    result={sCap}
+                  />
+                  <Row
+                    title="Reduce discretionary (swap)"
+                    subtitle={`${substituteActions.length} substitute actions`}
+                    result={sSub}
+                  />
+                </>
+              );
+            })()}
           </div>
         </CardBody>
       </Card>
@@ -267,7 +354,22 @@ export default function PlanPage() {
           <CardTitle>Top Actions</CardTitle>
         </CardHeader>
         <CardBody>
-          <ActionsPanel actions={actions} selected={selected} onSelectChange={setSelected} />
+          <ActionsPanel
+            actions={actions}
+            selected={selected}
+            onSelectChange={setSelected}
+            onAskWhy={(a) => {
+              const reasons = a.reasons?.slice(0, 6) ?? [];
+              const bullets = reasons.length ? `\nReasons:\n- ${reasons.join('\n- ')}` : '';
+              const prompt =
+                `Why is this action recommended, and how is its savings estimated?\n` +
+                `Action: ${a.title}\n` +
+                `Estimated savings: $${a.expectedMonthlySavings.toFixed(2)}/mo` +
+                bullets;
+              setCoachPrefill(prompt);
+              setCoachOpen(true);
+            }}
+          />
         </CardBody>
       </Card>
     </div>

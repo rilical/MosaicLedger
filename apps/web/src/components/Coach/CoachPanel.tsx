@@ -7,6 +7,7 @@ import { Button, Card, CardBody, CardHeader, CardTitle } from '../ui';
 import { Drawer } from '../ui/Drawer';
 import { useFlags } from '../../lib/flags-client';
 import { parseIntent } from './intent';
+import { TraceDrawer, type ToolTraceV1 } from '../Trace/TraceDrawer';
 
 type CoachTurn = {
   id: string;
@@ -17,9 +18,15 @@ type CoachTurn = {
   recommendedActionIds: string[];
   recommendedActionTitles: Record<string, string>;
   ai?: { rewritten?: string; usedAI?: boolean; error?: string };
+  trace?: ToolTraceV1;
 };
 
 const STORAGE_KEY = 'mosaicledger.coachHistory.v1';
+
+type SafetyResult =
+  | { kind: 'ok' }
+  | { kind: 'blocked'; answer: string; reason: string }
+  | { kind: 'limited'; answer: string; reason: string };
 
 function stableId(parts: string[]): string {
   return parts
@@ -204,11 +211,31 @@ async function rewriteWithAi(text: string): Promise<{
   usedAI: boolean;
   error?: string;
 }> {
-  const resp = await fetch('/api/ai/rewrite', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ text, style: 'friendly' }),
-  });
+  const controller = new AbortController();
+  const timeoutMs = 2500; // hackathon-safe: never hang the Coach UI
+  const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+
+  let resp: Response;
+  try {
+    resp = await fetch('/api/ai/rewrite', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ text, style: 'friendly' }),
+      signal: controller.signal,
+    });
+  } catch (e: unknown) {
+    const msg =
+      e &&
+      typeof e === 'object' &&
+      'name' in e &&
+      String((e as { name?: unknown }).name) === 'AbortError'
+        ? 'timeout'
+        : 'network_error';
+    window.clearTimeout(timer);
+    return { rewritten: text, usedAI: false, error: msg };
+  } finally {
+    window.clearTimeout(timer);
+  }
   const json = (await resp.json()) as unknown;
   if (!resp.ok || !json || typeof json !== 'object') {
     return { rewritten: text, usedAI: false, error: `rewrite failed (${resp.status})` };
@@ -227,18 +254,127 @@ async function rewriteWithAi(text: string): Promise<{
   };
 }
 
+function evaluateSafety(questionRaw: string): SafetyResult {
+  const q = questionRaw.trim().toLowerCase();
+  if (!q) return { kind: 'ok' };
+
+  const has = (s: string) => q.includes(s);
+
+  const selfHarm =
+    has('suicide') ||
+    has('kill myself') ||
+    has('self harm') ||
+    has('self-harm') ||
+    has('hurt myself') ||
+    has('end my life');
+  if (selfHarm) {
+    return {
+      kind: 'blocked',
+      reason: 'self_harm',
+      answer:
+        `I can’t help with that. If you’re in immediate danger, call 911.\n` +
+        `If you’re in the U.S., you can call or text 988 (Suicide & Crisis Lifeline) right now.\n` +
+        `If you want, ask me something about your budget plan (subscriptions, caps, upcoming bills) and I’ll help.`,
+    };
+  }
+
+  const secrets =
+    has('password') ||
+    has('passcode') ||
+    has('2fa') ||
+    has('otp') ||
+    has('ssn') ||
+    has('social security') ||
+    has('routing number') ||
+    has('account number') ||
+    has('credit card') ||
+    has('cvv') ||
+    has('pin') ||
+    has('seed phrase') ||
+    has('private key') ||
+    has('access token') ||
+    has('plaid secret') ||
+    has('supabase service role');
+  if (secrets) {
+    return {
+      kind: 'blocked',
+      reason: 'secrets',
+      answer:
+        `I can’t help with secrets or account credentials.\n` +
+        `For safety, never share passwords, SSNs, bank account details, or API keys here.\n` +
+        `I can still help with budgeting questions using your computed totals and plan actions.`,
+    };
+  }
+
+  const illegal =
+    has('launder') ||
+    has('money laundering') ||
+    has('fraud') ||
+    has('steal') ||
+    has('evade tax') ||
+    has('tax evasion');
+  if (illegal) {
+    return {
+      kind: 'blocked',
+      reason: 'illegal',
+      answer:
+        `I can’t help with wrongdoing.\n` +
+        `If you want, I can help you reduce spending, identify subscriptions, and set category caps using deterministic outputs.`,
+    };
+  }
+
+  const investing =
+    has('stock') ||
+    has('crypto') ||
+    has('bitcoin') ||
+    has('ethereum') ||
+    has('option') ||
+    has('day trade');
+  if (investing) {
+    return {
+      kind: 'limited',
+      reason: 'investing',
+      answer:
+        `I can’t provide investment advice or tell you what to buy/sell.\n` +
+        `What I can do here: find subscription savings, upcoming obligations, and deterministic budget caps from your spending history.`,
+    };
+  }
+
+  return { kind: 'ok' };
+}
+
 export function CoachPanel({
   artifacts,
   onJumpToAction,
+  open: openProp,
+  onOpenChange: onOpenChangeProp,
+  prefillQuestion,
 }: {
   artifacts: AnalysisArtifactsV1 | null;
   onJumpToAction: (actionId: string) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  prefillQuestion?: string | null;
 }) {
   const { flags } = useFlags();
-  const [open, setOpen] = React.useState(false);
+  const [internalOpen, setInternalOpen] = React.useState(false);
+  const open = openProp ?? internalOpen;
+  const setOpen = onOpenChangeProp ?? setInternalOpen;
+  const [traceOpen, setTraceOpen] = React.useState(false);
   const [question, setQuestion] = React.useState('');
   const [turns, setTurns] = React.useState<CoachTurn[]>([]);
   const [loading, setLoading] = React.useState(false);
+  const lastTrace = React.useMemo(() => {
+    const last = turns.length ? turns[turns.length - 1] : null;
+    return last?.trace ?? null;
+  }, [turns]);
+
+  React.useEffect(() => {
+    const q = (prefillQuestion ?? '').trim();
+    if (!q) return;
+    setQuestion(q);
+    if (!open) setOpen(true);
+  }, [prefillQuestion, open, setOpen]);
 
   React.useEffect(() => {
     setTurns(safeParseTurns(window.localStorage.getItem(STORAGE_KEY)));
@@ -253,9 +389,63 @@ export function CoachPanel({
     const q = question.trim();
     if (!q) return;
 
+    const startedAt = new Date().toISOString();
+    const t0 = Date.now();
+    const steps: ToolTraceV1['steps'] = [];
+
     setLoading(true);
     try {
+      const safetyStart = Date.now();
+      const safety = evaluateSafety(q);
+      steps.push({
+        id: stableId(['trace', startedAt, 'safety']),
+        name: 'safetyCheck()',
+        at: new Date().toISOString(),
+        durationMs: Date.now() - safetyStart,
+        ok: safety.kind === 'ok',
+        input: { questionRedacted: { length: q.length } },
+        output: { kind: safety.kind, reason: (safety as { reason?: string }).reason ?? null },
+        error:
+          safety.kind === 'ok' ? undefined : ((safety as { reason?: string }).reason ?? 'blocked'),
+      });
+      if (safety.kind !== 'ok') {
+        const id = stableId(['coach', new Date().toISOString(), q.slice(0, 40)]);
+        const trace: ToolTraceV1 = {
+          version: 1,
+          startedAt,
+          totalMs: Date.now() - t0,
+          steps,
+        };
+        const turn: CoachTurn = {
+          id,
+          at: new Date().toISOString(),
+          question: q,
+          intent: {
+            kind: 'safety',
+            safety: safety.kind,
+            reason: (safety as { reason?: string }).reason ?? 'unknown',
+          },
+          answer: safety.answer,
+          recommendedActionIds: [],
+          recommendedActionTitles: {},
+          trace,
+        };
+        setTurns((prev) => [...prev.slice(-9), turn]);
+        setQuestion('');
+        return;
+      }
+
+      const intentStart = Date.now();
       const intent = parseIntent(q);
+      steps.push({
+        id: stableId(['trace', startedAt, 'intent']),
+        name: 'parseIntent()',
+        at: new Date().toISOString(),
+        durationMs: Date.now() - intentStart,
+        ok: true,
+        input: { questionRedacted: { length: q.length } },
+        output: { intentKind: intent.kind },
+      });
       // CONWAY-002 fallback trace: don't log PII; intent only.
       try {
         console.debug('coach.intent', intent);
@@ -263,17 +453,37 @@ export function CoachPanel({
         // ignore
       }
 
+      const recStart = Date.now();
       const recommended = chooseRecommendedActions({
         actions: artifacts.actionPlan,
         recurring: artifacts.recurring,
         intent,
       });
+      steps.push({
+        id: stableId(['trace', startedAt, 'recommend']),
+        name: 'chooseRecommendedActions()',
+        at: new Date().toISOString(),
+        durationMs: Date.now() - recStart,
+        ok: true,
+        input: { intentKind: intent.kind, actionCount: artifacts.actionPlan.length },
+        output: { recommendedActionIds: recommended.map((a) => a.id) },
+      });
 
+      const ansStart = Date.now();
       const answer = buildDeterministicAnswer({
         question: q,
         intent,
         artifacts,
         recommended,
+      });
+      steps.push({
+        id: stableId(['trace', startedAt, 'answer']),
+        name: 'buildDeterministicAnswer()',
+        at: new Date().toISOString(),
+        durationMs: Date.now() - ansStart,
+        ok: true,
+        input: { intentKind: intent.kind, recommendedCount: recommended.length },
+        output: { answerChars: answer.length },
       });
 
       const id = stableId(['coach', new Date().toISOString(), q.slice(0, 40)]);
@@ -288,17 +498,48 @@ export function CoachPanel({
       };
 
       if (flags.aiEnabled) {
+        const rewriteStart = Date.now();
         try {
           const ai = await rewriteWithAi(answer);
           turn.ai = { rewritten: ai.rewritten, usedAI: ai.usedAI, error: ai.error };
+          steps.push({
+            id: stableId(['trace', startedAt, 'ai']),
+            name: 'rewriteWithAi()',
+            at: new Date().toISOString(),
+            durationMs: Date.now() - rewriteStart,
+            ok: true,
+            input: { answerChars: answer.length },
+            output: {
+              rewrittenChars: ai.rewritten.length,
+              usedAI: ai.usedAI,
+              error: ai.error ?? null,
+            },
+          });
         } catch (e: unknown) {
           const msg =
             e && typeof e === 'object' && 'message' in e
               ? String((e as { message?: unknown }).message)
               : 'rewrite failed';
           turn.ai = { rewritten: answer, usedAI: false, error: msg };
+          steps.push({
+            id: stableId(['trace', startedAt, 'ai']),
+            name: 'rewriteWithAi()',
+            at: new Date().toISOString(),
+            durationMs: Date.now() - rewriteStart,
+            ok: false,
+            input: { answerChars: answer.length },
+            output: { rewrittenChars: answer.length, usedAI: false },
+            error: msg,
+          });
         }
       }
+
+      turn.trace = {
+        version: 1,
+        startedAt,
+        totalMs: Date.now() - t0,
+        steps,
+      };
 
       setTurns((prev) => [...prev.slice(-9), turn]);
       setQuestion('');
@@ -315,6 +556,16 @@ export function CoachPanel({
 
       <Drawer open={open} onOpenChange={setOpen} title="Decision Support Coach">
         <div style={{ display: 'grid', gap: 12 }}>
+          {flags.debugTraces ? (
+            <>
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <Button variant="ghost" onClick={() => setTraceOpen(true)} disabled={!lastTrace}>
+                  Trace
+                </Button>
+              </div>
+              <TraceDrawer open={traceOpen} onOpenChange={setTraceOpen} trace={lastTrace} />
+            </>
+          ) : null}
           {!artifacts ? (
             <Card>
               <CardHeader>
@@ -332,6 +583,14 @@ export function CoachPanel({
             </CardHeader>
             <CardBody>
               <div style={{ display: 'grid', gap: 10 }}>
+                <div className="small" style={{ opacity: 0.95 }}>
+                  Not financial advice. Don’t share secrets. Numbers are deterministic.
+                  {!flags.aiEnabled ? (
+                    <span style={{ marginLeft: 8, color: 'rgba(34,197,94,0.95)' }}>
+                      Offline mode
+                    </span>
+                  ) : null}
+                </div>
                 <input
                   className="input"
                   placeholder="e.g., What is my top savings action? What bills are coming up?"

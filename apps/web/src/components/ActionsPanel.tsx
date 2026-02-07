@@ -20,8 +20,9 @@ export function ActionsPanel(props: {
   actions: ActionRecommendation[];
   selected?: Record<string, boolean>;
   onSelectChange?: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+  onAskWhy?: (action: ActionRecommendation) => void;
 }) {
-  const { actions, selected, onSelectChange } = props;
+  const { actions, selected, onSelectChange, onAskWhy } = props;
   const { flags } = useFlags();
 
   const [aiShown, setAiShown] = React.useState<Record<string, boolean>>({});
@@ -85,6 +86,19 @@ export function ActionsPanel(props: {
                 +${a.expectedMonthlySavings.toFixed(2)}/mo
               </div>
             </div>
+
+            {onAskWhy ? (
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <button
+                  className="btn btnGhost"
+                  type="button"
+                  onClick={() => onAskWhy(a)}
+                  aria-label={`Ask why for ${a.title}`}
+                >
+                  Ask why
+                </button>
+              </div>
+            ) : null}
 
             <details>
               <summary className="small" style={{ cursor: 'pointer', userSelect: 'none' }}>

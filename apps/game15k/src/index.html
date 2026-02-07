@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>Mosaic Sprint</title>
+    <link rel="stylesheet" href="/game/style.css" />
+  </head>
+  <body>
+    <canvas id="c"></canvas>
+
+    <div id="hud">
+      <div class="box">
+        <div>
+          <div class="k">Score</div>
+          <div class="v" id="score">0</div>
+        </div>
+        <div class="sep"></div>
+        <div>
+          <div class="k">Time</div>
+          <div class="v" id="time">60</div>
+        </div>
+        <div class="sep"></div>
+        <div>
+          <div class="k">Best</div>
+          <div class="v" id="best">0</div>
+        </div>
+        <div class="sep"></div>
+        <div>
+          <div class="k">Sessions</div>
+          <div class="v" id="sessions">0</div>
+        </div>
+      </div>
+
+      <button id="mute" class="btn" type="button">Mute</button>
+    </div>
+
+    <div id="overlay" class="overlay">
+      <div class="card">
+        <h1 id="title">Mosaic Sprint</h1>
+        <p id="msg">
+          Tap to place tiles and assemble a mosaic. Debt shards cost points. You have 60 seconds.
+        </p>
+
+        <div class="row">
+          <button id="start" class="btn primary" type="button">Start</button>
+          <a class="btn ghost" href="/app/mosaic?source=demo">Try MosaicLedger</a>
+        </div>
+
+        <p class="small">
+          No images. No audio files. Just canvas + a tiny palette.
+          <span class="pill">Target: &lt; 15KB</span>
+        </p>
+      </div>
+    </div>
+
+    <div id="crash" class="overlay hidden">
+      <div class="card">
+        <h1>Game crashed</h1>
+        <p class="small">This should not happen, but the demo should never white-screen.</p>
+        <pre id="crashMsg"></pre>
+        <div class="row">
+          <button id="reload" class="btn primary" type="button">Reload</button>
+          <a class="btn ghost" href="/game">Back to game</a>
+        </div>
+      </div>
+    </div>
+
+    <script src="/game/game.js" defer></script>
+  </body>
+</html>
