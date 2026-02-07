@@ -61,7 +61,7 @@ export function ActionsPanel(props: {
   return (
     <ol style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 10 }}>
       {actions.map((a) => (
-        <li key={a.id}>
+        <li key={a.id} id={`action_${a.id}`}>
           <div style={{ display: 'grid', gap: 8 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
               <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
