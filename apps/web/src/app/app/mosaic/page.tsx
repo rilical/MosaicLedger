@@ -25,11 +25,17 @@ import { useAnalysis } from '../../../components/Analysis/useAnalysis';
 import { useFlags } from '../../../lib/flags-client';
 
 type MosaicLevel = 'category' | 'merchant';
+type MosaicMode = 'deterministic' | 'timeline';
 
 function addDays(iso: string, days: number): string {
   const d = new Date(iso + 'T00:00:00Z');
   d.setUTCDate(d.getUTCDate() + days);
   return d.toISOString().slice(0, 10);
+}
+
+function getMonthLabel(dateStr: string): string {
+  const d = new Date(dateStr + 'T00:00:00Z');
+  return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 }
 
 function stageLabel(stage: 'idle' | 'syncing' | 'analyzing' | 'rendering'): string {
@@ -67,6 +73,7 @@ export default function MosaicPage() {
   const { setFlag } = useFlags();
 
   const [level, setLevel] = React.useState<MosaicLevel>('category');
+  const [mode, setMode] = React.useState<MosaicMode>('deterministic');
   const [selectedCategory, setSelectedCategory] = React.useState<string | null>(null);
   const [selectedMerchant, setSelectedMerchant] = React.useState<string | null>(null);
 
@@ -75,6 +82,7 @@ export default function MosaicPage() {
   React.useEffect(() => {
     // When new artifacts arrive (recompute/range change), reset drill-down state to avoid stale selections.
     setLevel('category');
+    setMode('deterministic');
     setSelectedCategory(null);
     setSelectedMerchant(null);
   }, [artifacts]);
@@ -113,14 +121,36 @@ export default function MosaicPage() {
     [upcoming],
   );
 
+  // Compute tiles based on mode and level
   const tiles = React.useMemo(() => {
     if (!artifacts) return [];
-    if (level === 'category') return artifacts.mosaic.tiles;
-    if (!selectedCategory) return [];
-    if (txns.length === 0) return [];
-    const byMerchant = sumByMerchant(txns, selectedCategory);
-    return buildTreemapTiles(byMerchant);
-  }, [artifacts, level, selectedCategory, txns]);
+
+    // Drill-down to merchant level uses category tiles
+    if (level === 'merchant') {
+      if (!selectedCategory) return [];
+      if (txns.length === 0) return [];
+      const byMerchant = sumByMerchant(txns, selectedCategory);
+      return buildTreemapTiles(byMerchant);
+    }
+
+    // Top-level view: use selected mode
+    if (mode === 'deterministic') {
+      // Default: by category
+      return artifacts.mosaic.tiles;
+    }
+
+    if (mode === 'timeline') {
+      // Group by month
+      const byMonth: Record<string, number> = {};
+      for (const t of txns) {
+        const monthLabel = getMonthLabel(t.date);
+        byMonth[monthLabel] = (byMonth[monthLabel] || 0) + t.amount;
+      }
+      return buildTreemapTiles(byMonth);
+    }
+
+    return artifacts.mosaic.tiles;
+  }, [artifacts, level, mode, selectedCategory, txns]);
 
   const drawerTxns = React.useMemo(() => {
     if (!selectedCategory || !selectedMerchant) return [];
@@ -198,14 +228,18 @@ export default function MosaicPage() {
               <div style={{ display: 'grid', gap: 4 }}>
                 <CardTitle>
                   {level === 'category'
-                    ? 'Categories'
+                    ? mode === 'deterministic'
+                      ? 'Categories'
+                      : 'Timeline'
                     : selectedCategory
                       ? `Merchants in ${selectedCategory}`
                       : 'Merchants'}
                 </CardTitle>
                 <div className="small" style={{ opacity: 0.9 }}>
                   {level === 'category'
-                    ? 'Click a category tile to drill down.'
+                    ? mode === 'timeline'
+                      ? 'Spending grouped by month. Click to switch to category view.'
+                      : 'Click a tile to drill down into merchants.'
                     : 'Click a merchant tile to see transactions.'}
                 </div>
               </div>
@@ -222,6 +256,27 @@ export default function MosaicPage() {
                 </Button>
               ) : null}
             </div>
+            {level === 'category' && (
+              <div
+                className="previewTabs"
+                style={{ marginTop: 12, display: 'flex', gap: 8, padding: 0 }}
+              >
+                <button
+                  className={`previewTab${mode === 'deterministic' ? ' previewTabActive' : ''}`}
+                  onClick={() => setMode('deterministic')}
+                  disabled={loading}
+                >
+                  Deterministic
+                </button>
+                <button
+                  className={`previewTab${mode === 'timeline' ? ' previewTabActive' : ''}`}
+                  onClick={() => setMode('timeline')}
+                  disabled={loading}
+                >
+                  Timeline
+                </button>
+              </div>
+            )}
           </CardHeader>
           <CardBody>
             {!artifacts && loading ? (
@@ -237,6 +292,13 @@ export default function MosaicPage() {
                 }
                 onTileClick={(tile) => {
                   if (level === 'category') {
+                    // In timeline mode, switch to deterministic view first
+                    // Don't drill down - let user see categories, then they can drill to merchants
+                    if (mode === 'timeline') {
+                      setMode('deterministic');
+                      return;
+                    }
+                    // In deterministic mode, drill down to merchants for the selected category
                     setSelectedCategory(tile.label);
                     setSelectedMerchant(null);
                     setLevel('merchant');

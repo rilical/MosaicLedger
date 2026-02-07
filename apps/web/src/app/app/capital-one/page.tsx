@@ -3,6 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { Badge, Button, Card, CardBody, CardHeader, CardTitle } from '../../../components/ui';
+import { PlacesMap } from '../../../components/PlacesMap';
 import { useFlags } from '../../../lib/flags-client';
 
 type OverviewResp =
@@ -99,8 +100,17 @@ export default function CapitalOnePage() {
     try {
       const qp = new URLSearchParams({ lat, lng, rad });
       const resp = await fetch(`/api/nessie/overview?${qp.toString()}`, { method: 'GET' });
-      const json = (await resp.json()) as OverviewResp;
-      if (!resp.ok || !json || typeof json !== 'object') throw new Error('overview_failed');
+      const text = await resp.text();
+      if (!text || !text.trim()) {
+        throw new Error(resp.ok ? 'Empty response from server' : `Request failed (${resp.status})`);
+      }
+      let json: OverviewResp;
+      try {
+        json = JSON.parse(text) as OverviewResp;
+      } catch {
+        throw new Error(resp.ok ? 'Invalid JSON from server' : `Request failed (${resp.status})`);
+      }
+      if (!json || typeof json !== 'object') throw new Error('overview_failed');
       if (!('ok' in json) || !json.ok)
         throw new Error(('error' in json ? json.error : null) ?? 'overview_failed');
       setData(json);
@@ -359,49 +369,77 @@ export default function CapitalOnePage() {
           </CardBody>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Branch Locations</CardTitle>
-          </CardHeader>
-          <CardBody>
-            {ok && data.branches && data.branches.length ? (
-              <div style={{ display: 'grid', gap: 10 }}>
-                {data.branches.slice(0, 10).map((b, idx) => {
-                  const addr = fmtAddr(b.address);
-                  return (
-                    <div
-                      key={String(b._id ?? `branch-${idx}`)}
-                      style={{
-                        display: 'grid',
-                        gap: 4,
-                        padding: '10px 12px',
-                        borderRadius: 14,
-                        border: '1px solid rgba(255,255,255,0.10)',
-                        background: 'rgba(255,255,255,0.03)',
-                      }}
-                    >
-                      <div style={{ fontWeight: 650 }}>{b.name || 'Branch'}</div>
-                      {addr ? <div className="small">{addr}</div> : null}
-                      {b.phone_number ? <div className="small">Phone: {b.phone_number}</div> : null}
-                      {addr ? (
-                        <a
-                          className="small"
-                          href={mapsLinkFromAddress(addr)}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          Open in Google Maps
-                        </a>
-                      ) : null}
-                    </div>
-                  );
-                })}
+        <div
+          style={{
+            gridColumn: '1 / -1',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: 16,
+            alignItems: 'start',
+          }}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle>Branch Locations</CardTitle>
+            </CardHeader>
+            <CardBody>
+              {ok && data.branches && data.branches.length ? (
+                <div style={{ display: 'grid', gap: 10 }}>
+                  {data.branches.slice(0, 10).map((b, idx) => {
+                    const addr = fmtAddr(b.address);
+                    return (
+                      <div
+                        key={String(b._id ?? `branch-${idx}`)}
+                        style={{
+                          display: 'grid',
+                          gap: 4,
+                          padding: '10px 12px',
+                          borderRadius: 14,
+                          border: '1px solid rgba(255,255,255,0.10)',
+                          background: 'rgba(255,255,255,0.03)',
+                        }}
+                      >
+                        <div style={{ fontWeight: 650 }}>{b.name || 'Branch'}</div>
+                        {addr ? <div className="small">{addr}</div> : null}
+                        {b.phone_number ? (
+                          <div className="small">Phone: {b.phone_number}</div>
+                        ) : null}
+                        {addr ? (
+                          <a
+                            className="small"
+                            href={mapsLinkFromAddress(addr)}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            Open in Google Maps
+                          </a>
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="small">No branches found.</div>
+              )}
+            </CardBody>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Map</CardTitle>
+            </CardHeader>
+            <CardBody>
+              <div className="small" style={{ marginBottom: 10, opacity: 0.9 }}>
+                Branches and ATMs for your search area. Branch markers may take a moment to load.
               </div>
-            ) : (
-              <div className="small">No branches found.</div>
-            )}
-          </CardBody>
-        </Card>
+              <PlacesMap
+                centerLat={Number(lat) || 40.4433}
+                centerLng={Number(lng) || -79.9436}
+                branches={ok && data.branches ? data.branches : null}
+                atms={ok && data.atms ? data.atms : null}
+              />
+            </CardBody>
+          </Card>
+        </div>
       </div>
     </div>
   );

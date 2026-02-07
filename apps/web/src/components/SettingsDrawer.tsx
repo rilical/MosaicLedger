@@ -138,43 +138,6 @@ export function SettingsDrawer() {
                 </label>
               </div>
             ))}
-
-            <details
-              style={{
-                border: '1px solid rgba(255,255,255,0.10)',
-                borderRadius: 16,
-                padding: 12,
-                background: 'rgba(255,255,255,0.03)',
-              }}
-            >
-              <summary className="small" style={{ cursor: 'pointer', userSelect: 'none' }}>
-                Advanced toggles
-              </summary>
-              <div style={{ display: 'grid', gap: 10, marginTop: 12 }}>
-                {FLAG_KEYS.filter((k) => !FLAG_ORDER.includes(k)).map((k) => (
-                  <div key={k} className="flagRow">
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <div style={{ fontWeight: 650 }}>{labelFor(k)}</div>
-                        <Badge tone={flags[k] ? 'good' : 'neutral'}>
-                          {flags[k] ? 'ON' : 'OFF'}
-                        </Badge>
-                      </div>
-                      <div className="small">{helpFor(k)}</div>
-                    </div>
-
-                    <label className="switch" aria-label={`Toggle ${labelFor(k)}`}>
-                      <input
-                        type="checkbox"
-                        checked={Boolean(flags[k])}
-                        onChange={(e) => setFlag(k, e.target.checked)}
-                      />
-                      <span className="switchTrack" />
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </details>
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>

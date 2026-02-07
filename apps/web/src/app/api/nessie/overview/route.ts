@@ -38,6 +38,19 @@ function okOrNull<T>(r: NessieResult<T>): T | null {
   return r.ok ? r.data : null;
 }
 
+function ensureArray<T>(value: unknown, key?: string): T[] {
+  if (Array.isArray(value)) return value as T[];
+  if (value && typeof value === 'object' && key && key in value) {
+    const v = (value as Record<string, unknown>)[key];
+    if (Array.isArray(v)) return v as T[];
+  }
+  if (value && typeof value === 'object' && 'data' in value) {
+    const v = (value as { data?: unknown }).data;
+    if (Array.isArray(v)) return v as T[];
+  }
+  return [];
+}
+
 function upcomingBills(bills: NessieBill[]): { upcomingCount: number; upcomingIds: string[] } {
   const now = toYyyyMmDd(new Date());
   const end = addDays(now, 30);
@@ -153,85 +166,102 @@ export async function GET(request: Request) {
   const lng = clamp(parseNum(url.searchParams.get('lng'), -79.9436), -180, 180);
   const rad = clamp(parseNum(url.searchParams.get('rad'), 2), 1, 25);
 
-  // Judge/demo safe: don't do sponsor network calls.
-  if (envFlags.demoMode || envFlags.judgeMode) {
-    return NextResponse.json(demoPayload());
+  try {
+    // Judge/demo safe: don't do sponsor network calls.
+    if (envFlags.demoMode || envFlags.judgeMode) {
+      return NextResponse.json(demoPayload());
+    }
+
+    if (!hasNessieEnv()) {
+      return NextResponse.json(demoPayload());
+    }
+
+    const binding = await resolveBinding();
+    const nessie = nessieServerClient();
+
+    const accountsP = nessie.listAssignedAccounts();
+    const accountsResp = await accountsP;
+    const accounts = ensureArray<{ _id?: string }>(okOrNull(accountsResp), 'accounts');
+
+    const accountId =
+      binding.accountId ??
+      accounts.find((a) => typeof a._id === 'string' && a._id.trim())?._id ??
+      null;
+
+    const purchasesP = accountId ? nessie.listPurchases(accountId) : Promise.resolve(null);
+    const billsP = accountId ? nessie.listBillsByAccount(accountId) : Promise.resolve(null);
+    const branchesP = nessie.listBranches();
+    const atmsP = nessie.listAtms({ lat, lng, rad });
+
+    const [purchasesResp, billsResp, branchesResp, atmsResp] = await Promise.all([
+      purchasesP,
+      billsP,
+      branchesP,
+      atmsP,
+    ]);
+
+    const purchasesRaw =
+      purchasesResp && 'ok' in purchasesResp && purchasesResp.ok ? purchasesResp.data : [];
+    const purchases = (Array.isArray(purchasesRaw) ? purchasesRaw : [])
+      .map((p) =>
+        nessiePurchaseToNormalized(
+          p as unknown as import('@mosaicledger/connectors').NessiePurchase,
+          { source: 'nessie', accountId: accountId ?? 'unknown' },
+        ),
+      )
+      .filter((t) => t != null)
+      .slice(0, 30)
+      .map((t) => ({
+        id: t.id,
+        date: t.date,
+        amount: t.amount,
+        merchant: t.merchant,
+        category: t.category,
+        pending: t.pending,
+      }));
+
+    const bills = ensureArray<NessieBill>(
+      billsResp && 'ok' in billsResp && billsResp.ok ? billsResp.data : null,
+      'bills',
+    );
+    const branches = ensureArray<NessieBranch>(okOrNull(branchesResp), 'branches');
+    const atms = ensureArray<NessieAtm>(okOrNull(atmsResp), 'atms');
+    const up = upcomingBills(bills as NessieBill[]);
+
+    return NextResponse.json({
+      ok: true,
+      configured: true,
+      mode: 'live' as const,
+      query: { lat, lng, rad },
+      accountId: accountId ?? null,
+      accountsCount: accounts.length,
+      purchasesCount: purchases.length,
+      billsCount: bills.length,
+      billsUpcoming30d: up,
+      purchases,
+      bills: bills.slice(0, 50),
+      branches: branches.slice(0, 50),
+      atms: atms.slice(0, 30),
+      errors: {
+        accounts: accountsResp.ok ? null : accountsResp.message,
+        purchases:
+          purchasesResp && 'ok' in purchasesResp && !purchasesResp.ok
+            ? purchasesResp.message
+            : null,
+        bills: billsResp && 'ok' in billsResp && !billsResp.ok ? billsResp.message : null,
+        branches: branchesResp.ok ? null : branchesResp.message,
+        atms: atmsResp.ok ? null : atmsResp.message,
+      },
+    });
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : 'Nessie overview failed';
+    try {
+      return NextResponse.json(
+        { ...demoPayload(), errors: { overview: message } },
+        { status: 200 },
+      );
+    } catch {
+      return NextResponse.json({ ok: false, error: message }, { status: 500 });
+    }
   }
-
-  if (!hasNessieEnv()) {
-    return NextResponse.json(demoPayload());
-  }
-
-  const binding = await resolveBinding();
-  const nessie = nessieServerClient();
-
-  const accountsP = nessie.listAssignedAccounts();
-  const accountsResp = await accountsP;
-  const accounts = okOrNull(accountsResp) ?? [];
-
-  const accountId =
-    binding.accountId ??
-    accounts.find((a) => typeof a._id === 'string' && a._id.trim())?._id ??
-    null;
-
-  const purchasesP = accountId ? nessie.listPurchases(accountId) : Promise.resolve(null);
-  const billsP = accountId ? nessie.listBillsByAccount(accountId) : Promise.resolve(null);
-  const branchesP = nessie.listBranches();
-  const atmsP = nessie.listAtms({ lat, lng, rad });
-
-  const [purchasesResp, billsResp, branchesResp, atmsResp] = await Promise.all([
-    purchasesP,
-    billsP,
-    branchesP,
-    atmsP,
-  ]);
-
-  const purchasesRaw =
-    purchasesResp && 'ok' in purchasesResp && purchasesResp.ok ? purchasesResp.data : [];
-  const purchases = (Array.isArray(purchasesRaw) ? purchasesRaw : [])
-    .map((p) =>
-      nessiePurchaseToNormalized(
-        p as unknown as import('@mosaicledger/connectors').NessiePurchase,
-        { source: 'nessie', accountId: accountId ?? 'unknown' },
-      ),
-    )
-    .filter((t) => t != null)
-    .slice(0, 30)
-    .map((t) => ({
-      id: t.id,
-      date: t.date,
-      amount: t.amount,
-      merchant: t.merchant,
-      category: t.category,
-      pending: t.pending,
-    }));
-
-  const bills = billsResp && 'ok' in billsResp && billsResp.ok ? (billsResp.data ?? []) : [];
-  const branches = okOrNull(branchesResp) ?? [];
-  const atms = okOrNull(atmsResp) ?? [];
-  const up = upcomingBills(bills as NessieBill[]);
-
-  return NextResponse.json({
-    ok: true,
-    configured: true,
-    mode: 'live' as const,
-    query: { lat, lng, rad },
-    accountId: accountId ?? null,
-    accountsCount: accounts.length,
-    purchasesCount: purchases.length,
-    billsCount: Array.isArray(bills) ? bills.length : 0,
-    billsUpcoming30d: up,
-    purchases,
-    bills: (Array.isArray(bills) ? bills : []).slice(0, 50),
-    branches: (branches as NessieBranch[]).slice(0, 50),
-    atms: (atms as NessieAtm[]).slice(0, 30),
-    errors: {
-      accounts: accountsResp.ok ? null : accountsResp.message,
-      purchases:
-        purchasesResp && 'ok' in purchasesResp && !purchasesResp.ok ? purchasesResp.message : null,
-      bills: billsResp && 'ok' in billsResp && !billsResp.ok ? billsResp.message : null,
-      branches: branchesResp.ok ? null : branchesResp.message,
-      atms: atmsResp.ok ? null : atmsResp.message,
-    },
-  });
 }
