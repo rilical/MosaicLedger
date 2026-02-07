@@ -56,11 +56,11 @@ function labelFor(key: FlagKey): string {
     case 'aiEnabled':
       return 'AI Explanations';
     case 'xrplEnabled':
-      return 'XRPL';
+      return 'Round-up Transfers';
     case 'plaidEnabled':
       return 'Plaid';
     case 'nessieEnabled':
-      return 'Nessie (Capital One)';
+      return 'Banking Connector';
     case 'debugTraces':
       return 'Tool Traces';
     default:
@@ -77,11 +77,11 @@ function helpFor(key: FlagKey): string {
     case 'aiEnabled':
       return 'AI can rewrite explanations, but never change deterministic numbers.';
     case 'xrplEnabled':
-      return 'Enable XRPL round-up scaffolding (optional).';
+      return 'Enable round-up sweep simulation and (optional) Testnet sends.';
     case 'plaidEnabled':
       return 'Enable Plaid link/sync scaffolding (optional, keys required).';
     case 'nessieEnabled':
-      return 'Enable the Capital One Nessie connector (optional sponsor API, keys required).';
+      return 'Enable the banking connector (purchases, bills, ATMs, branches). Keys required.';
     case 'debugTraces':
       return 'Show a debug trace viewer for Coach tool calls (inputs redacted, screenshot-ready).';
     default:

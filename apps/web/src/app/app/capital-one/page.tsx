@@ -132,20 +132,20 @@ export default function CapitalOnePage() {
     return (
       <div className="pageStack" style={{ maxWidth: 980 }}>
         <div className="pageHeader">
-          <h1 className="pageTitle">Capital One</h1>
+          <h1 className="pageTitle">Locations & Bills</h1>
           <div className="pageMeta">
-            <div className="pageTagline">ATM, branches, bills, and payments (Nessie)</div>
+            <div className="pageTagline">ATMs, branches, bills, and payments (connector)</div>
             <Badge tone="warn">Disabled</Badge>
           </div>
         </div>
         <Card>
           <CardHeader>
-            <CardTitle>Enable Capital One (Nessie)</CardTitle>
+            <CardTitle>Enable the banking connector</CardTitle>
           </CardHeader>
           <CardBody>
             <div className="small">
-              Turn on Settings → Nessie (Capital One) to show the sponsor connector UI. The app will
-              still run in demo mode without it.
+              Turn on Runtime Flags → Banking Connector to show locations and bill signals. The app
+              still runs in demo mode without it.
             </div>
             <div className="buttonRow" style={{ marginTop: 12 }}>
               <Link className="btn btnPrimary" href="/app">
@@ -169,7 +169,7 @@ export default function CapitalOnePage() {
   return (
     <div className="pageStack" style={{ maxWidth: 1100 }}>
       <div className="pageHeader">
-        <h1 className="pageTitle">Capital One</h1>
+        <h1 className="pageTitle">Locations & Bills</h1>
         <div className="pageMeta">
           <div className="pageTagline">Make the data obvious: places, bills, payments.</div>
           <Badge tone={configured ? 'good' : 'warn'}>

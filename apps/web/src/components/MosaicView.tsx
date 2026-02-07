@@ -5,11 +5,12 @@ import type { TreemapTile } from '@mosaicledger/mosaic';
 
 export function MosaicView(props: {
   tiles: TreemapTile[];
+  nestedTiles?: TreemapTile[];
   totalSpend?: number;
   selectedId?: string;
   onTileClick?: (tile: TreemapTile) => void;
 }) {
-  const { tiles, totalSpend, selectedId, onTileClick } = props;
+  const { tiles, nestedTiles = [], totalSpend, selectedId, onTileClick } = props;
   const [hover, setHover] = React.useState<TreemapTile | null>(null);
   const [isTransitioning, setIsTransitioning] = React.useState(false);
 
@@ -50,6 +51,60 @@ export function MosaicView(props: {
     if (tile.label.length <= maxChars) return tile.label;
     return tile.label.slice(0, Math.max(0, maxChars - 1)).trimEnd() + '…';
   };
+
+  // Font matching the MosaicLedger nav title (Fraunces serif)
+  const BRAND_FONT = "'Fraunces', 'Times New Roman', serif";
+
+  // Nested tile: centered label, dynamic font size to fit box, vertical when height > width
+  const NESTED_CHAR_RATIO = 0.65; // Fraunces bold is wide; conservative so text stays inside
+  const NESTED_LINE_RATIO = 1.25;
+  const NESTED_FONT_MIN = 6;
+  const SAFETY = 0.88; // render at 88% of computed size so text never overflows
+  function getNestedLabelConfig(tile: TreemapTile): {
+    fontSize: number;
+    label: string;
+    vertical: boolean;
+  } {
+    const vertical = tile.h > tile.w;
+    const label = tile.label || '';
+    if (label.length === 0) return { fontSize: NESTED_FONT_MIN, label: '', vertical: false };
+
+    const area = tile.w * tile.h;
+    const NESTED_FONT_MAX = Math.min(26, Math.max(12, 6 + Math.sqrt(area) / 14));
+    // Small boxes: use less of the box so text stays clearly inside; large boxes can use more
+    const useFraction = area < 4000 ? 0.76 : area < 12000 ? 0.82 : 0.88;
+
+    let fontSize: number;
+    if (vertical) {
+      const byLength = (tile.h * useFraction) / (label.length * NESTED_CHAR_RATIO);
+      const byHeight = (tile.w * useFraction) / NESTED_LINE_RATIO;
+      fontSize = Math.min(byLength, byHeight);
+    } else {
+      const byLength = (tile.w * useFraction) / (label.length * NESTED_CHAR_RATIO);
+      const byHeight = (tile.h * useFraction) / NESTED_LINE_RATIO;
+      fontSize = Math.min(byLength, byHeight);
+    }
+    fontSize = Math.max(NESTED_FONT_MIN, Math.min(NESTED_FONT_MAX, fontSize));
+    fontSize = Math.round(fontSize * SAFETY);
+
+    let displayLabel = label;
+    if (vertical) {
+      const maxChars = Math.max(
+        1,
+        Math.floor((tile.h * useFraction * SAFETY) / (fontSize * NESTED_CHAR_RATIO)) - 1,
+      );
+      if (label.length > maxChars)
+        displayLabel = label.slice(0, Math.max(0, maxChars - 1)).trimEnd() + '…';
+    } else {
+      const maxChars = Math.max(
+        1,
+        Math.floor((tile.w * useFraction * SAFETY) / (fontSize * NESTED_CHAR_RATIO)) - 1,
+      );
+      if (label.length > maxChars)
+        displayLabel = label.slice(0, Math.max(0, maxChars - 1)).trimEnd() + '…';
+    }
+    return { fontSize: Math.max(NESTED_FONT_MIN, fontSize), label: displayLabel, vertical };
+  }
 
   const hoverPct =
     hover && hasPositiveTotalSpend ? Math.min(1, Math.max(0, hover.value / totalSpend)) : 0;
@@ -137,7 +192,8 @@ export function MosaicView(props: {
                   x={t.x + 12}
                   y={t.y + fs + 8}
                   fontSize={fs}
-                  fontWeight={600}
+                  fontWeight={700}
+                  fontFamily={BRAND_FONT}
                   fill="rgba(255,255,255,0.95)"
                   filter="url(#text-shadow)"
                   style={{
@@ -145,6 +201,53 @@ export function MosaicView(props: {
                   }}
                 >
                   {label}
+                </text>
+              ) : null}
+            </g>
+          );
+        })}
+        {nestedTiles.map((t) => {
+          const cx = t.x + t.w / 2;
+          const cy = t.y + t.h / 2;
+          const { fontSize, label: displayLabel, vertical } = getNestedLabelConfig(t);
+          const showLabel = t.w >= 14 && t.h >= 14 && displayLabel.length > 0;
+          return (
+            <g
+              key={t.id}
+              onMouseEnter={() => setHover(t)}
+              onMouseLeave={() => setHover(null)}
+              onClick={onTileClick ? () => onTileClick(t) : undefined}
+              role={onTileClick ? 'button' : undefined}
+              tabIndex={onTileClick ? 0 : -1}
+              aria-label={onTileClick ? `${t.label} · $${t.value.toFixed(2)}` : undefined}
+              style={{ cursor: onTileClick ? 'pointer' : 'default' }}
+            >
+              <title>
+                {t.label} · ${t.value.toFixed(2)}
+              </title>
+              <rect
+                x={t.x}
+                y={t.y}
+                width={t.w}
+                height={t.h}
+                rx={8}
+                fill="rgba(255,255,255,0.18)"
+                stroke="rgba(255,255,255,0.5)"
+                strokeWidth={1}
+              />
+              {showLabel ? (
+                <text
+                  x={cx}
+                  y={cy}
+                  fontSize={fontSize}
+                  fontWeight={700}
+                  fontFamily={BRAND_FONT}
+                  fill="rgba(255,255,255,0.95)"
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  transform={vertical ? `rotate(-90, ${cx}, ${cy})` : undefined}
+                >
+                  {displayLabel}
                 </text>
               ) : null}
             </g>

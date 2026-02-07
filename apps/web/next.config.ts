@@ -2,6 +2,10 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Keep @resvg/resvg-wasm out of the webpack bundle; it carries a `.wasm` artifact
+  // that Next/webpack otherwise tries to compile (breaking `next build`).
+  // At runtime (Node), the route loads the `.wasm` bytes directly via `require.resolve`.
+  serverExternalPackages: ['@resvg/resvg-wasm'],
   webpack: (config) => {
     // Monorepo packages are authored in TS but use ESM-style ".js" specifiers so Node can run
     // the compiled output without experimental flags. Teach Next/Webpack to resolve those

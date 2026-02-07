@@ -31,11 +31,10 @@ export function useFlags(): {
   setFlag: (key: FlagKey, value: boolean) => void;
   resetFlags: () => void;
 } {
-  const [overrides, setOverrides] = React.useState<Partial<Flags>>({});
-
-  React.useEffect(() => {
-    setOverrides(safeParseOverrides(window.localStorage.getItem(STORAGE_KEY)));
-  }, []);
+  const [overrides, setOverrides] = React.useState<Partial<Flags>>(() => {
+    if (typeof window === 'undefined') return {};
+    return safeParseOverrides(window.localStorage.getItem(STORAGE_KEY));
+  });
 
   const flags = React.useMemo(() => mergeFlags(envFlags, overrides), [overrides]);
 

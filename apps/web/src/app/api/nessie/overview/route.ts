@@ -115,7 +115,7 @@ function demoPayload() {
   const branches: NessieBranch[] = [
     {
       _id: 'demo_branch_1',
-      name: 'Capital One Cafe (Demo)',
+      name: 'Demo Cafe',
       phone_number: '000-000-0000',
       address: {
         street_number: '123',
@@ -130,7 +130,7 @@ function demoPayload() {
   const atms: NessieAtm[] = [
     {
       _id: 'demo_atm_1',
-      name: 'Capital One ATM (Demo)',
+      name: 'Demo ATM',
       geocode: { lat: 40.4433, lng: -79.9436 },
       accessibility: true,
       amount_left: 5000,
@@ -179,10 +179,8 @@ export async function GET(request: Request) {
     const binding = await resolveBinding();
     const nessie = nessieServerClient();
 
-    const accountsP = nessie.listAssignedAccounts();
-    const accountsResp = await accountsP;
+    const accountsResp = await nessie.listAssignedAccounts();
     const accounts = ensureArray<{ _id?: string }>(okOrNull(accountsResp), 'accounts');
-
     const accountId =
       binding.accountId ??
       accounts.find((a) => typeof a._id === 'string' && a._id.trim())?._id ??
@@ -202,7 +200,7 @@ export async function GET(request: Request) {
 
     const purchasesRaw =
       purchasesResp && 'ok' in purchasesResp && purchasesResp.ok ? purchasesResp.data : [];
-    const purchases = (Array.isArray(purchasesRaw) ? purchasesRaw : [])
+    const purchases = ensureArray(purchasesRaw)
       .map((p) =>
         nessiePurchaseToNormalized(
           p as unknown as import('@mosaicledger/connectors').NessiePurchase,
@@ -220,20 +218,18 @@ export async function GET(request: Request) {
         pending: t.pending,
       }));
 
-    const bills = ensureArray<NessieBill>(
-      billsResp && 'ok' in billsResp && billsResp.ok ? billsResp.data : null,
-      'bills',
-    );
-    const branches = ensureArray<NessieBranch>(okOrNull(branchesResp), 'branches');
-    const atms = ensureArray<NessieAtm>(okOrNull(atmsResp), 'atms');
-    const up = upcomingBills(bills as NessieBill[]);
+    const billsRaw = billsResp && 'ok' in billsResp && billsResp.ok ? billsResp.data : [];
+    const bills = ensureArray<NessieBill>(billsRaw);
+    const branches = ensureArray<NessieBranch>(okOrNull(branchesResp));
+    const atms = ensureArray<NessieAtm>(okOrNull(atmsResp));
+    const up = upcomingBills(bills);
 
     return NextResponse.json({
       ok: true,
       configured: true,
       mode: 'live' as const,
       query: { lat, lng, rad },
-      accountId: accountId ?? null,
+      accountId,
       accountsCount: accounts.length,
       purchasesCount: purchases.length,
       billsCount: bills.length,
