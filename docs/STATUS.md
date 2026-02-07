@@ -15,6 +15,14 @@ This file is updated in every PR.
 
 ## Latest Changes
 
+- DED-016 (branch: `codex/ded-016-trace-viewer`): added an in-app Tool Trace debug drawer for the
+  Coach that shows redacted inputs/outputs and step timings (toggle via runtime flag `Tool Traces`).
+- CONWAY-006 (branch: `codex/conway-006-ask-why`): added an "Ask why" deep link on each plan action
+  that opens the Coach with a prefilled prompt and keeps the original action explanation visible.
+- DED-002/003/004/005/006 (branch: `codex/ded-002-mcp-streamable-http`): implemented a stateless
+  Streamable HTTP MCP server in `packages/mcp-server` with `/health` + `/mcp` endpoints, strict zod
+  validation (`v1`), and 3 deterministic tools: `analyzeTransactions`, `buildMosaicSpec`,
+  `buildActionPlan`.
 - UX-002 (branch: `codex/ux-002-loading-skeleton`): added Mosaic loading skeleton + a simple
   progress line; when analysis is slow, offers a one-click switch to demo data.
 - QA-018 (branch: `codex/qa-018-pr-gates`): tightened PR template requirements and added label

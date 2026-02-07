@@ -4,10 +4,19 @@ Goal: expose the budget brain as tools.
 
 Run (dev)
 
-- `pnpm -C packages/mcp-server dev`
+- `pnpm mcp:dev`
 
-Tools (planned)
+Endpoints
+
+- `GET /health` -> `{ ok, name, version }`
+- `POST /mcp` -> Streamable HTTP MCP transport (stateless)
+
+Tools (v1)
 
 - `analyzeTransactions`
-- `recommendActions`
-- `renderMosaicSpec`
+- `buildMosaicSpec`
+- `buildActionPlan`
+
+Schemas
+
+- `packages/mcp-server/src/schemas.ts` (zod; `version: "v1"`)

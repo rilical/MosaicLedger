@@ -49,6 +49,8 @@ function labelFor(key: FlagKey): string {
       return 'XRPL';
     case 'plaidEnabled':
       return 'Plaid';
+    case 'debugTraces':
+      return 'Tool Traces';
     default:
       return key satisfies never;
   }
@@ -66,6 +68,8 @@ function helpFor(key: FlagKey): string {
       return 'Enable XRPL round-up scaffolding (optional).';
     case 'plaidEnabled':
       return 'Enable Plaid link/sync scaffolding (optional, keys required).';
+    case 'debugTraces':
+      return 'Show a debug trace viewer for Coach tool calls (inputs redacted, screenshot-ready).';
     default:
       return key satisfies never;
   }
