@@ -32,6 +32,9 @@ This file is updated in every PR.
   with deterministic explainability ("Why this?"), a Visa-style budget table with accept-as-goal
   cap flow, and a before/after scenario card with action toggles. Optional AI rewrite is exposed via
   `/api/ai/rewrite` and never changes numbers (token-guarded; falls back when no key).
+- EXPORT-001/002/003 (branch: `codex/export-001-003-poster-export`): implements poster export as a
+  single artifact: Mosaic + legend + top actions, downloadable as SVG/PNG from `/app/export`.
+  Privacy mode redacts merchant names in the plan summary.
 
 ## Known Risks / TODO
 
