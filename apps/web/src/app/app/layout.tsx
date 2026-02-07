@@ -30,7 +30,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     <div className="appShell">
       <nav className="sideNav" aria-label="Primary">
         <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
-          <div className="navTitle" style={{ cursor: 'pointer' }}>MosaicLedger</div>
+          <div className="navTitle" style={{ cursor: 'pointer' }}>
+            MosaicLedger
+          </div>
         </Link>
         <div className="navSubtitle" style={{ marginBottom: 12 }}>
           Assembled, explainable budget planning.

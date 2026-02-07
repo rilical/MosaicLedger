@@ -87,7 +87,9 @@ export function MosaicPreviewToggle() {
   return (
     <>
       <div className="pageMeta" style={{ marginBottom: 12 }}>
-        <div className="pageTagline" style={{ fontWeight: 650, fontSize: 16 }}>Glass mosaic preview</div>
+        <div className="pageTagline" style={{ fontWeight: 650, fontSize: 16 }}>
+          Glass mosaic preview
+        </div>
         <div className="previewTabs">
           {presetKeys.map((key) => (
             <button
@@ -119,7 +121,8 @@ export function MosaicPreviewToggle() {
                 gridColumn: `span ${tile.colSpan}`,
                 gridRow: `span ${tile.rowSpan}`,
                 opacity: hoveredIndex !== null && hoveredIndex !== index ? 0.4 : 1,
-                transition: 'opacity 220ms ease, transform 260ms ease, box-shadow 260ms ease, border-color 260ms ease',
+                transition:
+                  'opacity 220ms ease, transform 260ms ease, box-shadow 260ms ease, border-color 260ms ease',
               } as CSSProperties
             }
             onMouseEnter={() => setHoveredIndex(index)}

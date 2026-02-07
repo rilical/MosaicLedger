@@ -17,7 +17,7 @@ export function MosaicView(props: {
     setIsTransitioning(true);
     const timer = setTimeout(() => setIsTransitioning(false), 50);
     return () => clearTimeout(timer);
-  }, [tiles.length, tiles.map(t => t.id).join(',')]);
+  }, [tiles.length, tiles.map((t) => t.id).join(',')]);
 
   // Calculate dynamic font size based on tile area
   const calculateFontSize = (tile: TreemapTile): number => {
@@ -25,11 +25,11 @@ export function MosaicView(props: {
     const baseSize = 13;
     const maxSize = 24;
     const minSize = 11;
-    
+
     // Scale font size based on area (larger tiles = larger text)
     const scaleFactor = Math.sqrt(area) / 40;
     const fontSize = baseSize * scaleFactor;
-    
+
     return Math.min(maxSize, Math.max(minSize, fontSize));
   };
 
@@ -61,7 +61,7 @@ export function MosaicView(props: {
             role={onTileClick ? 'button' : undefined}
             tabIndex={onTileClick ? 0 : -1}
             aria-label={onTileClick ? `Open ${t.label}` : undefined}
-            style={{ 
+            style={{
               cursor: onTileClick ? 'pointer' : 'default',
               transform: isTransitioning ? 'scale(0.8)' : 'scale(1)',
               transformOrigin: '500px 325px',
