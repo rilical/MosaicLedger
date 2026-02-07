@@ -20,12 +20,7 @@ function renderInline(text: string): React.ReactNode {
     const boldAt = text.indexOf('**', i);
     const codeAt = text.indexOf('`', i);
 
-    const nextAt =
-      boldAt === -1
-        ? codeAt
-        : codeAt === -1
-          ? boldAt
-          : Math.min(boldAt, codeAt);
+    const nextAt = boldAt === -1 ? codeAt : codeAt === -1 ? boldAt : Math.min(boldAt, codeAt);
 
     if (nextAt === -1) {
       pushText(text.slice(i));
@@ -208,4 +203,3 @@ export function MarkdownLite(props: { text: string }) {
     </div>
   );
 }
-
