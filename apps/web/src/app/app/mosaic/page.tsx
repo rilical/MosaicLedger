@@ -80,7 +80,9 @@ export default function MosaicPage() {
   React.useEffect(() => {
     const sourceParam = searchParams.get('source');
     if (sourceParam && URL_SOURCE_KEYS.includes(sourceParam as (typeof URL_SOURCE_KEYS)[number])) {
-      setSettings((s) => (s.source === sourceParam ? s : { ...s, source: sourceParam as typeof s.source }));
+      setSettings((s) =>
+        s.source === sourceParam ? s : { ...s, source: sourceParam as typeof s.source },
+      );
     }
   }, [searchParams, setSettings]);
 

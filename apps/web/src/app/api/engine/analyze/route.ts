@@ -64,9 +64,7 @@ export async function POST(request: Request) {
         const purchases = await nessie.getPurchases(accountId);
         if (!purchases.ok) throw new Error(purchases.message);
         const txnsAll = (purchases.data ?? [])
-          .map((p) =>
-            nessiePurchaseToNormalized(p, { source: 'nessie', accountId }),
-          )
+          .map((p) => nessiePurchaseToNormalized(p, { source: 'nessie', accountId }))
           .filter((t) => t != null);
         if (!txnsAll.length) throw new Error('No valid Nessie transactions');
         const artifacts = computeArtifactsFromNormalized(txnsAll, body, {

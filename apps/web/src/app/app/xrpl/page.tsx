@@ -99,7 +99,10 @@ export default function XrplPage() {
       const json = (await resp.json()) as unknown;
       if (!resp.ok || !json || typeof json !== 'object') {
         const apiError =
-          json && typeof json === 'object' && 'error' in json && typeof (json as { error?: unknown }).error === 'string'
+          json &&
+          typeof json === 'object' &&
+          'error' in json &&
+          typeof (json as { error?: unknown }).error === 'string'
             ? (json as { error: string }).error
             : null;
         throw new Error(apiError || `Transfer failed (${resp.status})`);
@@ -108,7 +111,10 @@ export default function XrplPage() {
       const rec = (json as { receipt?: unknown }).receipt;
       if (!ok || !rec || typeof rec !== 'object') {
         const apiError =
-          json && typeof json === 'object' && 'error' in json && typeof (json as { error?: unknown }).error === 'string'
+          json &&
+          typeof json === 'object' &&
+          'error' in json &&
+          typeof (json as { error?: unknown }).error === 'string'
             ? (json as { error: string }).error
             : null;
         throw new Error(apiError || 'Transfer failed');
