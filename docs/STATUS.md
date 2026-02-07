@@ -35,6 +35,9 @@ This file is updated in every PR.
 - EXPORT-001/002/003 (branch: `codex/export-001-003-poster-export`): implements poster export as a
   single artifact: Mosaic + legend + top actions, downloadable as SVG/PNG from `/app/export`.
   Privacy mode redacts merchant names in the plan summary.
+- DEPLOY-003 (branch: `codex/deploy-003-health`): adds a `/health` page for judges and the team to
+  quickly verify demo dataset availability and the presence of optional integration env vars. No
+  secrets are displayed.
 
 ## Known Risks / TODO
 
