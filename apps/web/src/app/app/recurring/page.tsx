@@ -1,19 +1,15 @@
-'use client';
-
-import * as React from 'react';
+import { getDemoTransactions } from '@mosaicledger/banking';
+import { normalizeRawTransactions, summarizeTransactions } from '@mosaicledger/core';
 import { RecurringPanel } from '../../../components/RecurringPanel';
 import { Badge, Card, CardBody, CardHeader, CardTitle } from '../../../components/ui';
-import { AnalysisControls } from '../../../components/Analysis/AnalysisControls';
-import {
-  useAnalysisSettings,
-  toAnalyzeRequest,
-} from '../../../components/Analysis/useAnalysisSettings';
-import { useAnalysis } from '../../../components/Analysis/useAnalysis';
 
-export default function RecurringPage() {
-  const { settings, setSettings } = useAnalysisSettings();
-  const req = React.useMemo(() => toAnalyzeRequest(settings), [settings]);
-  const { artifacts, loading, error, recompute } = useAnalysis(req);
+export default async function RecurringPage(props: { searchParams: Promise<{ source?: string }> }) {
+  const sp = await props.searchParams;
+  const source = sp.source ?? 'demo';
+
+  const raw = source === 'demo' ? getDemoTransactions() : getDemoTransactions();
+  const txns = normalizeRawTransactions(raw, { source: 'demo' });
+  const summary = summarizeTransactions(txns);
 
   return (
     <div className="pageStack" style={{ maxWidth: 980 }}>
@@ -27,25 +23,12 @@ export default function RecurringPage() {
         </div>
       </div>
 
-      <AnalysisControls
-        settings={settings}
-        setSettings={setSettings}
-        loading={loading}
-        onRecompute={() => void recompute()}
-      />
-
-      {error ? (
-        <div className="small" style={{ color: 'rgba(234,179,8,0.95)' }}>
-          {error}
-        </div>
-      ) : null}
-
       <Card>
         <CardHeader>
           <CardTitle>Detected Subscriptions</CardTitle>
         </CardHeader>
         <CardBody>
-          <RecurringPanel recurring={artifacts?.recurring ?? []} />
+          <RecurringPanel recurring={summary.recurring} />
         </CardBody>
       </Card>
     </div>

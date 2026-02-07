@@ -3,6 +3,7 @@
 - `tasks/index.md`: single task board (repo root)
 - `docs/CODEX_TASKS.md`: granular task board
 - `docs/STATUS.md`: living status doc (updated in every PR)
+- `docs/PRIZE_MATRIX.md`: sponsor prize coverage matrix (truthful demo checklist)
 - `docs/CONTRACTS.md`: contract-first type/source-of-truth notes
 - `docs/SUPABASE_SETUP.md`: Supabase auth + schema setup steps
 - `docs/DATA_SOURCES.md`: enrichment and caching plan

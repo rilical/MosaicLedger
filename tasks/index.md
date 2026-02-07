@@ -37,9 +37,27 @@ Status legend: `TODO` | `DOING` | `BLOCKED` | `REVIEW` | `DONE`
 
 | ID       | Status | Notes                                                                 |
 | -------- | ------ | --------------------------------------------------------------------- |
-| DATA-004 | REVIEW | Date range selector (This month / Last month / Custom) + persistence. |
-| DATA-005 | REVIEW | Transaction exclusions (refunds/transfers) wired into analysis + UI.  |
+| DATA-004 | DONE   | Date range selector (This month / Last month / Custom) + persistence. |
+| DATA-005 | DONE   | Transaction exclusions (refunds/transfers) wired into analysis + UI.  |
 | DATA-006 | TODO   | Category override pipeline (persist + apply on next analysis run).    |
+
+## Plan (PLAN)
+
+| ID       | Status | Notes                                                                |
+| -------- | ------ | -------------------------------------------------------------------- |
+| PLAN-007 | REVIEW | Explainability: expandable "Why this?" + optional AI rewrite toggle. |
+| PLAN-008 | REVIEW | Budget table per category + accept cap as goal (localStorage).       |
+| PLAN-009 | REVIEW | Scenario compare (before/after) + action toggles (deterministic).    |
+
+## Export (EXPORT)
+
+| ID         | Status | Notes                                                       |
+| ---------- | ------ | ----------------------------------------------------------- |
+| EXPORT-001 | REVIEW | `exportToSvg()` poster generator (mosaic + legend + totals) |
+| EXPORT-002 | REVIEW | PNG export (client canvas) + download buttons               |
+| EXPORT-003 | REVIEW | Poster includes top 5 plan actions + range + total spend    |
+| EXPORT-004 | TODO   | Optional share link (requires storage + /share route)       |
+| EXPORT-005 | TODO   | Export QA pass (clipping, sizing, safe area)                |
 
 ## Bank Connector (BANK)
 
@@ -48,3 +66,15 @@ Status legend: `TODO` | `DOING` | `BLOCKED` | `REVIEW` | `DONE`
 | BANK-001 | TODO   | Create Plaid account + sandbox keys.                          |
 | BANK-002 | DONE   | Server-only Plaid client module + `/api/plaid/health`.        |
 | BANK-003 | DONE   | `/api/plaid/link-token` (judge/demo mode returns fake token). |
+
+## Deploy (DEPLOY)
+
+| ID         | Status | Notes                                                     |
+| ---------- | ------ | --------------------------------------------------------- |
+| DEPLOY-003 | REVIEW | `/health` page shows system state (no secrets; demo-safe) |
+
+## QA
+
+| ID     | Status | Notes                                                |
+| ------ | ------ | ---------------------------------------------------- |
+| QA-001 | REVIEW | Playwright e2e harness + smoke test (/health,/login) |

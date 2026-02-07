@@ -28,6 +28,18 @@ This file is updated in every PR.
   month / Custom) and deterministic transaction exclusions (refunds + transfer-like) that apply to
   Mosaic, Recurring, and Plan. Settings persist in `localStorage`, and `/api/engine/analyze` is
   triggered on changes. Demo check now pre-builds shared packages before running.
+- PLAN-007/008/009 (branch: `codex/plan-007-009-explain-budget-scenario`): expands the Plan page
+  with deterministic explainability ("Why this?"), a Visa-style budget table with accept-as-goal
+  cap flow, and a before/after scenario card with action toggles. Optional AI rewrite is exposed via
+  `/api/ai/rewrite` and never changes numbers (token-guarded; falls back when no key).
+- EXPORT-001/002/003 (branch: `codex/export-001-003-poster-export`): implements poster export as a
+  single artifact: Mosaic + legend + top actions, downloadable as SVG/PNG from `/app/export`.
+  Privacy mode redacts merchant names in the plan summary.
+- DEPLOY-003 (branch: `codex/deploy-003-health`): adds a `/health` page for judges and the team to
+  quickly verify demo dataset availability and the presence of optional integration env vars. No
+  secrets are displayed.
+- QA-001 (branch: `codex/qa-001-playwright-harness`): adds Playwright e2e harness + CI job and a
+  smoke test that loads `/health` and `/login`.
 
 ## Known Risks / TODO
 

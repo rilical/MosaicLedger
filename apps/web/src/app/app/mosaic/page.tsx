@@ -1,16 +1,14 @@
-'use client';
-
-import * as React from 'react';
+import { getDemoTransactions } from '@mosaicledger/banking';
+import {
+  normalizeRawTransactions,
+  recommendActions,
+  summarizeTransactions,
+} from '@mosaicledger/core';
+import { buildTreemapTiles } from '@mosaicledger/mosaic';
 import { MosaicView } from '../../../components/MosaicView';
 import { RecurringPanel } from '../../../components/RecurringPanel';
 import { ActionsPanel } from '../../../components/ActionsPanel';
 import { Badge, Card, CardBody, CardHeader, CardTitle } from '../../../components/ui';
-import { AnalysisControls } from '../../../components/Analysis/AnalysisControls';
-import {
-  useAnalysisSettings,
-  toAnalyzeRequest,
-} from '../../../components/Analysis/useAnalysisSettings';
-import { useAnalysis } from '../../../components/Analysis/useAnalysis';
 
 export default function MosaicPage() {
   const { settings, setSettings } = useAnalysisSettings();
@@ -52,7 +50,7 @@ export default function MosaicPage() {
             <CardTitle>Month Mosaic</CardTitle>
           </CardHeader>
           <CardBody>
-            <MosaicView tiles={artifacts?.mosaic.tiles ?? []} />
+            <MosaicView tiles={tiles} />
           </CardBody>
         </Card>
 
@@ -62,7 +60,7 @@ export default function MosaicPage() {
               <CardTitle>Recurring</CardTitle>
             </CardHeader>
             <CardBody>
-              <RecurringPanel recurring={artifacts?.recurring ?? []} />
+              <RecurringPanel recurring={summary.recurring} />
             </CardBody>
           </Card>
 
@@ -71,7 +69,7 @@ export default function MosaicPage() {
               <CardTitle>Next Actions</CardTitle>
             </CardHeader>
             <CardBody>
-              <ActionsPanel actions={(artifacts?.actionPlan ?? []).slice(0, 5)} />
+              <ActionsPanel actions={actions.slice(0, 5)} />
             </CardBody>
           </Card>
         </div>
