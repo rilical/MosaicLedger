@@ -19,7 +19,7 @@ export async function POST() {
   // Get the user's most recent active Plaid item.
   const { data: items, error: dbError } = await supabase
     .from('plaid_items')
-    .select('access_token')
+    .select('id,access_token')
     .eq('user_id', user.id)
     .eq('status', 'active')
     .order('created_at', { ascending: false })
@@ -55,6 +55,16 @@ export async function POST() {
     amount: t.amount, // Plaid: positive = debit (spend)
     category: t.personal_finance_category?.primary ?? t.category?.[0] ?? undefined,
   }));
+
+  // Best-effort: record a "last sync" timestamp without storing any PII.
+  try {
+    await supabase
+      .from('plaid_items')
+      .update({ updated_at: new Date().toISOString() })
+      .eq('id', (firstItem as { id?: unknown }).id as string);
+  } catch {
+    // Non-blocking for hackathon demo.
+  }
 
   return NextResponse.json({ ok: true, transactions });
 }

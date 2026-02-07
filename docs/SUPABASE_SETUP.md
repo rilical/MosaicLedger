@@ -30,3 +30,8 @@ Set these in `apps/web/.env.local` (gitignored):
 ## AUTH-005: Schema
 
 Apply `/supabase/schema.sql` in the Supabase SQL editor.
+
+Verification:
+
+- Open `/health` and check "Supabase schema" and "Schema Details".
+- Optional CLI check (requires service role key in env): `pnpm check:supabase-schema`

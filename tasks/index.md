@@ -78,5 +78,7 @@ Status legend: `TODO` | `DOING` | `BLOCKED` | `REVIEW` | `DONE`
 | ID     | Status | Notes                                                |
 | ------ | ------ | ---------------------------------------------------- |
 | QA-001 | REVIEW | Playwright e2e harness + smoke test (/health,/login) |
-| QA-012 | REVIEW | Gitleaks secret scanning in CI + rotation docs       |
-| QA-016 | DOING  | Core engine fuzz tests for weird transactions        |
+| QA-012 | DONE   | Gitleaks secret scanning in CI + rotation docs       |
+| QA-016 | DONE   | Core engine fuzz tests for weird transactions        |
+| QA-017 | DOING  | /health schema checks + clear fix instructions       |
+| QA-022 | DOING  | /health integration statuses + Plaid last sync       |
