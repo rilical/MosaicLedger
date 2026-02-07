@@ -80,8 +80,8 @@ Status legend: `TODO` | `DOING` | `BLOCKED` | `REVIEW` | `DONE`
 | QA-001 | REVIEW | Playwright e2e harness + smoke test (/health,/login) |
 | QA-012 | DONE   | Gitleaks secret scanning in CI + rotation docs       |
 | QA-016 | DONE   | Core engine fuzz tests for weird transactions        |
-| QA-017 | DOING  | /health schema checks + clear fix instructions       |
-| QA-022 | DOING  | /health integration statuses + Plaid last sync       |
-| QA-019 | DOING  | CI dependency audit job (non-blocking)               |
-| QA-021 | DOING  | Release checklist + Expo reset button                |
-| QA-018 | DOING  | PR template + labels automation + branch protection  |
+| QA-017 | DONE   | /health schema checks + clear fix instructions       |
+| QA-022 | DONE   | /health integration statuses + Plaid last sync       |
+| QA-019 | DONE   | CI dependency audit job (non-blocking)               |
+| QA-021 | DONE   | Release checklist + Expo reset button                |
+| QA-018 | DONE   | PR template + labels automation + branch protection  |
