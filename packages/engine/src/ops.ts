@@ -307,9 +307,7 @@ function roundAmountCluster(txns: NormalizedTransaction[]): OpsFinding[] {
 
   let roundCount = 0;
   let roundTotal = 0;
-  let total = 0;
   for (const t of spend) {
-    total += t.amount;
     const c = Math.abs(cents(t.amount)) % 100;
     if (c === 0) {
       roundCount += 1;
@@ -440,10 +438,7 @@ function buildTiles(findings: OpsFinding[]): OpsTileInput[] {
   return tiles;
 }
 
-export function analyzeOps(
-  transactions: NormalizedTransaction[],
-  range: DateRange,
-): OpsAnalysis {
+export function analyzeOps(transactions: NormalizedTransaction[], range: DateRange): OpsAnalysis {
   const txns = transactions
     .filter((t) => t && typeof t.date === 'string' && isWithinRange(t.date, range))
     .slice()
@@ -468,4 +463,3 @@ export function analyzeOps(
     tiles,
   };
 }
-

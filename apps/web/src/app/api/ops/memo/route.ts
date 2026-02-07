@@ -52,9 +52,7 @@ function formatMemoDeterministic(params: {
   lines.push('');
 
   const order: Array<OpsBrief['analyst']> = ['risk', 'compliance', 'recon'];
-  const sorted = briefs
-    .slice()
-    .sort((a, b) => order.indexOf(a.analyst) - order.indexOf(b.analyst));
+  const sorted = briefs.slice().sort((a, b) => order.indexOf(a.analyst) - order.indexOf(b.analyst));
 
   for (const brief of sorted) {
     const title =
@@ -163,4 +161,3 @@ export async function POST(request: Request) {
     clearTimeout(timeout);
   }
 }
-

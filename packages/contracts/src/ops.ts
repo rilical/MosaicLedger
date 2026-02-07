@@ -45,4 +45,3 @@ export type OpsAnalysis = {
   briefs: OpsBrief[];
   tiles: OpsTileInput[];
 };
-

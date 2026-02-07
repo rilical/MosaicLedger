@@ -59,9 +59,7 @@ describe('analyzeOps', () => {
     const a = analyzeOps(txns, range);
     const b = analyzeOps(txns, range);
     // `generatedAt` is intentionally time-based; everything else must be stable.
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { generatedAt: _ga, ...aRest } = a;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { generatedAt: _gb, ...bRest } = b;
     expect(aRest).toEqual(bRest);
   });

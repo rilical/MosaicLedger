@@ -1,6 +1,11 @@
 import { buildTreemap, type TreemapTile } from '@mosaicledger/mosaic';
 import { analyzeOps } from '@mosaicledger/engine';
-import type { DateRange, NormalizedTransaction, OpsBrief, OpsFinding } from '@mosaicledger/contracts';
+import type {
+  DateRange,
+  NormalizedTransaction,
+  OpsBrief,
+  OpsFinding,
+} from '@mosaicledger/contracts';
 import { MosaicView } from '../../../components/MosaicView';
 import { Badge, Card, CardBody, CardHeader, CardTitle } from '../../../components/ui';
 import { OpsMemoPanel } from '../../../components/Ops/OpsMemoPanel';
@@ -33,11 +38,16 @@ function defaultRangeFromDemo(): DateRange {
   return { start: addDays(max, -29), end: max };
 }
 
-async function loadTransactions(range: DateRange): Promise<{ txns: NormalizedTransaction[]; source: 'db' | 'demo' }> {
+async function loadTransactions(
+  range: DateRange,
+): Promise<{ txns: NormalizedTransaction[]; source: 'db' | 'demo' }> {
   // Demo/judge-safe mode: never require auth or schema.
   if (envFlags.demoMode || envFlags.judgeMode || !hasSupabaseEnv()) {
     const demo = computeDemoArtifacts({ preset: 'custom', customRange: range });
-    return { txns: (demo.transactions ?? []) as unknown as NormalizedTransaction[], source: 'demo' };
+    return {
+      txns: (demo.transactions ?? []) as unknown as NormalizedTransaction[],
+      source: 'demo',
+    };
   }
 
   try {
@@ -48,7 +58,10 @@ async function loadTransactions(range: DateRange): Promise<{ txns: NormalizedTra
 
     if (!user) {
       const demo = computeDemoArtifacts({ preset: 'custom', customRange: range });
-      return { txns: (demo.transactions ?? []) as unknown as NormalizedTransaction[], source: 'demo' };
+      return {
+        txns: (demo.transactions ?? []) as unknown as NormalizedTransaction[],
+        source: 'demo',
+      };
     }
 
     const { data: rows, error } = await sb
@@ -73,7 +86,10 @@ async function loadTransactions(range: DateRange): Promise<{ txns: NormalizedTra
         const category = String(row.category ?? 'Uncategorized');
         const sourceRaw = typeof row.source === 'string' ? row.source : 'bank';
         const source =
-          sourceRaw === 'demo' || sourceRaw === 'nessie' || sourceRaw === 'csv' || sourceRaw === 'bank'
+          sourceRaw === 'demo' ||
+          sourceRaw === 'nessie' ||
+          sourceRaw === 'csv' ||
+          sourceRaw === 'bank'
             ? (sourceRaw as NormalizedTransaction['source'])
             : 'bank';
         const accountId = typeof row.account_id === 'string' ? row.account_id : undefined;
@@ -146,7 +162,9 @@ export default async function OpsPage(props: {
         <h1 className="pageTitle">Ops</h1>
         <div className="pageMeta">
           <div className="pageTagline">Deterministic back-office findings grouped by analyst.</div>
-          <Badge tone={source === 'db' ? 'neutral' : 'good'}>{source === 'db' ? 'DB' : 'DEMO'}</Badge>
+          <Badge tone={source === 'db' ? 'neutral' : 'good'}>
+            {source === 'db' ? 'DB' : 'DEMO'}
+          </Badge>
         </div>
       </div>
 
@@ -187,7 +205,13 @@ export default async function OpsPage(props: {
         </CardBody>
       </Card>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: 16,
+        }}
+      >
         {analysis.briefs.map((brief) => (
           <Card key={brief.analyst}>
             <CardHeader>

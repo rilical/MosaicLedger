@@ -18,7 +18,9 @@ async function main() {
     },
   };
 
-  console.log(`Minesweeper size (game.html): ${report.bytes.total} bytes (limit ${report.bytes.limit})`);
+  console.log(
+    `Minesweeper size (game.html): ${report.bytes.total} bytes (limit ${report.bytes.limit})`,
+  );
   console.log(JSON.stringify(report, null, 2));
 
   if (!report.bytes.ok) process.exit(1);

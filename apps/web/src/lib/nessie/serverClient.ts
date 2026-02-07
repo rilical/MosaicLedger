@@ -125,7 +125,9 @@ export function nessieServerClient(): {
   listAccounts: (customerId: string) => Promise<NessieResult<NessieAccount[]>>;
   listPurchases: (accountId: string) => Promise<NessieResult<NessiePurchase[]>>;
   listDeposits: (accountId: string) => Promise<NessieResult<NessieDeposit[]>>;
-  createMerchant: (payload: Record<string, unknown>) => Promise<NessieResult<Record<string, unknown>>>;
+  createMerchant: (
+    payload: Record<string, unknown>,
+  ) => Promise<NessieResult<Record<string, unknown>>>;
 
   // Legacy aliases (keep to avoid churn across branches).
   getCustomers: () => Promise<NessieResult<NessieCustomer[]>>;

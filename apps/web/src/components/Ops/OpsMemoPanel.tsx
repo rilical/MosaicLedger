@@ -70,8 +70,14 @@ export function OpsMemoPanel(props: {
             </Button>
           </div>
           <div className="buttonRow">
-            <Badge tone={aiEnabled ? 'neutral' : 'good'}>{aiEnabled ? 'AI opt-in' : 'AI off'}</Badge>
-            {memo ? <Badge tone={usedAI ? 'warn' : 'neutral'}>{usedAI ? 'AI rewrite' : 'Deterministic'}</Badge> : null}
+            <Badge tone={aiEnabled ? 'neutral' : 'good'}>
+              {aiEnabled ? 'AI opt-in' : 'AI off'}
+            </Badge>
+            {memo ? (
+              <Badge tone={usedAI ? 'warn' : 'neutral'}>
+                {usedAI ? 'AI rewrite' : 'Deterministic'}
+              </Badge>
+            ) : null}
           </div>
         </div>
 
@@ -86,10 +92,15 @@ export function OpsMemoPanel(props: {
           readOnly
           value={memo}
           placeholder="Generate a memo from deterministic briefs."
-          style={{ marginTop: 12, minHeight: 220, width: '100%', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace', fontSize: 12 }}
+          style={{
+            marginTop: 12,
+            minHeight: 220,
+            width: '100%',
+            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+            fontSize: 12,
+          }}
         />
       </CardBody>
     </Card>
   );
 }
-

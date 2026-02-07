@@ -323,4 +323,3 @@ export async function POST(request: Request) {
     synced: { purchasesFetched: purchases.length, upserted: upserts.length },
   });
 }
-

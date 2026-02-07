@@ -11,4 +11,3 @@ export type NormalizedTransaction = {
 };
 
 export type DateRange = { start: string; end: string };
-
