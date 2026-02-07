@@ -1,8 +1,37 @@
 'use client';
 
 import type { RecurringCharge } from '@mosaicledger/core';
+import { useSubscriptionChoices } from '../lib/subscriptions/choices';
+
+function formatMonthlyEquivalent(r: RecurringCharge): number {
+  switch (r.cadence) {
+    case 'weekly':
+      return (r.expectedAmount * 52) / 12;
+    case 'biweekly':
+      return (r.expectedAmount * 26) / 12;
+    case 'monthly':
+      return r.expectedAmount;
+    default:
+      return r.cadence satisfies never;
+  }
+}
+
+function formatAnnual(r: RecurringCharge): number {
+  switch (r.cadence) {
+    case 'weekly':
+      return r.expectedAmount * 52;
+    case 'biweekly':
+      return r.expectedAmount * 26;
+    case 'monthly':
+      return r.expectedAmount * 12;
+    default:
+      return r.cadence satisfies never;
+  }
+}
 
 export function RecurringPanel({ recurring }: { recurring: RecurringCharge[] }) {
+  const { choices, setChoice } = useSubscriptionChoices();
+
   if (recurring.length === 0) {
     return <div className="small">No recurring charges detected yet.</div>;
   }
@@ -17,8 +46,35 @@ export function RecurringPanel({ recurring }: { recurring: RecurringCharge[] }) 
               <div className="small">
                 {r.cadence} · next {r.nextDate} · confidence {(r.confidence * 100).toFixed(0)}%
               </div>
+              <div className="small" style={{ opacity: 0.9 }}>
+                ~${formatMonthlyEquivalent(r).toFixed(2)}/mo · ${formatAnnual(r).toFixed(2)}/yr
+              </div>
             </div>
             <div className="money">${r.expectedAmount.toFixed(2)}</div>
+          </div>
+
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 10 }}>
+            <button
+              type="button"
+              className={choices[r.merchant] === 'keep' ? 'btn btnPrimary' : 'btn'}
+              onClick={() => setChoice(r.merchant, 'keep')}
+            >
+              Keep
+            </button>
+            <button
+              type="button"
+              className={choices[r.merchant] === 'cancel' ? 'btn btnPrimary' : 'btn'}
+              onClick={() => setChoice(r.merchant, 'cancel')}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className={choices[r.merchant] === 'downgrade' ? 'btn btnPrimary' : 'btn'}
+              onClick={() => setChoice(r.merchant, 'downgrade')}
+            >
+              Downgrade
+            </button>
           </div>
         </div>
       ))}
