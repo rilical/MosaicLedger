@@ -22,7 +22,7 @@ This is a pragmatic checklist to ensure we actually demonstrate the sponsor inte
   - `/app/mosaic?source=nessie` (uses Nessie purchases when configured; falls back safely)
 - MCP (tool calling transport):
   - Hosted MCP server `/health` + `/mcp` (see repo root `index.js`)
-  - (Optional) `DEDALUS_MCP_SERVER_URL` enables tool calling through MCP
+  - (Removed) Dedalus-hosted tool calling is no longer used
 - 15KB Minesweeper side quest (AppLovin proof):
   - `/game` (single file size gate in CI)
 
@@ -35,8 +35,7 @@ This is a pragmatic checklist to ensure we actually demonstrate the sponsor inte
   - optional: `NESSIE_ACCOUNT_ID` / `NESSIE_CUSTOMER_ID`
   - optional: `NESSIE_BASE_URL` (default: `http://api.nessieisreal.com`)
 - Dedalus Coach (optional):
-  - `DEDALUS_API_KEY`
-  - optional: `DEDALUS_MCP_SERVER_URL`
+  - (Removed) `DEDALUS_*` environment variables
 - AI rewrite (optional):
   - `OPENAI_API_KEY`
 
