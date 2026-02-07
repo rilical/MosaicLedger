@@ -87,20 +87,7 @@ export function ActionsPanel(props: {
               </div>
             </div>
 
-            {onAskWhy ? (
-              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <button
-                  className="btn btnGhost"
-                  type="button"
-                  onClick={() => onAskWhy(a)}
-                  aria-label={`Ask why for ${a.title}`}
-                >
-                  Ask why
-                </button>
-              </div>
-            ) : null}
-
-            <details>
+            <details style={{ marginTop: 4 }}>
               <summary className="small" style={{ cursor: 'pointer', userSelect: 'none' }}>
                 Why this?
               </summary>
@@ -179,6 +166,19 @@ export function ActionsPanel(props: {
                 ) : null}
               </div>
             </details>
+
+            {onAskWhy ? (
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 4 }}>
+                <button
+                  className="btn btnGhost"
+                  type="button"
+                  onClick={() => onAskWhy(a)}
+                  aria-label={`Ask why for ${a.title}`}
+                >
+                  Ask why
+                </button>
+              </div>
+            ) : null}
           </div>
         </li>
       ))}

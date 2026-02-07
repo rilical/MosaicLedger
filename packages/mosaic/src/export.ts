@@ -31,7 +31,7 @@ function truncate(s: string, maxLen: number): string {
 
 export function exportToSvg(input: ExportPosterInput): string {
   const W = 1000;
-  const H = 900;
+  const H = 980;
 
   const headerY = 30;
   const mosaicY = 80;
@@ -40,7 +40,7 @@ export function exportToSvg(input: ExportPosterInput): string {
 
   const legendX = 40;
   const planX = 520;
-  const footerWidth = 460;
+  const footerWidth = 440;
 
   const currency = input.currency ?? 'USD';
   const money = (n: number) => `$${n.toFixed(2)}`;
@@ -111,7 +111,7 @@ export function exportToSvg(input: ExportPosterInput): string {
     `</g>`,
 
     // Footer panels
-    `<rect x="28" y="${footerY - 8}" width="${W - 56}" height="${H - footerY + 8 - 28}" rx="18" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.10)" />`,
+    `<rect x="28" y="${footerY - 8}" width="${W - 56}" height="${H - footerY - 20}" rx="18" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.10)" />`,
 
     `<text x="${legendX}" y="${footerY + 10}" font-size="11" fill="rgba(255,255,255,0.65)" letter-spacing="0.08em" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial">LEGEND</text>`,
     legendRows,
