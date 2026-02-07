@@ -15,6 +15,9 @@ This file is updated in every PR.
 
 ## Latest Changes
 
+- GAME-008/009/010/011/012 (branch: `codex/game-008-012-game15k-core`): added a tiny static canvas
+  game at `/game` (procedural visuals, mobile-safe viewport, WebAudio synth tones + mute, local
+  stats, crash-safe overlay) and a 15KB bundle build/size pipeline (`pnpm game:build`, `pnpm game:size`).
 - DED-016 (branch: `codex/ded-016-trace-viewer`): added an in-app Tool Trace debug drawer for the
   Coach that shows redacted inputs/outputs and step timings (toggle via runtime flag `Tool Traces`).
 - CONWAY-006 (branch: `codex/conway-006-ask-why`): added an "Ask why" deep link on each plan action
