@@ -169,19 +169,40 @@
         border-radius: 10px;
         pointer-events: none;
         background-color: transparent;
-        background-image: url(/scotty.png);
         background-repeat: no-repeat;
-        /* Square box + 200% 200% = one quadrant, no stretch */
-        background-size: 200% 200%;
+        background-position: center;
+        background-size: contain;
       }
-      .scotty-nervous { background-position: 0 0; }
-      .scotty-shocked { background-position: 100% 0; }
+      .scotty-nervous { background-image: url(/scotty-tl.png); }
+      .scotty-shocked { background-image: url(/scotty-tr.png); }
       .scotty-win {
-        background-position: 0 100%;
+        background-image: url(/scotty-bl.png);
         clip-path: inset(0 10px 5px 0);
         transform: translateY(-10px);
       }
-      .scotty-bomb { background-position: 100% 100%; }
+      .scotty-bomb { background-image: url(/scotty-br.png); }
+      @keyframes scotty-fade-in {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @keyframes scotty-fade-out {
+        from { opacity: 1; }
+        to { opacity: 0; }
+      }
+      @keyframes pulse-opacity {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.4; }
+      }
+      .scotty {
+        opacity: 0;
+        animation: scotty-fade-in 0.3s ease-out forwards;
+      }
+      .scotty.scotty-out {
+        animation: scotty-fade-out 0.25s ease-out forwards;
+      }
+      .scotty.scotty-bomb {
+        animation: scotty-fade-in 0.3s ease-out forwards, pulse-opacity 1.5s ease-in-out 0.3s infinite;
+      }
       .grid-wrap {
         position: relative;
       }
@@ -194,11 +215,18 @@
         aspect-ratio: 1;
         pointer-events: none;
         background-color: transparent;
-        background-image: url(/scotty.png);
+        background-image: url(/scotty-bl.png);
         background-repeat: no-repeat;
-        background-size: 200% 200%;
-        background-position: 0 100%;
+        background-position: center;
+        background-size: contain;
         clip-path: inset(0 10px 5px 0);
+        opacity: 0;
+      }
+      .center-scotty.scotty-fade-in {
+        animation: scotty-fade-in 0.3s ease-out forwards, pulse-opacity 1.5s ease-in-out 0.3s infinite;
+      }
+      .center-scotty.scotty-out {
+        animation: scotty-fade-out 0.25s ease-out forwards;
       }
       .c:focus {
         outline: 2px solid rgba(56, 189, 248, 0.55);
@@ -210,6 +238,9 @@
       }
       a {
         color: var(--accent);
+      }
+      #status.status-pulse {
+        animation: pulse-opacity 1.5s ease-in-out infinite;
       }
     </style>
   </head>
@@ -278,7 +309,8 @@
           timer = 0,
           remain = L,
           seed = location.search.match(/(?:\\?|&)seed=([^&]+)/);
-        var audioCtx = null;
+        var audioCtx = null,
+          bgMusicStarted = false;
         function getCtx() {
           if (!audioCtx) {
             try {
@@ -286,6 +318,53 @@
             } catch (e) {}
           }
           return audioCtx;
+        }
+        function scheduleBgLoop(ctx, t) {
+          var BPM = 72,
+            beat = 60 / BPM,
+            len = 12 * beat,
+            n = [
+              [329.63, 0, 1],
+              [329.63, 1, 1],
+              [392, 2, 2],
+              [261.63, 4, 1],
+              [246.94, 5, 1],
+              [220, 6, 2],
+              [196, 8, 1],
+              [220, 9, 1],
+              [246.94, 10, 1],
+              [261.63, 11, 1]
+            ],
+            i, st, d, o, g;
+          for (i = 0; i < n.length; i++) {
+            st = t + n[i][1] * beat;
+            d = n[i][2] * beat;
+            o = ctx.createOscillator();
+            g = ctx.createGain();
+            o.type = 'triangle';
+            o.frequency.setValueAtTime(n[i][0], st);
+            g.gain.setValueAtTime(0, st);
+            g.gain.linearRampToValueAtTime(0.18, st + 0.06);
+            g.gain.linearRampToValueAtTime(0.11, st + d - 0.08);
+            g.gain.linearRampToValueAtTime(0.001, st + d);
+            o.connect(g);
+            g.connect(ctx.destination);
+            o.start(st);
+            o.stop(st + d);
+          }
+          setTimeout(function () {
+            scheduleBgLoop(ctx, t + len);
+          }, (len - 0.2) * 1000);
+        }
+        function startBgMusic() {
+          if (bgMusicStarted) return;
+          bgMusicStarted = true;
+          var ctx = getCtx();
+          if (!ctx) return;
+          try {
+            if (ctx.state === 'suspended') ctx.resume();
+            scheduleBgLoop(ctx, ctx.currentTime);
+          } catch (e) {}
         }
         function playExplosion() {
           var ctx = getCtx();
@@ -381,6 +460,8 @@
           elS.textContent = t;
           elD.style.display = 'none';
           elS.style.display = 'inline-flex';
+          if (t === 'READY') elS.classList.add('status-pulse');
+          else elS.classList.remove('status-pulse');
         }
         function mk() {
           grid.innerHTML = '';
@@ -426,7 +507,12 @@
           elM.textContent = M;
           safeLeft = N * N - M;
           elL.textContent = safeLeft;
-          if (centerScottyEl) centerScottyEl.style.display = '';
+          if (centerScottyEl) {
+            centerScottyEl.style.display = '';
+            centerScottyEl.classList.remove('scotty-out', 'scotty-fade-in');
+            void centerScottyEl.offsetHeight;
+            centerScottyEl.classList.add('scotty-fade-in');
+          }
         }
         function placeSafe(first) {
           var ban = {};
@@ -453,7 +539,15 @@
         function start() {
           if (started) return;
           started = 1;
-          if (centerScottyEl) centerScottyEl.style.display = 'none';
+          if (centerScottyEl) {
+            centerScottyEl.classList.remove('scotty-fade-in');
+            centerScottyEl.classList.add('scotty-out');
+            centerScottyEl.addEventListener('animationend', function done() {
+              centerScottyEl.removeEventListener('animationend', done);
+              centerScottyEl.style.display = 'none';
+              centerScottyEl.classList.remove('scotty-out');
+            });
+          }
           setStatus('RUNNING', 'rgba(56,189,248,.45)');
           timer = setInterval(function () {
             if (over) return;
@@ -491,14 +585,24 @@
             lose(i);
             return;
           }
-          if (lastScottyEl && lastScottyEl.parentNode) {
-            lastScottyEl.parentNode.removeChild(lastScottyEl);
-            lastScottyEl = null;
+          function doRevealAndScotty() {
+            rev(i);
+            var frame = s.a >= 3 ? 'shocked' : 'nervous';
+            lastScottyEl = addScotty(s.el, frame);
+            if (safeLeft <= 0) win();
           }
-          rev(i);
-          var frame = s.a >= 3 ? 'shocked' : 'nervous';
-          lastScottyEl = addScotty(s.el, frame);
-          if (safeLeft <= 0) win();
+          if (lastScottyEl && lastScottyEl.parentNode) {
+            var elToFade = lastScottyEl;
+            lastScottyEl = null;
+            elToFade.classList.add('scotty-out');
+            elToFade.addEventListener('animationend', function done() {
+              elToFade.removeEventListener('animationend', done);
+              if (elToFade.parentNode) elToFade.parentNode.removeChild(elToFade);
+              doRevealAndScotty();
+            });
+            return;
+          }
+          doRevealAndScotty();
         }
         function rev(i) {
           var q = [i];
@@ -576,6 +680,10 @@
           return d;
         }
         mk();
+        document.addEventListener('click', function startOnClick() {
+          document.removeEventListener('click', startOnClick);
+          startBgMusic();
+        }, { once: true });
       })();
     </script>
   </body>
