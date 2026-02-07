@@ -53,7 +53,10 @@ export function RecurringPanel({ recurring }: { recurring: RecurringCharge[] }) 
             <div className="money">${r.expectedAmount.toFixed(2)}</div>
           </div>
 
-          <div className="recurringBtns" style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 10 }}>
+          <div
+            className="recurringBtns"
+            style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 10 }}
+          >
             <button
               type="button"
               className="btn recurringBtn recurringBtnKeep"

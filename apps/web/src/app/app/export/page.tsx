@@ -124,7 +124,9 @@ export default function ExportPage() {
 
   return (
     <div style={{ display: 'grid', gap: 16, maxWidth: 980 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}>
+      <div
+        style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}
+      >
         <div className="small">Poster export (SVG/PNG) of your Mosaic + Plan summary</div>
         <Badge tone={error ? 'warn' : 'good'}>{error ? 'Error' : 'Ready'}</Badge>
       </div>
