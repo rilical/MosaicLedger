@@ -33,8 +33,7 @@ export function LoginForm() {
     try {
       const supabase = supabaseBrowser();
       const next = searchParams.get('next') ?? '/app';
-      const origin =
-        process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ?? window.location.origin;
+      const origin = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ?? window.location.origin;
       const redirectTo = new URL('/auth/callback', origin);
       redirectTo.searchParams.set('next', next);
 
