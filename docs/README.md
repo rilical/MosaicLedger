@@ -7,6 +7,7 @@
 - `docs/CONTRACTS.md`: contract-first type/source-of-truth notes
 - `docs/SUPABASE_SETUP.md`: Supabase auth + schema setup steps
 - `docs/DATA_SOURCES.md`: enrichment and caching plan
+- `docs/SECURITY.md`: key handling + rotation notes + CI secret scanning
 - `docs/ATTRIBUTION.md`: licensing/attribution notes for planned public data sources
 - `docs/BUSINESS.md`: business path and expansion
 - `docs/HACKATHON_RUNBOOK.md`: hour-by-hour plan
