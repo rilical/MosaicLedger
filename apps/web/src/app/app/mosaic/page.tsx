@@ -96,7 +96,6 @@ export default function MosaicPage() {
   return (
     <div className="pageStack">
       <div className="pageHeader">
-        <h1 className="pageTitle">Mosaic</h1>
         <div className="pageMeta">
           <div className="pageTagline">
             {artifacts ? `${txCount} transactions · $${spend.toFixed(2)} spend` : 'Computing…'}

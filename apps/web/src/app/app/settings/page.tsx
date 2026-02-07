@@ -23,7 +23,6 @@ export default function SettingsPage() {
   return (
     <div className="pageStack" style={{ maxWidth: 980 }}>
       <div className="pageHeader">
-        <h1 className="pageTitle">Settings</h1>
         <div className="pageMeta">
           <div className="pageTagline">Runtime flags and device overrides.</div>
         </div>
@@ -50,10 +49,6 @@ export default function SettingsPage() {
               >
                 Forget this device
               </Button>
-
-              <a className="btn btnGhost" href="/game" aria-label="Play Minesweeper (180s)">
-                Play Minesweeper (180s)
-              </a>
             </div>
 
             {done ? (

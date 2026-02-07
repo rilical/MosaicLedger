@@ -53,70 +53,25 @@ export function RecurringPanel({ recurring }: { recurring: RecurringCharge[] }) 
             <div className="money">${r.expectedAmount.toFixed(2)}</div>
           </div>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 10 }}>
+          <div className="recurringBtns" style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 10 }}>
             <button
               type="button"
-              className={choices[r.merchant] === 'keep' ? 'btn btnPrimary' : 'btn'}
+              className="btn recurringBtn recurringBtnKeep"
               onClick={() => setChoice(r.merchant, 'keep')}
-              style={{
-                transition: 'background 140ms ease, border-color 140ms ease',
-              }}
-              onMouseEnter={(e) => {
-                if (choices[r.merchant] !== 'keep') {
-                  e.currentTarget.style.background = 'rgba(34, 197, 94, 0.18)';
-                  e.currentTarget.style.borderColor = 'rgba(34, 197, 94, 0.35)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (choices[r.merchant] !== 'keep') {
-                  e.currentTarget.style.background = '';
-                  e.currentTarget.style.borderColor = '';
-                }
-              }}
             >
               Keep
             </button>
             <button
               type="button"
-              className={choices[r.merchant] === 'cancel' ? 'btn btnPrimary' : 'btn'}
+              className="btn recurringBtn recurringBtnCancel"
               onClick={() => setChoice(r.merchant, 'cancel')}
-              style={{
-                transition: 'background 140ms ease, border-color 140ms ease',
-              }}
-              onMouseEnter={(e) => {
-                if (choices[r.merchant] !== 'cancel') {
-                  e.currentTarget.style.background = 'rgba(244, 63, 94, 0.18)';
-                  e.currentTarget.style.borderColor = 'rgba(244, 63, 94, 0.35)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (choices[r.merchant] !== 'cancel') {
-                  e.currentTarget.style.background = '';
-                  e.currentTarget.style.borderColor = '';
-                }
-              }}
             >
               Cancel
             </button>
             <button
               type="button"
-              className={choices[r.merchant] === 'downgrade' ? 'btn btnPrimary' : 'btn'}
+              className="btn recurringBtn recurringBtnDowngrade"
               onClick={() => setChoice(r.merchant, 'downgrade')}
-              style={{
-                transition: 'background 140ms ease, border-color 140ms ease',
-              }}
-              onMouseEnter={(e) => {
-                if (choices[r.merchant] !== 'downgrade') {
-                  e.currentTarget.style.background = 'rgba(234, 179, 8, 0.18)';
-                  e.currentTarget.style.borderColor = 'rgba(234, 179, 8, 0.35)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (choices[r.merchant] !== 'downgrade') {
-                  e.currentTarget.style.background = '';
-                  e.currentTarget.style.borderColor = '';
-                }
-              }}
             >
               Downgrade
             </button>

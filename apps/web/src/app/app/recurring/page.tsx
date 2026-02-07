@@ -39,7 +39,6 @@ export default function RecurringPage() {
   return (
     <div className="pageStack" style={{ maxWidth: 980 }}>
       <div className="pageHeader">
-        <h1 className="pageTitle">Recurring</h1>
         <div className="pageMeta">
           <div className="pageTagline">{count} detected recurring charges</div>
           <Badge tone={error ? 'warn' : loading ? 'warn' : 'good'}>

@@ -19,6 +19,9 @@ export function MosaicView(props: {
     return () => clearTimeout(timer);
   }, [tiles.length, tiles.map((t) => t.id).join(',')]);
 
+  const PADDING = 16;
+  const CHAR_WIDTH_RATIO = 0.58;
+
   // Calculate dynamic font size based on tile area
   const calculateFontSize = (tile: TreemapTile): number => {
     const area = tile.w * tile.h;
@@ -31,6 +34,16 @@ export function MosaicView(props: {
     const fontSize = baseSize * scaleFactor;
 
     return Math.min(maxSize, Math.max(minSize, fontSize));
+  };
+
+  // Only show label if it fits inside the box (avoid overflow)
+  const labelFitsInTile = (tile: TreemapTile): boolean => {
+    const fs = calculateFontSize(tile);
+    const availW = tile.w - PADDING * 2;
+    const availH = tile.h - PADDING * 2;
+    const estimatedWidth = tile.label.length * fs * CHAR_WIDTH_RATIO;
+    const lineHeight = fs * 1.2;
+    return estimatedWidth <= availW && lineHeight <= availH;
   };
 
   return (
@@ -88,7 +101,7 @@ export function MosaicView(props: {
                 transition: 'transform 180ms ease, opacity 180ms ease',
               }}
             />
-            {t.w > 80 && t.h > 30 ? (
+            {t.w > 80 && t.h > 30 && labelFitsInTile(t) ? (
               <text
                 x={t.x + 12}
                 y={t.y + calculateFontSize(t) + 8}

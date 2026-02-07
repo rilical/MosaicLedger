@@ -46,12 +46,17 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 18px;
+        padding: 12px;
+        box-sizing: border-box;
+        overflow-x: hidden;
+        min-height: 100%;
       }
       .app {
-        width: min(520px, 100%);
+        width: 100%;
+        max-width: min(520px, 100vw);
         display: grid;
         gap: 14px;
+        box-sizing: border-box;
       }
       .top {
         display: flex;
@@ -118,10 +123,12 @@
       }
       .grid {
         display: grid;
-        grid-template-columns: repeat(10, 1fr);
+        grid-template-columns: repeat(10, minmax(0, 1fr));
         gap: 6px;
         user-select: none;
         touch-action: manipulation;
+        width: 100%;
+        max-width: 100%;
       }
       .c {
         width: 100%;
@@ -166,7 +173,8 @@
           <h1>Minesweeper (180s)</h1>
           <div class="meta">10x10 · 15 mines · first click safe</div>
         </div>
-        <div class="pill" id="status">READY</div>
+        <a class="pill primary" id="dashboardBtn" href="/app" style="text-decoration:none;color:inherit;display:inline-flex">Dashboard</a>
+        <div class="pill" id="status" style="display:none">READY</div>
       </div>
 
       <div class="card">
@@ -199,7 +207,8 @@
         var elT = document.getElementById('time'),
           elM = document.getElementById('mines'),
           elL = document.getElementById('left');
-        var elS = document.getElementById('status'),
+        var elD = document.getElementById('dashboardBtn'),
+          elS = document.getElementById('status'),
           btnF = document.getElementById('flag'),
           btnR = document.getElementById('restart');
         var flagMode = 0,
@@ -244,8 +253,8 @@
           return a;
         }
         function setStatus(t, tone) {
-          elS.textContent = t;
-          elS.style.borderColor = tone || 'rgba(255,255,255,.12)';
+          elD.style.display = 'inline-flex';
+          elS.style.display = 'none';
         }
         function mk() {
           grid.innerHTML = '';

@@ -40,7 +40,8 @@ export function exportToSvg(input: ExportPosterInput): string {
 
   const legendX = 40;
   const planX = 520;
-  const footerWidth = 440;
+  const planMaxWidth = 440;
+  const footerWidth = planMaxWidth;
 
   const currency = input.currency ?? 'USD';
   const money = (n: number) => `$${n.toFixed(2)}`;
@@ -62,9 +63,10 @@ export function exportToSvg(input: ExportPosterInput): string {
 
       return [
         `<g>`,
-        `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="${esc(t.color)}" opacity="0.92" />`,
+        `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="${esc(t.color)}" opacity="0.78" stroke="rgba(255,255,255,0.35)" stroke-width="1" />`,
+        `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="url(#glass-shine)" opacity="0.45" />`,
         showLabel
-          ? `<text x="${x + 14}" y="${y + 28}" font-size="16" fill="rgba(0,0,0,0.80)" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial">${label}</text>`
+          ? `<text x="${x + w/2}" y="${y + h/2}" text-anchor="middle" dominant-baseline="middle" font-size="16" fill="rgba(0,0,0,0.78)" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial">${label}</text>`
           : '',
         `</g>`,
       ].join('');
@@ -89,7 +91,7 @@ export function exportToSvg(input: ExportPosterInput): string {
       const y = footerY + 24 + idx * 20;
       return [
         `<g>`,
-        `<text x="${planX}" y="${y - 2}" font-size="12" fill="rgba(255,255,255,0.85)" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial">${esc(truncate(p.title, 42))}</text>`,
+        `<text x="${planX}" y="${y - 2}" font-size="12" fill="rgba(255,255,255,0.85)" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial">${esc(truncate(p.title, 28))}</text>`,
         `<text x="${planX + footerWidth}" y="${y - 2}" text-anchor="end" font-size="12" fill="rgba(34,197,94,0.95)" font-variant-numeric="tabular-nums" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial">+${money(p.savings)}/mo</text>`,
         `</g>`,
       ].join('');
@@ -98,6 +100,7 @@ export function exportToSvg(input: ExportPosterInput): string {
 
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`,
+    `<defs><linearGradient id="glass-shine" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="rgba(255,255,255,0.65)"/><stop offset="55%" stop-color="rgba(255,255,255,0.2)"/><stop offset="100%" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>`,
     `<rect x="0" y="0" width="${W}" height="${H}" fill="#0b0e14" />`,
 
     // Header

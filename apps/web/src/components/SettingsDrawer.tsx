@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useFlags } from '../lib/flags-client';
 import { FLAG_KEYS, type FlagKey } from '../lib/flags';
 import { Drawer } from './ui/Drawer';
-import { Badge, Button, Tooltip } from './ui';
+import { Badge, Button } from './ui';
 
 function forgetThisDevice() {
   try {
@@ -87,7 +87,7 @@ export function SettingsDrawer() {
   return (
     <>
       <Button variant="ghost" onClick={() => setOpen(true)}>
-        Settings
+        Runtime Flags
       </Button>
       <Drawer open={open} onOpenChange={setOpen} title="Runtime Flags">
         <div style={{ display: 'grid', gap: 12 }}>
@@ -97,13 +97,6 @@ export function SettingsDrawer() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <div style={{ fontWeight: 650 }}>{labelFor(k)}</div>
                   <Badge tone={flags[k] ? 'good' : 'neutral'}>{flags[k] ? 'ON' : 'OFF'}</Badge>
-                  {helpFor(k) ? (
-                    <Tooltip content={helpFor(k)}>
-                      <span className="helpDot" aria-label={helpFor(k)}>
-                        ?
-                      </span>
-                    </Tooltip>
-                  ) : null}
                 </div>
                 <div className="small">{helpFor(k)}</div>
               </div>
