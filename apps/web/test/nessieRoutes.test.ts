@@ -158,7 +158,15 @@ describe('/api/nessie/sync', () => {
         body: JSON.stringify({}),
       }),
     );
-    const json1 = (await resp1.json()) as any;
+    const json1 = (await resp1.json()) as {
+      ok: boolean;
+      counts: {
+        accounts: number;
+        purchases: number;
+        inserted: number;
+        deduped: number;
+      };
+    };
 
     expect(resp1.status).toBe(200);
     expect(json1.ok).toBe(true);
@@ -175,7 +183,15 @@ describe('/api/nessie/sync', () => {
         body: JSON.stringify({}),
       }),
     );
-    const json2 = (await resp2.json()) as any;
+    const json2 = (await resp2.json()) as {
+      ok: boolean;
+      counts: {
+        accounts: number;
+        purchases: number;
+        inserted: number;
+        deduped: number;
+      };
+    };
 
     expect(resp2.status).toBe(200);
     expect(json2.ok).toBe(true);
@@ -185,4 +201,3 @@ describe('/api/nessie/sync', () => {
     expect(json2.counts.deduped).toBe(20);
   });
 });
-
