@@ -10,6 +10,7 @@ import {
 } from '../../../components/Analysis/useAnalysisSettings';
 import { useAnalysis } from '../../../components/Analysis/useAnalysis';
 import { usePlanGoal } from '../../../components/Plan/usePlanGoal';
+import { useSubscriptionChoices } from '../../../lib/subscriptions/choices';
 
 function formatMoney(n: number): string {
   if (!Number.isFinite(n)) return '$0.00';
@@ -19,11 +20,21 @@ function formatMoney(n: number): string {
 export default function PlanPage() {
   const { settings, setSettings } = useAnalysisSettings();
   const { goal, setGoal, resetGoal } = usePlanGoal();
+  const { choices } = useSubscriptionChoices();
 
   const req = React.useMemo(() => ({ ...toAnalyzeRequest(settings), goal }), [settings, goal]);
   const { artifacts, loading, error, recompute } = useAnalysis(req);
 
-  const actions = artifacts?.actionPlan ?? [];
+  const actions = React.useMemo(() => {
+    const base = artifacts?.actionPlan ?? [];
+    // VISA-001: subscription manager choices influence the plan.
+    // If a user marks a subscription "keep", we hide the cancel action to keep guidance aligned.
+    return base.filter((a) => {
+      if (a.actionType !== 'cancel') return true;
+      if (a.target.kind !== 'merchant') return true;
+      return choices[a.target.value] !== 'keep';
+    });
+  }, [artifacts?.actionPlan, choices]);
   const beforeSpend = artifacts?.summary.totalSpend ?? 0;
 
   const [selected, setSelected] = React.useState<Record<string, boolean>>({});
