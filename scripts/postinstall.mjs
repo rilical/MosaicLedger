@@ -7,7 +7,7 @@ function hasCommand(cmd) {
 
 function run(cmd, args) {
   const res = spawnSync(cmd, args, { stdio: 'inherit' });
-  if (res.status !== 0) process.exit(res.status ?? 1);
+  return res.status ?? 1;
 }
 
 // Hosted build environments (e.g. Dedalus) may install dependencies using Bun
@@ -18,7 +18,7 @@ if (!hasCommand('pnpm')) {
   process.exit(0);
 }
 
-run('pnpm', [
+const status = run('pnpm', [
   '-r',
   '--filter',
   '@mosaicledger/*',
@@ -28,4 +28,13 @@ run('pnpm', [
   '!@mosaicledger/mobile',
   'build',
 ]);
+
+// In hosted environments we want installs to succeed even if optional build
+// tooling isn't present (or devDependencies weren't installed).
+if (status !== 0) {
+  const strict = process.env.MOSAICLEDGER_STRICT_POSTINSTALL === '1';
+  if (strict) process.exit(status);
+  console.warn(`[postinstall] workspace build failed (exit ${status}); continuing`);
+  process.exit(0);
+}
 
