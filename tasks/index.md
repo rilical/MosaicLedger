@@ -90,4 +90,4 @@ Status legend: `TODO` | `DOING` | `BLOCKED` | `REVIEW` | `DONE`
 
 | ID     | Status | Notes                                         |
 | ------ | ------ | --------------------------------------------- |
-| UX-002 | DOING  | Mosaic loading skeleton + progress + fallback |
+| UX-002 | DONE   | Mosaic loading skeleton + progress + fallback |
