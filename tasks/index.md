@@ -49,6 +49,16 @@ Status legend: `TODO` | `DOING` | `BLOCKED` | `REVIEW` | `DONE`
 | PLAN-008 | REVIEW | Budget table per category + accept cap as goal (localStorage).       |
 | PLAN-009 | REVIEW | Scenario compare (before/after) + action toggles (deterministic).    |
 
+## Export (EXPORT)
+
+| ID         | Status | Notes                                                       |
+| ---------- | ------ | ----------------------------------------------------------- |
+| EXPORT-001 | REVIEW | `exportToSvg()` poster generator (mosaic + legend + totals) |
+| EXPORT-002 | REVIEW | PNG export (client canvas) + download buttons               |
+| EXPORT-003 | REVIEW | Poster includes top 5 plan actions + range + total spend    |
+| EXPORT-004 | TODO   | Optional share link (requires storage + /share route)       |
+| EXPORT-005 | TODO   | Export QA pass (clipping, sizing, safe area)                |
+
 ## Bank Connector (BANK)
 
 | ID       | Status | Notes                                                         |
