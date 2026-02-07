@@ -41,8 +41,8 @@ create table if not exists public.plaid_items (
   provider text not null default 'plaid',
   item_id text,
 
-  -- WARNING: Storing access tokens in plaintext is NOT acceptable for real production.
-  -- For hackathon MVP only. Replace with Vault/KMS encryption before any real deployment.
+  -- Stored encrypted at rest (app-layer AES-256-GCM).
+  -- Required env: PLAID_TOKEN_ENCRYPTION_KEY (32 bytes, base64).
   access_token text not null,
 
   -- Plaid Transactions Sync cursor (for incremental sync).

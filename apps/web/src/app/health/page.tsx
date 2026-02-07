@@ -2,6 +2,7 @@ import { getDemoTransactions } from '@mosaicledger/banking';
 import { Badge, Card, CardBody, CardHeader, CardTitle } from '../../components/ui';
 import { parseBooleanEnv } from '../../lib/env';
 import { hasPlaidEnv } from '../../lib/plaid/serverClient';
+import { hasPlaidTokenEncryptionKey } from '../../lib/plaid/tokenCrypto';
 import { checkSchema, type SchemaStatus } from '../../lib/db/schemaCheck';
 import { getPlaidLastSync } from '../../lib/plaid/status';
 
@@ -82,6 +83,13 @@ export default async function HealthPage() {
       detail: hasPlaidEnv()
         ? 'PLAID_CLIENT_ID/PLAID_SECRET/PLAID_ENV present.'
         : 'Missing Plaid env (demo is fine).',
+    },
+    {
+      name: 'Plaid token encryption',
+      status: hasPlaidTokenEncryptionKey() ? 'ok' : 'warn',
+      detail: hasPlaidTokenEncryptionKey()
+        ? 'PLAID_TOKEN_ENCRYPTION_KEY present.'
+        : 'Missing PLAID_TOKEN_ENCRYPTION_KEY (required to store real Plaid access tokens).',
     },
     {
       name: 'Plaid last sync',
