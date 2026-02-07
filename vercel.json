@@ -1,6 +1,6 @@
 {
-  "buildCommand": "pnpm --filter @mosaicledger/web build",
-  "installCommand": "pnpm install --frozen-lockfile",
-  "outputDirectory": "apps/web/.next",
+  "buildCommand": "pnpm -C .. --filter @mosaicledger/web build",
+  "installCommand": "pnpm -C .. install --frozen-lockfile",
+  "outputDirectory": ".next",
   "framework": "nextjs"
 }
