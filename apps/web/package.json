@@ -17,6 +17,7 @@
     "@mosaicledger/contracts": "workspace:*",
     "@mosaicledger/engine": "workspace:*",
     "@mosaicledger/mosaic": "workspace:*",
+    "@mosaicledger/xrpl": "workspace:*",
     "@resvg/resvg-wasm": "^2.6.2",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.49.1",
@@ -26,6 +27,7 @@
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-plaid-link": "^4.1.1",
+    "xrpl": "^4.4.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {
