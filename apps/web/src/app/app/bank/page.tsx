@@ -6,12 +6,14 @@ import { usePlaidLink } from 'react-plaid-link';
 import { Button, Badge, Card, CardBody, CardHeader, CardTitle } from '../../../components/ui';
 
 type Step = 'idle' | 'fetching_token' | 'link_ready' | 'exchanging' | 'done' | 'error';
+type LinkMode = 'plaid' | 'fixture';
 
 export default function BankConnectPage() {
   const router = useRouter();
   const [step, setStep] = React.useState<Step>('idle');
   const [linkToken, setLinkToken] = React.useState<string | null>(null);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
+  const [mode, setMode] = React.useState<LinkMode>('plaid');
 
   // 1. Fetch a link token from our API.
   const fetchLinkToken = React.useCallback(async () => {
@@ -19,10 +21,22 @@ export default function BankConnectPage() {
     setErrorMsg(null);
     try {
       const resp = await fetch('/api/plaid/link-token', { method: 'POST' });
-      const json = (await resp.json()) as { ok: boolean; linkToken?: string; error?: string };
-      if (!resp.ok || !json.ok || !json.linkToken) {
-        throw new Error(json.error ?? 'Failed to create link token');
+      const json = (await resp.json()) as
+        | { ok: true; mode: LinkMode; linkToken?: string }
+        | { ok: false; error?: string };
+      if (!resp.ok || !json.ok) {
+        throw new Error(('error' in json ? json.error : null) ?? 'Failed to create link token');
       }
+
+      setMode(json.mode);
+      if (json.mode === 'fixture') {
+        // Demo-safe: no Plaid Link required.
+        setLinkToken(null);
+        setStep('link_ready');
+        return;
+      }
+
+      if (!json.linkToken) throw new Error('Missing link token');
       setLinkToken(json.linkToken);
       setStep('link_ready');
     } catch (e: unknown) {
@@ -31,9 +45,28 @@ export default function BankConnectPage() {
     }
   }, []);
 
+  const simulateLink = React.useCallback(async () => {
+    setStep('exchanging');
+    setErrorMsg(null);
+    try {
+      const resp = await fetch('/api/plaid/exchange-token', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ publicToken: 'fixture-public-token' }),
+      });
+      const json = (await resp.json()) as { ok: boolean; error?: string };
+      if (!resp.ok || !json.ok) throw new Error(json.error ?? 'Simulated link failed');
+      setStep('done');
+      setTimeout(() => router.push('/app/mosaic'), 900);
+    } catch (e: unknown) {
+      setErrorMsg(e instanceof Error ? e.message : 'Simulated link failed');
+      setStep('error');
+    }
+  }, [router]);
+
   // 2. Plaid Link hook.
   const { open, ready } = usePlaidLink({
-    token: linkToken,
+    token: mode === 'plaid' ? linkToken : null,
     onSuccess: async (publicToken) => {
       setStep('exchanging');
       try {
@@ -67,10 +100,13 @@ export default function BankConnectPage() {
 
   // Auto-open Plaid Link once the token is ready.
   React.useEffect(() => {
-    if (step === 'link_ready' && ready) {
-      open();
+    if (step !== 'link_ready') return;
+    if (mode === 'fixture') {
+      void simulateLink();
+      return;
     }
-  }, [step, ready, open]);
+    if (ready) open();
+  }, [step, ready, open, mode, simulateLink]);
 
   return (
     <div className="pageStack" style={{ maxWidth: 980 }}>

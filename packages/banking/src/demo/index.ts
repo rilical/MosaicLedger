@@ -14,3 +14,5 @@ export function getDemoTransactions(): DemoRawTransaction[] {
   // Return a copy to keep consumers from mutating the shared module object.
   return DEMO_DATASET.map((t) => ({ ...t }));
 }
+
+export * from './plaidSyncFixture';
