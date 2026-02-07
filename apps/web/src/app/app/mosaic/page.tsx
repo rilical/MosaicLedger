@@ -2,20 +2,38 @@
 
 import * as React from 'react';
 import { MosaicView } from '../../../components/MosaicView';
+import { MosaicSkeleton } from '../../../components/MosaicSkeleton';
 import { RecurringPanel } from '../../../components/RecurringPanel';
 import { ActionsPanel } from '../../../components/ActionsPanel';
-import { Badge, Card, CardBody, CardHeader, CardTitle } from '../../../components/ui';
+import { Badge, Button, Card, CardBody, CardHeader, CardTitle } from '../../../components/ui';
 import { AnalysisControls } from '../../../components/Analysis/AnalysisControls';
 import {
   toAnalyzeRequest,
   useAnalysisSettings,
 } from '../../../components/Analysis/useAnalysisSettings';
 import { useAnalysis } from '../../../components/Analysis/useAnalysis';
+import { useFlags } from '../../../lib/flags-client';
+
+function stageLabel(stage: 'idle' | 'syncing' | 'analyzing' | 'rendering'): string {
+  switch (stage) {
+    case 'syncing':
+      return 'Syncing';
+    case 'analyzing':
+      return 'Analyzing';
+    case 'rendering':
+      return 'Rendering';
+    case 'idle':
+      return 'Ready';
+    default:
+      return stage satisfies never;
+  }
+}
 
 export default function MosaicPage() {
   const { settings, setSettings } = useAnalysisSettings();
   const req = React.useMemo(() => toAnalyzeRequest(settings), [settings]);
-  const { artifacts, loading, error, recompute } = useAnalysis(req);
+  const { artifacts, loading, error, stage, isSlow, recompute } = useAnalysis(req);
+  const { setFlag } = useFlags();
 
   const spend = artifacts?.summary.totalSpend ?? 0;
   const txCount = artifacts?.summary.transactionCount ?? 0;
@@ -47,13 +65,38 @@ export default function MosaicPage() {
         </div>
       ) : null}
 
+      {loading ? (
+        <div className="filterBar" style={{ justifyContent: 'space-between' }}>
+          <div className="small" style={{ fontVariantNumeric: 'tabular-nums' }}>
+            {stageLabel(stage)}…
+          </div>
+          {isSlow ? (
+            <Button
+              variant="ghost"
+              onClick={() => {
+                // One-click recovery: force deterministic demo path.
+                setFlag('judgeMode', true);
+                setFlag('demoMode', true);
+                window.location.href = '/app/mosaic?source=demo';
+              }}
+            >
+              Switch to demo data
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
+
       <div className="grid">
         <Card>
           <CardHeader>
             <CardTitle>Month Mosaic</CardTitle>
           </CardHeader>
           <CardBody>
-            <MosaicView tiles={artifacts?.mosaic.tiles ?? []} />
+            {!artifacts && loading ? (
+              <MosaicSkeleton label={`${stageLabel(stage)}…`} />
+            ) : (
+              <MosaicView tiles={artifacts?.mosaic.tiles ?? []} />
+            )}
           </CardBody>
         </Card>
 

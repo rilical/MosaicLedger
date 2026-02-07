@@ -791,3 +791,17 @@ a {
     transform: translateY(0);
   }
 }
+
+@keyframes mlShimmer {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(1400px);
+  }
+}
+
+.mlSkeletonShimmer {
+  animation: mlShimmer 1300ms ease-in-out infinite;
+  opacity: 0.9;
+}
