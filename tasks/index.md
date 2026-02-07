@@ -85,3 +85,9 @@ Status legend: `TODO` | `DOING` | `BLOCKED` | `REVIEW` | `DONE`
 | QA-019 | DONE   | CI dependency audit job (non-blocking)               |
 | QA-021 | DONE   | Release checklist + Expo reset button                |
 | QA-018 | DONE   | PR template + labels automation + branch protection  |
+
+## UX
+
+| ID     | Status | Notes                                         |
+| ------ | ------ | --------------------------------------------- |
+| UX-002 | DOING  | Mosaic loading skeleton + progress + fallback |

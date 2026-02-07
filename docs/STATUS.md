@@ -15,6 +15,8 @@ This file is updated in every PR.
 
 ## Latest Changes
 
+- UX-002 (branch: `codex/ux-002-loading-skeleton`): added Mosaic loading skeleton + a simple
+  progress line; when analysis is slow, offers a one-click switch to demo data.
 - QA-018 (branch: `codex/qa-018-pr-gates`): tightened PR template requirements and added label
   automation (`needs-review` on open; `safe-to-merge` on CI success).
 - QA-021 (branch: `codex/qa-021-release-reset`): added expo release checklist and an optional
