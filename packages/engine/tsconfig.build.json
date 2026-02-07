@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@mosaicledger/contracts": ["../contracts/dist/index.d.ts"],
+      "@mosaicledger/contracts/*": ["../contracts/dist/*"]
+    }
+  },
+  "include": ["src/**/*.ts"]
+}

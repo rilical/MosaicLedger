@@ -12,6 +12,7 @@ const navItemsBase = [
   { href: '/app/plan', label: 'Plan', badge: 'v0' },
   { href: '/app/export', label: 'Export', badge: 'soon' },
   { href: '/app/settings', label: 'Settings', badge: 'v0' },
+  { href: '/game', label: 'Play Minesweeper', badge: '180s' },
 ];
 
 type AppNavProps = {

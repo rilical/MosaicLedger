@@ -68,9 +68,15 @@ importers:
       '@mosaicledger/connectors':
         specifier: workspace:*
         version: link:../../packages/connectors
+      '@mosaicledger/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
       '@mosaicledger/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@mosaicledger/engine':
+        specifier: workspace:*
+        version: link:../../packages/engine
       '@mosaicledger/mosaic':
         specifier: workspace:*
         version: link:../../packages/mosaic
@@ -143,7 +149,29 @@ importers:
         specifier: ^2.1.8
         version: 2.1.9(@types/node@22.19.9)(lightningcss@1.27.0)(terser@5.46.0)
 
+  packages/contracts:
+    devDependencies:
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.19.9)(lightningcss@1.27.0)(terser@5.46.0)
+
   packages/core:
+    devDependencies:
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.19.9)(lightningcss@1.27.0)(terser@5.46.0)
+
+  packages/engine:
+    dependencies:
+      '@mosaicledger/contracts':
+        specifier: workspace:*
+        version: link:../contracts
     devDependencies:
       typescript:
         specifier: ^5.7.3

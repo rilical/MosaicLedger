@@ -14,6 +14,8 @@
     "@mosaicledger/banking": "workspace:*",
     "@mosaicledger/connectors": "workspace:*",
     "@mosaicledger/core": "workspace:*",
+    "@mosaicledger/contracts": "workspace:*",
+    "@mosaicledger/engine": "workspace:*",
     "@mosaicledger/mosaic": "workspace:*",
     "@resvg/resvg-wasm": "^2.6.2",
     "@supabase/ssr": "^0.5.2",
