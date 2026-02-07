@@ -288,8 +288,16 @@ export function CoachPanel({
       };
 
       if (flags.aiEnabled) {
-        const ai = await rewriteWithAi(answer);
-        turn.ai = { rewritten: ai.rewritten, usedAI: ai.usedAI, error: ai.error };
+        try {
+          const ai = await rewriteWithAi(answer);
+          turn.ai = { rewritten: ai.rewritten, usedAI: ai.usedAI, error: ai.error };
+        } catch (e: unknown) {
+          const msg =
+            e && typeof e === 'object' && 'message' in e
+              ? String((e as { message?: unknown }).message)
+              : 'rewrite failed';
+          turn.ai = { rewritten: answer, usedAI: false, error: msg };
+        }
       }
 
       setTurns((prev) => [...prev.slice(-9), turn]);
