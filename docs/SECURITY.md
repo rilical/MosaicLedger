@@ -38,6 +38,12 @@ This repo is production-shaped, not production-complete. Treat anything beyond D
 - If `XRPL_TESTNET_SEED` is leaked, discard the wallet and generate a new testnet wallet/seed.
 - Keep simulation mode available for judge reliability.
 
+## XRPL Seed Boundary (XRPLP-009)
+
+- `XRPL_TESTNET_SEED` must never be referenced in any client module (anything with `'use client'`).
+- Seeds must never be stored in `localStorage`, `sessionStorage`, cookies, or sent back to the browser.
+- CI enforces this via `pnpm check-secrets` (see `scripts/check-secrets.ts`).
+
 ## CI Secret Scanning
 
 CI runs gitleaks on PRs and pushes. If it fails:
