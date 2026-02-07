@@ -2,10 +2,6 @@
   "name": "mosaicledger",
   "private": true,
   "main": "index.js",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
   "packageManager": "pnpm@9.15.4",
   "engines": {
     "node": ">=20"
@@ -15,6 +11,7 @@
     "@mosaicledger/banking": "file:packages/banking",
     "@mosaicledger/core": "file:packages/core",
     "@mosaicledger/mosaic": "file:packages/mosaic",
+    "d3-hierarchy": "^3.1.2",
     "zod": "^4.3.6"
   },
   "scripts": {
