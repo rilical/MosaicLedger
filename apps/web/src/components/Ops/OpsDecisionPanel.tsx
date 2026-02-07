@@ -4,6 +4,7 @@ import * as React from 'react';
 import type { OpsDashboard } from '../../lib/ops/dashboard';
 import type { OpsFinding } from '@mosaicledger/contracts';
 import { Badge, Button, Card, CardBody, CardHeader, CardTitle } from '../ui';
+import { MarkdownLite } from '../MarkdownLite';
 
 type OpsDecisionResponse =
   | { ok: true; text: string; usedAI: boolean; error?: string }
@@ -22,6 +23,7 @@ export function OpsDecisionPanel(props: {
   const [usedAI, setUsedAI] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string | null>(null);
   const [useAI, setUseAI] = React.useState<boolean>(aiEnabled);
+  const [view, setView] = React.useState<'formatted' | 'raw'>('formatted');
 
   async function run(style: 'exec' | 'concise') {
     setStatus('loading');
@@ -94,6 +96,13 @@ export function OpsDecisionPanel(props: {
             >
               AI: {useAI ? 'ON' : 'OFF'}
             </Button>
+            <Button
+              variant={view === 'formatted' ? 'primary' : 'ghost'}
+              onClick={() => setView((v) => (v === 'formatted' ? 'raw' : 'formatted'))}
+              disabled={!text}
+            >
+              {view === 'formatted' ? 'Formatted' : 'Raw'}
+            </Button>
           </div>
           <div className="buttonRow">
             <Badge tone={useAI ? 'neutral' : 'good'}>{useAI ? 'AI on' : 'AI off'}</Badge>
@@ -127,19 +136,45 @@ export function OpsDecisionPanel(props: {
           </div>
         ) : null}
 
-        <textarea
-          className="input"
-          readOnly
-          value={text}
-          placeholder="Generate a decision brief from deterministic ops metrics."
-          style={{
-            marginTop: 12,
-            minHeight: 240,
-            width: '100%',
-            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-            fontSize: 12,
-          }}
-        />
+        {view === 'raw' ? (
+          <textarea
+            className="input"
+            readOnly
+            value={text}
+            placeholder="Generate a decision brief from deterministic ops metrics."
+            style={{
+              marginTop: 12,
+              minHeight: 240,
+              width: '100%',
+              fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+              fontSize: 12,
+            }}
+          />
+        ) : (
+          <div
+            className="input"
+            style={{
+              marginTop: 12,
+              minHeight: 240,
+              width: '100%',
+              padding: 14,
+              borderRadius: 16,
+              background: 'rgba(0,0,0,0.25)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              overflow: 'auto',
+              fontSize: 13,
+              lineHeight: 1.5,
+            }}
+          >
+            {text ? (
+              <MarkdownLite text={text} />
+            ) : (
+              <div className="small" style={{ opacity: 0.85 }}>
+                Generate a decision brief from deterministic ops metrics.
+              </div>
+            )}
+          </div>
+        )}
       </CardBody>
     </Card>
   );

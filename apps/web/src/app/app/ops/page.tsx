@@ -263,7 +263,7 @@ export default async function OpsPage(props: {
         </CardHeader>
         <CardBody>
           {mosaicTiles.length ? (
-            <MosaicView tiles={mosaicTiles} />
+            <MosaicView tiles={mosaicTiles} height={280} showHud={false} />
           ) : (
             <div className="small">No findings produced tiles for this range.</div>
           )}
