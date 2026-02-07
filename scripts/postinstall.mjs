@@ -34,4 +34,3 @@ if (status !== 0) {
   console.warn(`[postinstall] workspace build failed (exit ${status}); continuing`);
   process.exit(0);
 }
-
