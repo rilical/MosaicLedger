@@ -4,7 +4,11 @@ type TableSpec = { table: string; columns: string[] };
 
 const REQUIRED: TableSpec[] = [
   { table: 'user_profiles', columns: ['user_id', 'created_at'] },
-  { table: 'plaid_items', columns: ['user_id', 'status', 'updated_at'] },
+  { table: 'plaid_items', columns: ['user_id', 'status', 'updated_at', 'transactions_cursor'] },
+  {
+    table: 'plaid_transactions',
+    columns: ['user_id', 'transaction_id', 'date', 'amount', 'deleted'],
+  },
   { table: 'user_overrides', columns: ['user_id', 'kind', 'key', 'value'] },
   {
     table: 'analysis_runs',
