@@ -16,7 +16,7 @@ export default function LoginPage() {
         </div>
         <Card>
           <CardHeader>
-            <CardTitle>Login</CardTitle>
+            <CardTitle>Magic link</CardTitle>
           </CardHeader>
           <CardBody>
             {supabaseConfigured ? (

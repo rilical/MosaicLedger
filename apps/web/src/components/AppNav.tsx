@@ -29,8 +29,7 @@ export function AppNav({ demoMode }: AppNavProps) {
     <div className="navList">
       {navItems.map((item) => {
         const active = isActivePath(pathname, item.href);
-        const badgeText =
-          item.href === '/app' ? (demoMode ? 'DEMO' : 'LIVE') : item.badge;
+        const badgeText = item.href === '/app' ? (demoMode ? 'DEMO' : 'LIVE') : item.badge;
 
         return (
           <Link
@@ -40,9 +39,7 @@ export function AppNav({ demoMode }: AppNavProps) {
             aria-current={active ? 'page' : undefined}
           >
             <span>{item.label}</span>
-            <Badge tone={item.href === '/app' && demoMode ? 'good' : 'neutral'}>
-              {badgeText}
-            </Badge>
+            <Badge tone={item.href === '/app' && demoMode ? 'good' : 'neutral'}>{badgeText}</Badge>
           </Link>
         );
       })}

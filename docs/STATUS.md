@@ -15,6 +15,10 @@ This file is updated in every PR.
 
 ## Latest Changes
 
+- Restore analysis-driven pages (Mosaic/Recurring/Plan) after landing-page merge regression:
+  re-enabled shared AnalysisControls (range + filters), brought back Plan explainability + scenario
+  compare, fixed `/login` duplicate "Login" headings (Playwright strict locator), and normalized
+  formatting to keep CI green.
 - AUTH scaffold (branch: `codex/auth-scaffold`): Supabase magic-link login is wired when env vars are
   present, `/app/*` routes are protected via middleware when demo/judge modes are off, and a starter
   RLS schema is added under `supabase/schema.sql`. Demo Mode remains the default and must continue

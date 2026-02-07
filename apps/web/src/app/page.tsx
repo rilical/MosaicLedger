@@ -40,8 +40,8 @@ export default function LandingPage() {
           <div className="landingKicker">Mosaic-led planning</div>
           <h1 className="landingTitle">Enter with fragments. Leave with something whole.</h1>
           <p className="landingSubtitle">
-            MosaicLedger turns messy transactions into a clear mural: what to keep, what to cut,
-            and how to reach your next goal with deterministic, explainable math.
+            MosaicLedger turns messy transactions into a clear mural: what to keep, what to cut, and
+            how to reach your next goal with deterministic, explainable math.
           </p>
           <div className="landingActions">
             <Link className="btn btnPrimary" href="/app/mosaic?source=demo">
@@ -100,7 +100,8 @@ export default function LandingPage() {
           <div className="stepCard">
             <div style={{ fontWeight: 600, marginBottom: 6 }}>3. Act with confidence</div>
             <div className="small">
-              Plans and recurring insights are ranked with quantified savings and deterministic logic.
+              Plans and recurring insights are ranked with quantified savings and deterministic
+              logic.
             </div>
           </div>
         </div>
