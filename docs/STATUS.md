@@ -15,6 +15,10 @@ This file is updated in every PR.
 
 ## Latest Changes
 
+- DED-002/003/004/005/006 (branch: `codex/ded-002-mcp-streamable-http`): implemented a stateless
+  Streamable HTTP MCP server in `packages/mcp-server` with `/health` + `/mcp` endpoints, strict zod
+  validation (`v1`), and 3 deterministic tools: `analyzeTransactions`, `buildMosaicSpec`,
+  `buildActionPlan`.
 - UX-002 (branch: `codex/ux-002-loading-skeleton`): added Mosaic loading skeleton + a simple
   progress line; when analysis is slow, offers a one-click switch to demo data.
 - QA-018 (branch: `codex/qa-018-pr-gates`): tightened PR template requirements and added label
