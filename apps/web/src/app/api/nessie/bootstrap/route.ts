@@ -48,7 +48,7 @@ function pickPreferredAccount(accounts: unknown[]): {
         ? o.id.trim()
         : null;
     const customerId = isNonEmptyString(o.customer_id) ? o.customer_id.trim() : null;
-    if (accountId && customerId) return { accountId, customerId };
+    if (accountId) return { accountId, customerId };
   }
   return { accountId: null, customerId: null };
 }
@@ -152,10 +152,10 @@ export async function POST() {
         const accounts = await nessie.listAssignedAccounts();
         if (accounts.ok) {
           const picked = pickPreferredAccount((accounts.data as unknown[]) ?? []);
-          if (picked.accountId && picked.customerId) {
+          if (picked.accountId) {
             return NextResponse.json({
               ok: true,
-              customerId: picked.customerId,
+              customerId: picked.customerId ?? undefined,
               accountId: picked.accountId,
               mode: 'env_noauth',
             });
@@ -254,12 +254,12 @@ export async function POST() {
       }
     }
 
-    if (!envCustomerId || !envAccountId) {
+    if (!envAccountId) {
       return NextResponse.json(
         {
           ok: false,
           error:
-            'Supabase not configured. Set NESSIE_CUSTOMER_ID and NESSIE_ACCOUNT_ID (or ensure your key has accounts assigned) to use Nessie in hosted judge/demo deployments.',
+            'Supabase not configured. Set NESSIE_ACCOUNT_ID (and optionally NESSIE_CUSTOMER_ID) or ensure your key has accounts assigned.',
         },
         { status: 400 },
       );
@@ -293,10 +293,10 @@ export async function POST() {
       const accounts = await nessie.listAssignedAccounts();
       if (accounts.ok) {
         const picked = pickPreferredAccount((accounts.data as unknown[]) ?? []);
-        if (picked.accountId && picked.customerId) {
+        if (picked.accountId) {
           return NextResponse.json({
             ok: true,
-            customerId: picked.customerId,
+            customerId: picked.customerId ?? undefined,
             accountId: picked.accountId,
             mode: 'env_noauth',
           });
