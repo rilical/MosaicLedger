@@ -70,6 +70,16 @@ function sumByMerchant(
 const URL_SOURCE_KEYS = ['demo', 'plaid', 'nessie', 'auto'] as const;
 
 export default function MosaicPage() {
+  // NOTE: useSearchParams() must be wrapped in a Suspense boundary for Next's
+  // CSR bailout rules. Keep the hook inside the inner component.
+  return (
+    <React.Suspense fallback={<MosaicSkeleton label="Loading mosaic…" />}>
+      <MosaicPageInner />
+    </React.Suspense>
+  );
+}
+
+function MosaicPageInner() {
   const searchParams = useSearchParams();
   const { settings, setSettings } = useAnalysisSettings();
   const req = React.useMemo(() => toAnalyzeRequest(settings), [settings]);
