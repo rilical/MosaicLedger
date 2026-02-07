@@ -25,26 +25,65 @@ export default async function MosaicPage(props: { searchParams: Promise<{ source
     saveAmount: 200,
     byDate: '2026-04-01',
   });
+  const topCategory = Object.entries(summary.byCategory).sort((a, b) => b[1] - a[1])[0];
+  const topCategoryName = topCategory?.[0] ?? 'n/a';
+  const topCategorySpend = topCategory?.[1] ?? 0;
 
   return (
-    <div style={{ display: 'grid', gap: 16 }}>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'baseline',
-          gap: 10,
-        }}
-      >
-        <div>
-          <div className="h1" style={{ fontSize: 20 }}>
-            Mosaic
-          </div>
-          <div className="small">
+    <div className="pageStack">
+      <div className="pageHeader">
+        <h1 className="pageTitle">Mosaic</h1>
+        <div className="pageMeta">
+          <div className="pageTagline">
             {txns.length} transactions · ${summary.totalSpend.toFixed(2)} spend
           </div>
+          <Badge tone="good">Demo Data</Badge>
         </div>
-        <Badge tone="good">Demo Data</Badge>
+      </div>
+
+      <div className="statGrid">
+        <div className="statCard">
+          <div className="statLabel">Monthly spend</div>
+          <div className="statValue">${summary.totalSpend.toFixed(2)}</div>
+          <div className="statSub">From demo fixture set</div>
+        </div>
+        <div className="statCard">
+          <div className="statLabel">Average transaction</div>
+          <div className="statValue">${(summary.totalSpend / txns.length).toFixed(2)}</div>
+          <div className="statSub">Across {txns.length} entries</div>
+        </div>
+        <div className="statCard">
+          <div className="statLabel">Top category</div>
+          <div className="statValue">${topCategorySpend.toFixed(2)}</div>
+          <div className="statSub">{topCategoryName}</div>
+        </div>
+      </div>
+
+      <div className="filterBar">
+        <div className="filterGroup">
+          <div className="filterLabel">Month</div>
+          <select className="input select filterSelect" defaultValue="2026-02">
+            <option value="2026-02">February 2026</option>
+            <option value="2026-01">January 2026</option>
+            <option value="2025-12">December 2025</option>
+          </select>
+        </div>
+        <div className="filterGroup">
+          <div className="filterLabel">Category</div>
+          <select className="input select filterSelect" defaultValue="all">
+            <option value="all">All categories</option>
+            <option value="housing">Housing</option>
+            <option value="groceries">Groceries</option>
+            <option value="transport">Transport</option>
+          </select>
+        </div>
+        <div className="filterGroup">
+          <div className="filterLabel">View</div>
+          <select className="input select filterSelect" defaultValue="category">
+            <option value="category">By category</option>
+            <option value="merchant">By merchant</option>
+          </select>
+        </div>
       </div>
 
       <div className="grid">

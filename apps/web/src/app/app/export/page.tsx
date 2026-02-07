@@ -2,15 +2,13 @@ import { Badge, Card, CardBody, CardHeader, CardTitle } from '../../../component
 
 export default function ExportPage() {
   return (
-    <div style={{ display: 'grid', gap: 16, maxWidth: 980 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
-        <div>
-          <div className="h1" style={{ fontSize: 20 }}>
-            Export
-          </div>
-          <div className="small">Poster export (SVG/PNG) is next.</div>
+    <div className="pageStack" style={{ maxWidth: 980 }}>
+      <div className="pageHeader">
+        <h1 className="pageTitle">Export</h1>
+        <div className="pageMeta">
+          <div className="pageTagline">Poster export (SVG/PNG) is next.</div>
+          <Badge>soon</Badge>
         </div>
-        <Badge>soon</Badge>
       </div>
 
       <Card>

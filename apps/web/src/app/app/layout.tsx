@@ -1,8 +1,6 @@
-import Link from 'next/link';
-import { SettingsDrawer } from '../../components/SettingsDrawer';
-import { Badge } from '../../components/ui';
+import { AppNav } from '../../components/AppNav';
+import { AppHeader } from '../../components/AppHeader';
 import { envFlags } from '../../lib/flags';
-import { SignOutButton } from '../../components/Auth/SignOutButton';
 import { hasSupabaseEnv } from '../../lib/env';
 import { supabaseServer } from '../../lib/supabase/server';
 
@@ -31,35 +29,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     <div className="appShell">
       <nav className="sideNav" aria-label="Primary">
         <div className="navTitle">MosaicLedger</div>
-        <div className="small" style={{ marginBottom: 12 }}>
+        <div className="navSubtitle" style={{ marginBottom: 12 }}>
           Assembled, explainable budget planning.
         </div>
-        <div className="navList">
-          <Link className="navLink" href="/app">
-            <span>Connect</span>
-            {envFlags.demoMode ? <Badge tone="good">DEMO</Badge> : <Badge>LIVE</Badge>}
-          </Link>
-          <Link className="navLink" href="/app/mosaic?source=demo">
-            <span>Mosaic</span>
-            <Badge>v0</Badge>
-          </Link>
-          <Link className="navLink" href="/app/recurring?source=demo">
-            <span>Recurring</span>
-            <Badge>v0</Badge>
-          </Link>
-          <Link className="navLink" href="/app/plan?source=demo">
-            <span>Plan</span>
-            <Badge>v0</Badge>
-          </Link>
-          <Link className="navLink" href="/app/export?source=demo">
-            <span>Export</span>
-            <Badge>soon</Badge>
-          </Link>
-          <Link className="navLink" href="/app/settings">
-            <span>Settings</span>
-            <Badge>v0</Badge>
-          </Link>
-        </div>
+        <AppNav demoMode={envFlags.demoMode} />
 
         <div style={{ marginTop: 16 }}>
           <div className="small">
@@ -70,19 +43,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </nav>
 
       <div className="mainArea">
-        <div className="topBar">
-          <div>
-            <div style={{ fontWeight: 750 }}>App</div>
-            <div className="small">Primary UI is the Mosaic mural.</div>
-          </div>
-          <div className="buttonRow" style={{ justifyContent: 'flex-end' }}>
-            <Link className="btn btnGhost" href="/login">
-              Login
-            </Link>
-            <SignOutButton />
-            <SettingsDrawer />
-          </div>
-        </div>
+        <AppHeader />
 
         {children}
       </div>

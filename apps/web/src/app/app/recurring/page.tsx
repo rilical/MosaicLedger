@@ -12,15 +12,15 @@ export default async function RecurringPage(props: { searchParams: Promise<{ sou
   const summary = summarizeTransactions(txns);
 
   return (
-    <div style={{ display: 'grid', gap: 16, maxWidth: 980 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
-        <div>
-          <div className="h1" style={{ fontSize: 20 }}>
-            Recurring
+    <div className="pageStack" style={{ maxWidth: 980 }}>
+      <div className="pageHeader">
+        <h1 className="pageTitle">Recurring</h1>
+        <div className="pageMeta">
+          <div className="pageTagline">
+            {summary.recurring.length} detected recurring charges
           </div>
-          <div className="small">{summary.recurring.length} detected recurring charges</div>
+          <Badge tone="good">Demo Data</Badge>
         </div>
-        <Badge tone="good">Demo Data</Badge>
       </div>
 
       <Card>

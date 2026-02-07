@@ -8,17 +8,15 @@ export function ActionsPanel({ actions }: { actions: ActionRecommendation[] }) {
   }
 
   return (
-    <ol style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 10 }}>
+    <ol className="actionList">
       {actions.map((a) => (
-        <li key={a.id}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+        <li key={a.id} className="actionItem">
+          <div className="actionHeader">
             <div>
-              <div style={{ fontWeight: 650 }}>{a.title}</div>
+              <div className="actionTitle">{a.title}</div>
               <div className="small">{a.explanation}</div>
             </div>
-            <div style={{ whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
-              +${a.expectedMonthlySavings.toFixed(2)}/mo
-            </div>
+            <div className="money">+${a.expectedMonthlySavings.toFixed(2)}/mo</div>
           </div>
         </li>
       ))}
