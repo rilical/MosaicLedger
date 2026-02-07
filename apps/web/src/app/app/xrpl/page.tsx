@@ -103,7 +103,7 @@ export default function XrplPage() {
           : 'XRPL failed';
       setReceipt({ status: 'error', error: msg });
     }
-  }, [amountXrp]);
+  }, [amountXrp, mode, roundups.roundupUsd, roundups.spendUsd, roundups.txCount]);
 
   if (!flags.xrplEnabled) {
     return (
@@ -214,8 +214,8 @@ export default function XrplPage() {
                     </>
                   ) : (
                     <>
-                      <b>simulate-only</b> (set <code>XRPL_TESTNET_SEED</code> and{' '}
-                      <code>XRPL_RPC_URL</code> to enable Testnet sends)
+                      <b>simulate-only</b> (configure server-side XRPL credentials to enable Testnet
+                      sends)
                     </>
                   )
                 ) : (
