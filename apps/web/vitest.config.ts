@@ -14,6 +14,10 @@ export default defineConfig({
         path.dirname(fileURLToPath(import.meta.url)),
         '../../packages/core/src/index.ts',
       ),
+      '@mosaicledger/connectors': path.resolve(
+        path.dirname(fileURLToPath(import.meta.url)),
+        '../../packages/connectors/src/index.ts',
+      ),
       '@mosaicledger/mosaic': path.resolve(
         path.dirname(fileURLToPath(import.meta.url)),
         '../../packages/mosaic/src/index.ts',
