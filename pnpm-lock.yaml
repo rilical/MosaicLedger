@@ -114,7 +114,7 @@ importers:
         version: 1.9.4
       next:
         specifier: 15.1.11
-        version: 15.1.11(@playwright/test@1.58.2)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+        version: 15.1.11(@playwright/test@1.58.2)(react-dom@19.0.1(react@19.0.1))(react@19.0.1)
       plaid:
         specifier: ^31.0.0
         version: 31.1.0
@@ -1330,7 +1330,7 @@ packages:
 
   '@expo/bunyan@4.0.1':
     resolution: {integrity: sha512-+Lla7nYSiHZirgK+U/uYzsLv/X+HaJienbD5AKX1UQZHYfWaP+9uuQluRB4GrEVWF0GZ7vEVp/jzaOT9k/SQlg==}
-    engines: {node: '>=0.10.0'}
+    engines: {'0': node >=0.10.0}
 
   '@expo/cli@0.22.28':
     resolution: {integrity: sha512-lvt72KNitGuixYD2l3SZmRKVu2G4zJpmg5V7WfUBNpmUU5oODBw/6qmiJ6kSLAlfDozscUk+BBGknBBzxUrwrA==}
@@ -9438,7 +9438,7 @@ snapshots:
 
   nested-error-stacks@2.0.1: {}
 
-  next@15.1.11(@playwright/test@1.58.2)(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
+  next@15.1.11(@playwright/test@1.58.2)(react-dom@19.0.1(react@19.0.1))(react@19.0.1):
     dependencies:
       '@next/env': 15.1.11
       '@swc/counter': 0.1.3
