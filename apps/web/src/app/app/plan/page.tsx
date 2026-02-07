@@ -11,6 +11,7 @@ import {
 import { useAnalysis } from '../../../components/Analysis/useAnalysis';
 import { usePlanGoal } from '../../../components/Plan/usePlanGoal';
 import { useSubscriptionChoices } from '../../../lib/subscriptions/choices';
+import { CoachPanel } from '../../../components/Coach/CoachPanel';
 
 function formatMoney(n: number): string {
   if (!Number.isFinite(n)) return '$0.00';
@@ -90,9 +91,18 @@ export default function PlanPage() {
         <h1 className="pageTitle">Plan</h1>
         <div className="pageMeta">
           <div className="pageTagline">Ranked next actions with quantified monthly savings</div>
-          <Badge tone={error ? 'warn' : loading ? 'warn' : 'good'}>
-            {error ? 'Error' : loading ? 'Busy' : 'Ready'}
-          </Badge>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <CoachPanel
+              artifacts={artifacts}
+              onJumpToAction={(actionId) => {
+                const el = document.getElementById(`action_${actionId}`);
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+            />
+            <Badge tone={error ? 'warn' : loading ? 'warn' : 'good'}>
+              {error ? 'Error' : loading ? 'Busy' : 'Ready'}
+            </Badge>
+          </div>
         </div>
       </div>
 
