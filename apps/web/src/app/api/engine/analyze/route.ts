@@ -74,6 +74,73 @@ export async function POST(request: Request) {
   // Explicit Nessie request: pull sponsor mock transactions server-side and feed the same deterministic engine.
   if (body.source === 'nessie') {
     try {
+      // Prefer cached normalized transactions in DB (no sponsor network calls during analysis reruns).
+      try {
+        const { data: rows, error: txErr } = await supabase
+          .from('transactions_normalized')
+          .select('txn_id,date,amount,merchant_raw,merchant,category,account_id,pending')
+          .eq('user_id', user.id)
+          .eq('source', 'nessie')
+          .order('date', { ascending: false })
+          .limit(20000);
+
+        if (!txErr && rows && rows.length) {
+          const txnsAll = rows
+            .map((r) => {
+              const row = r as unknown as {
+                txn_id?: unknown;
+                date?: unknown;
+                amount?: unknown;
+                merchant_raw?: unknown;
+                merchant?: unknown;
+                category?: unknown;
+                account_id?: unknown;
+                pending?: unknown;
+              };
+
+              const id = typeof row.txn_id === 'string' ? row.txn_id : '';
+              const date = String(row.date ?? '').slice(0, 10);
+              const amount = Number(row.amount);
+              const merchantRaw = String(row.merchant_raw ?? '');
+              const merchant = String(row.merchant ?? '');
+              const category = String(row.category ?? 'Uncategorized');
+              const accountId = typeof row.account_id === 'string' ? row.account_id : undefined;
+              const pending = Boolean(row.pending);
+
+              if (!id || !date || !merchantRaw || !Number.isFinite(amount)) return null;
+
+              return {
+                id,
+                date,
+                amount,
+                merchantRaw,
+                merchant,
+                category,
+                source: 'nessie' as const,
+                accountId,
+                pending,
+              };
+            })
+            .filter((t): t is NonNullable<typeof t> => Boolean(t));
+
+          if (txnsAll.length) {
+            const artifacts = computeArtifactsFromNormalized(txnsAll, body, {
+              artifactsSource: 'nessie',
+            });
+
+            try {
+              await insertAnalysisRun(supabase, user.id, artifacts);
+            } catch {
+              // ignore
+            }
+            return NextResponse.json({ ok: true, artifacts, stored: true });
+          }
+        }
+      } catch {
+        // ignore (schema not applied yet)
+      }
+
+      // Fallback: live Nessie fetch (still deterministic mapping, but sponsor network call).
       if (!hasNessieEnv()) throw new Error('Missing NESSIE_API_KEY (server-only).');
       const accountId = body.nessie?.accountId?.trim() || process.env.NESSIE_ACCOUNT_ID?.trim();
       if (!accountId) {
