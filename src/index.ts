@@ -2,12 +2,10 @@
 
 // Entry point required by some MCP hosts (e.g. Dedalus/Daedalus) which detect
 // servers by the presence of `src/index.ts`.
-//
-// We import from TypeScript source so bundlers (bun) can inline everything.
-// The workspace packages will be bundled together.
+// Uses pre-built dist (committed) so Dedalus bundler resolves without postinstall.
 
 async function main(): Promise<void> {
-  const mod = (await import('../packages/mcp-server/src/http.ts')) as unknown as {
+  const mod = (await import('../packages/mcp-server/dist/http.js')) as unknown as {
     startHttpServer: () => Promise<void>;
   };
   await mod.startHttpServer();

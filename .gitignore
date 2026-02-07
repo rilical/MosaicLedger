@@ -1,7 +1,8 @@
 node_modules/
 .next/
-dist/
 coverage/
+/dist/
+/apps/*/dist/
 .turbo/
 .DS_Store
 .env
