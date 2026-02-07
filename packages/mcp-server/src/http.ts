@@ -173,6 +173,28 @@ export async function startHttpServer(): Promise<void> {
       }
 
       if (url.pathname === '/mcp') {
+        // Some HTTP clients (and a few platforms) send `Accept: */*` by default.
+        // The MCP Streamable HTTP transport requires clients to accept both JSON
+        // and SSE; treat `*/*` (or missing Accept) as "accepts everything".
+        //
+        // Note: the Node->Web conversion layer reads from `rawHeaders`, not just
+        // `req.headers`, so we update both to ensure the transport sees it.
+        const acceptRaw = typeof req.headers.accept === 'string' ? req.headers.accept : '';
+        if (!acceptRaw || acceptRaw.includes('*/*')) {
+          const value = 'application/json, text/event-stream';
+          req.headers.accept = value;
+          if (Array.isArray(req.rawHeaders)) {
+            let updated = false;
+            for (let i = 0; i < req.rawHeaders.length - 1; i += 2) {
+              if (String(req.rawHeaders[i]).toLowerCase() === 'accept') {
+                req.rawHeaders[i + 1] = value;
+                updated = true;
+                break;
+              }
+            }
+            if (!updated) req.rawHeaders.push('Accept', value);
+          }
+        }
         const body = await readJsonBody(req);
         await transport.handleRequest(req, res, body);
         return;
