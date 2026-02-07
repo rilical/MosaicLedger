@@ -50,4 +50,3 @@ describe('mcp-server tools (DED-003)', () => {
     }
   });
 });
-

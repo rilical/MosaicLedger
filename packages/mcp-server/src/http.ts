@@ -21,7 +21,12 @@ const DEFAULT_ALLOWED_ORIGINS = new Set([
 function parseAllowedOriginsFromEnv(): Set<string> {
   const raw = process.env.MCP_ALLOWED_ORIGINS?.trim();
   if (!raw) return DEFAULT_ALLOWED_ORIGINS;
-  return new Set(raw.split(',').map((s) => s.trim()).filter(Boolean));
+  return new Set(
+    raw
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean),
+  );
 }
 
 function isOriginAllowed(origin: string | undefined, allowed: Set<string>): boolean {
@@ -60,7 +65,10 @@ export async function startHttpServer(): Promise<void> {
       transactions: z.array(NormalizedTransactionSchema),
     },
     async (input) => {
-      const out = analyzeTransactionsTool({ version: SCHEMA_VERSION, transactions: input.transactions });
+      const out = analyzeTransactionsTool({
+        version: SCHEMA_VERSION,
+        transactions: input.transactions,
+      });
       return {
         content: [{ type: 'text', text: JSON.stringify(out) }],
       };
@@ -88,7 +96,11 @@ export async function startHttpServer(): Promise<void> {
     },
     async (input) => {
       // Full strict validation also happens in the tool layer (schemas.ts).
-      const out = buildActionPlanTool({ version: SCHEMA_VERSION, summary: input.summary, goal: input.goal });
+      const out = buildActionPlanTool({
+        version: SCHEMA_VERSION,
+        summary: input.summary,
+        goal: input.goal,
+      });
       return {
         content: [{ type: 'text', text: JSON.stringify(out) }],
       };

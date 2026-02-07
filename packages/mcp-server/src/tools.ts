@@ -1,5 +1,10 @@
 import { recommendActions, summarizeTransactions } from '@mosaicledger/core';
-import type { ActionRecommendation, GoalInput, NormalizedTransaction, Summary } from '@mosaicledger/core';
+import type {
+  ActionRecommendation,
+  GoalInput,
+  NormalizedTransaction,
+  Summary,
+} from '@mosaicledger/core';
 import { buildTreemapTiles } from '@mosaicledger/mosaic';
 import type { TreemapTile } from '@mosaicledger/mosaic';
 
@@ -13,7 +18,10 @@ import {
   SCHEMA_VERSION,
 } from './schemas';
 
-export function analyzeTransactionsTool(input: unknown): { version: typeof SCHEMA_VERSION; summary: Summary } {
+export function analyzeTransactionsTool(input: unknown): {
+  version: typeof SCHEMA_VERSION;
+  summary: Summary;
+} {
   const parsed = AnalyzeTransactionsInputSchema.parse(input);
   const txns: NormalizedTransaction[] = parsed.transactions;
   const summary = summarizeTransactions(txns);
@@ -24,7 +32,10 @@ export function analyzeTransactionsTool(input: unknown): { version: typeof SCHEM
   });
 }
 
-export function buildMosaicSpecTool(input: unknown): { version: typeof SCHEMA_VERSION; tiles: TreemapTile[] } {
+export function buildMosaicSpecTool(input: unknown): {
+  version: typeof SCHEMA_VERSION;
+  tiles: TreemapTile[];
+} {
   const parsed = BuildMosaicSpecInputSchema.parse(input);
   const tiles = buildTreemapTiles(parsed.byCategory);
 
@@ -46,4 +57,3 @@ export function buildActionPlanTool(input: unknown): {
     actions,
   });
 }
-
