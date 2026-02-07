@@ -56,7 +56,8 @@ export default function XrplPage() {
         }),
       });
       const json = (await resp.json()) as unknown;
-      if (!resp.ok || !json || typeof json !== 'object') throw new Error(`XRPL failed (${resp.status})`);
+      if (!resp.ok || !json || typeof json !== 'object')
+        throw new Error(`XRPL failed (${resp.status})`);
       const ok = Boolean((json as { ok?: unknown }).ok);
       const rec = (json as { receipt?: unknown }).receipt;
       if (!ok || !rec || typeof rec !== 'object') throw new Error('XRPL failed');
@@ -107,10 +108,17 @@ export default function XrplPage() {
         <CardBody>
           <div style={{ display: 'grid', gap: 10 }}>
             <div className="small">
-              Demo mode uses the local transaction fixture set. Round-ups are deterministic: for each spend
-              txn, round to the next whole dollar and sum the deltas.
+              Demo mode uses the local transaction fixture set. Round-ups are deterministic: for
+              each spend txn, round to the next whole dollar and sum the deltas.
             </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, fontVariantNumeric: 'tabular-nums' }}>
+            <div
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: 12,
+                fontVariantNumeric: 'tabular-nums',
+              }}
+            >
               <div>
                 <div style={{ fontWeight: 700 }}>{roundups.txCount}</div>
                 <div className="small">Transactions</div>
@@ -130,7 +138,12 @@ export default function XrplPage() {
             </div>
 
             <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-              <button className="btn btnPrimary" type="button" onClick={() => void send()} disabled={receipt.status === 'loading'}>
+              <button
+                className="btn btnPrimary"
+                type="button"
+                onClick={() => void send()}
+                disabled={receipt.status === 'loading'}
+              >
                 {receipt.status === 'loading' ? 'Simulating…' : 'Simulate Receipt'}
               </button>
               <div className="small" style={{ opacity: 0.9 }}>
@@ -170,4 +183,3 @@ export default function XrplPage() {
     </div>
   );
 }
-

@@ -23,4 +23,3 @@ test('xrpl page can simulate a deterministic receipt (evidence)', async ({ page 
     await page.screenshot({ path: '../../docs/assets/ripple-xrpl-roundups.png', fullPage: true });
   }
 });
-
