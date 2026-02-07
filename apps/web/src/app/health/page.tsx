@@ -128,9 +128,9 @@ export default async function HealthPage() {
     <main className="container" style={{ maxWidth: 980 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, marginBottom: 16 }}>
         <div>
-          <div className="h1" style={{ fontSize: 20 }}>
+          <h1 className="h1" style={{ fontSize: 20 }}>
             Health
-          </div>
+          </h1>
           <div className="small">Presence checks only. No secrets are displayed.</div>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>

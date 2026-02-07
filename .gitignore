@@ -8,6 +8,8 @@ coverage/
 .env.*
 !.env.example
 *.log
+test-results/
+playwright-report/
 
 # Expo / React Native
 .expo/

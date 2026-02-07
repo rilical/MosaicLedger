@@ -38,6 +38,8 @@ This file is updated in every PR.
 - DEPLOY-003 (branch: `codex/deploy-003-health`): adds a `/health` page for judges and the team to
   quickly verify demo dataset availability and the presence of optional integration env vars. No
   secrets are displayed.
+- QA-001 (branch: `codex/qa-001-playwright-harness`): adds Playwright e2e harness + CI job and a
+  smoke test that loads `/health` and `/login`.
 
 ## Known Risks / TODO
 

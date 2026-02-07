@@ -72,3 +72,9 @@ Status legend: `TODO` | `DOING` | `BLOCKED` | `REVIEW` | `DONE`
 | ID         | Status | Notes                                                     |
 | ---------- | ------ | --------------------------------------------------------- |
 | DEPLOY-003 | REVIEW | `/health` page shows system state (no secrets; demo-safe) |
+
+## QA
+
+| ID     | Status | Notes                                                |
+| ------ | ------ | ---------------------------------------------------- |
+| QA-001 | REVIEW | Playwright e2e harness + smoke test (/health,/login) |
