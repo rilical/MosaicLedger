@@ -10,40 +10,50 @@ test.use({
   hasTouch: iphone.hasTouch,
 });
 
-test('minesweeper loads and timer starts (mobile viewport)', async ({ page }) => {
-  await page.goto('/game?seed=e2e');
+test('game loads and score changes (mobile viewport)', async ({ page }) => {
+  await page.goto('/game');
 
-  await expect(page.locator('#status')).toHaveText('READY');
-  await expect(page.locator('#grid')).toBeVisible();
-  await expect(page.locator('#grid .c')).toHaveCount(100);
+  // Start screen renders (no auth required).
+  await expect(page.locator('#overlay')).toBeVisible();
+  await expect(page.locator('#start')).toBeVisible();
 
-  const left = page.locator('#left');
-  await expect(left).toHaveText('85');
+  await page.locator('#start').click();
+  await expect(page.locator('#overlay')).toBeHidden();
 
-  // First tap starts the timer and should never hit a mine (protects cell + neighbors).
-  await page.locator('#grid .c').first().click();
-  await expect(page.locator('#status')).toHaveText('RUNNING');
+  const score = page.locator('#score');
+  await expect(score).toHaveText('0');
 
-  // Safe-left must decrease after revealing.
-  await expect(left).not.toHaveText('85');
+  // Tap three cells inside the grid (deterministic session seed).
+  const layout = await page.evaluate(() => {
+    const GW = 10;
+    const GH = 14;
+    const hud = document.getElementById('hud');
+    const hudH = hud ? hud.getBoundingClientRect().height : 0;
+    const pad = 14;
+    const top = hudH + pad;
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const availW = w - pad * 2;
+    const availH = h - top - pad;
+    const s = Math.max(12, Math.floor(Math.min(availW / GW, availH / GH)));
+    const ox = Math.floor((w - s * GW) / 2);
+    const oy = Math.floor(top + (availH - s * GH) / 2);
+    return { ox, oy, s };
+  });
 
-  // Timer ticks down.
-  await page.waitForTimeout(1100);
-  const t = await page.locator('#time').innerText();
-  expect(Number(t)).toBeLessThanOrEqual(179);
+  const tapCell = async (col: number, row: number) => {
+    const x = layout.ox + col * layout.s + layout.s / 2;
+    const y = layout.oy + row * layout.s + layout.s / 2;
+    await page.touchscreen.tap(x, y);
+  };
 
-  // Flag mode toggles, then a tap places a flag.
-  await page.locator('#flag').click();
-  await expect(page.locator('#flag')).toHaveText(/Flag: ON/);
-  const toFlag = page.locator('#grid .c:not(.rev)').first();
-  await toFlag.click();
-  await expect(toFlag).toHaveClass(/flag/);
+  await tapCell(2, 2);
+  await expect(score).not.toHaveText('0');
 
-  // Restart resets the game.
-  await page.locator('#restart').click();
-  await expect(page.locator('#status')).toHaveText('READY');
-  await expect(page.locator('#time')).toHaveText('180');
+  await tapCell(6, 7);
+  await tapCell(8, 10);
 
+  // Optional evidence capture: generate a screenshot file under docs/assets for submissions.
   if (process.env.CAPTURE_EVIDENCE === '1') {
     await page.setViewportSize({ width: 430, height: 860 });
     await page.waitForTimeout(250);

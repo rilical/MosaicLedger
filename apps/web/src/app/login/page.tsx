@@ -3,8 +3,6 @@ import { Button, Card, CardBody, CardHeader, CardTitle } from '../../components/
 import { LoginForm } from '../../components/Auth/LoginForm';
 import { hasSupabaseEnv } from '../../lib/env';
 
-export const dynamic = 'force-dynamic';
-
 export default function LoginPage() {
   const supabaseConfigured = hasSupabaseEnv();
   return (

@@ -2,18 +2,22 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { test, expect } from '@playwright/test';
 
-test('AppLovin size proof: minesweeper stays under 15KB (single file)', async ({ page }) => {
-  const file = path.join(process.cwd(), 'public/game.html');
+test('AppLovin size proof: game bundle stays under 15KB (HTML+JS+CSS)', async ({ page }) => {
+  const dir = path.join(process.cwd(), 'public/game');
+  const files = ['index.html', 'style.css', 'game.js'] as const;
   const limit = 15 * 1024;
 
-  const stat = await fs.stat(file);
-  const total = stat.size;
+  const stats = await Promise.all(files.map((f) => fs.stat(path.join(dir, f))));
+  const total = stats.reduce((sum, s) => sum + s.size, 0);
 
   expect(total).toBeLessThanOrEqual(limit);
 
   const report = {
-    file,
+    dir,
     bytes: {
+      html: stats[0].size,
+      css: stats[1].size,
+      js: stats[2].size,
       total,
       limit,
       ok: total <= limit,
