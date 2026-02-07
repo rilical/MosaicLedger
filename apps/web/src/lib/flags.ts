@@ -4,6 +4,7 @@ export type Flags = {
   aiEnabled: boolean;
   xrplEnabled: boolean;
   plaidEnabled: boolean;
+  debugTraces: boolean;
 };
 
 export const FLAG_KEYS = [
@@ -12,6 +13,7 @@ export const FLAG_KEYS = [
   'aiEnabled',
   'xrplEnabled',
   'plaidEnabled',
+  'debugTraces',
 ] as const;
 export type FlagKey = (typeof FLAG_KEYS)[number];
 
@@ -30,4 +32,5 @@ export const envFlags: Flags = {
   aiEnabled: parseBoolean(process.env.NEXT_PUBLIC_AI_ENABLED, false),
   xrplEnabled: parseBoolean(process.env.NEXT_PUBLIC_XRPL_ENABLED, false),
   plaidEnabled: parseBoolean(process.env.NEXT_PUBLIC_PLAID_ENABLED, false),
+  debugTraces: parseBoolean(process.env.NEXT_PUBLIC_DEBUG_TRACES, false),
 };
