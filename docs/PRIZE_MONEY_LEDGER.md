@@ -14,7 +14,7 @@ This is a pragmatic checklist to ensure we actually demonstrate the sponsor inte
 - Export artifact (poster):
   - `/app/export` (SVG/PNG)
 - Ops analysts + memo:
-  - `/app/ops` (deterministic briefs + optional AI rewrite memo)
+  - `/app/ops` (risk dashboard + deterministic briefs + AI-optional decision brief + AI-optional memo)
 - Coach (tool calling + handoffs):
   - `/app/coach` (Dedalus optional; offline deterministic fallback)
 - Capital One Nessie (sponsor connector):
@@ -49,5 +49,6 @@ This is a pragmatic checklist to ensure we actually demonstrate the sponsor inte
 5. Show Plan top action + "Why this?".
 6. `/app/export` -> export poster.
 7. `/app/ops` -> generate Ops memo (AI optional).
+   - Also show the Ops dashboard cards (risk score, spend trend, 30d forecast) + Decision Support panel.
 8. (Optional) `/app` -> connect Nessie -> Mosaic source=nessie.
 9. `/game` -> show under-15KB proof + dashboard button.
