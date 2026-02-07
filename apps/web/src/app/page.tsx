@@ -5,7 +5,6 @@ import { MosaicPreviewToggle } from '../components/MosaicPreviewToggle';
 export default function LandingPage() {
   return (
     <main className="landing">
-
       <div className="landingNav">
         <div className="landingNavBrand">MosaicLedger</div>
         <div className="buttonRow">

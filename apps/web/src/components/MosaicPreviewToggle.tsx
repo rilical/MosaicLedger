@@ -5,7 +5,7 @@ import type { CSSProperties } from 'react';
 
 type Tile = { color: string; colSpan: number; rowSpan: number; label?: string };
 
-const presets: Record<string, { label: string; tiles: Tile[] }> = {
+const presets = {
   deterministic: {
     label: 'Deterministic',
     tiles: [
@@ -52,26 +52,28 @@ const presets: Record<string, { label: string; tiles: Tile[] }> = {
       { color: '#f43f5e', colSpan: 8, rowSpan: 2, label: 'September' },
     ],
   },
-};
+} satisfies Record<string, { label: string; tiles: Tile[] }>;
 
-const presetKeys = Object.keys(presets) as (keyof typeof presets)[];
+type PresetKey = keyof typeof presets;
+const presetKeys = Object.keys(presets) as PresetKey[];
 
 const FADE_MS = 220;
 
 export function MosaicPreviewToggle() {
-  const [active, setActive] = React.useState<string>('deterministic');
-  const [visible, setVisible] = React.useState<string>('deterministic');
+  const [active, setActive] = React.useState<PresetKey>('deterministic');
+  const [visible, setVisible] = React.useState<PresetKey>('deterministic');
   const [fading, setFading] = React.useState(false);
-  const pendingRef = React.useRef<string | null>(null);
+  const pendingRef = React.useRef<PresetKey | null>(null);
 
   const switchTo = React.useCallback(
-    (key: string) => {
+    (key: PresetKey) => {
       if (key === active || fading) return;
       pendingRef.current = key;
       setFading(true);
       setActive(key);
       setTimeout(() => {
-        setVisible(pendingRef.current!);
+        const next = pendingRef.current;
+        if (next) setVisible(next);
         setFading(false);
         pendingRef.current = null;
       }, FADE_MS);
@@ -117,9 +119,7 @@ export function MosaicPreviewToggle() {
               } as CSSProperties
             }
           >
-            {tile.label && (
-              <span className="tileLabel">{tile.label}</span>
-            )}
+            {tile.label && <span className="tileLabel">{tile.label}</span>}
           </div>
         ))}
       </div>

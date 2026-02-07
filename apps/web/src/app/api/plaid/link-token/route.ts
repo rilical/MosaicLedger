@@ -30,5 +30,15 @@ export async function POST() {
       country_codes: [CountryCode.Us],
     });
 
-  return NextResponse.json({ ok: true, mode: 'plaid' as const, linkToken: resp.data.link_token });
+    return NextResponse.json({ ok: true, mode: 'plaid' as const, linkToken: resp.data.link_token });
+  } catch (e: unknown) {
+    const msg =
+      e && typeof e === 'object' && 'message' in e
+        ? String((e as { message?: unknown }).message)
+        : 'unknown';
+    return NextResponse.json(
+      { ok: false, error: `plaid link token failed (${msg})` },
+      { status: 500 },
+    );
+  }
 }
