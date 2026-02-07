@@ -18,6 +18,19 @@ const DEFAULT_ALLOWED_ORIGINS = new Set([
   'http://127.0.0.1:8787',
 ]);
 
+const MAX_BODY_BYTES = 1_000_000; // 1MB (hackathon-safe default)
+
+class HttpError extends Error {
+  status: number;
+  code: string;
+
+  constructor(status: number, code: string) {
+    super(code);
+    this.status = status;
+    this.code = code;
+  }
+}
+
 function parseAllowedOriginsFromEnv(): Set<string> {
   const raw = process.env.MCP_ALLOWED_ORIGINS?.trim();
   if (!raw) return DEFAULT_ALLOWED_ORIGINS;
@@ -40,10 +53,20 @@ async function readJsonBody(req: http.IncomingMessage): Promise<unknown | undefi
   if (method !== 'POST' && method !== 'PUT' && method !== 'PATCH') return undefined;
 
   const chunks: Buffer[] = [];
-  for await (const c of req) chunks.push(c as Buffer);
+  let size = 0;
+  for await (const c of req) {
+    const chunk = c as Buffer;
+    size += chunk.length;
+    if (size > MAX_BODY_BYTES) throw new HttpError(413, 'payload_too_large');
+    chunks.push(chunk);
+  }
   const raw = Buffer.concat(chunks).toString('utf8').trim();
   if (!raw) return undefined;
-  return JSON.parse(raw) as unknown;
+  try {
+    return JSON.parse(raw) as unknown;
+  } catch {
+    throw new HttpError(400, 'invalid_json');
+  }
 }
 
 function json(res: http.ServerResponse, status: number, data: unknown): void {
@@ -54,7 +77,11 @@ function json(res: http.ServerResponse, status: number, data: unknown): void {
 
 export async function startHttpServer(): Promise<void> {
   const host = process.env.HOST || '127.0.0.1';
-  const port = Number(process.env.PORT || 8787);
+  const rawPort = process.env.PORT;
+  const port = rawPort ? Number.parseInt(rawPort, 10) : 8787;
+  if (!Number.isFinite(port) || port <= 0 || port > 65535) {
+    throw new Error(`Invalid PORT value: ${rawPort}`);
+  }
   const allowedOrigins = parseAllowedOriginsFromEnv();
 
   const mcp = new McpServer({ name: 'mosaicledger-mcp', version: SCHEMA_VERSION });
@@ -149,7 +176,11 @@ export async function startHttpServer(): Promise<void> {
       }
 
       json(res, 404, { ok: false, error: 'not_found' });
-    } catch (_err) {
+    } catch (err) {
+      if (err instanceof HttpError) {
+        json(res, err.status, { ok: false, error: err.code });
+        return;
+      }
       json(res, 500, { ok: false, error: 'internal_error' });
     }
   });
