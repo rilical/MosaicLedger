@@ -16,4 +16,3 @@
 1. Go to `/app` and click **Connect Capital One Nessie**.
 2. Wait for **Syncing…**, then land on the Mosaic.
 3. Re-run analysis: it uses cached normalized transactions (no sponsor network calls required for reruns).
-

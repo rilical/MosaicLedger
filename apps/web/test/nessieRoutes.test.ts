@@ -106,7 +106,10 @@ beforeEach(() => {
 
   nessieClient = {
     listAccounts: vi.fn(async () => ({ ok: true, data: [{ _id: 'acct_1' }, { _id: 'acct_2' }] })),
-    listPurchases: vi.fn(async (accountId: string) => ({ ok: true, data: purchasesFor(accountId) })),
+    listPurchases: vi.fn(async (accountId: string) => ({
+      ok: true,
+      data: purchasesFor(accountId),
+    })),
     createCustomer: vi.fn(async () => ({ ok: true, data: { objectCreated: { _id: 'cust_new' } } })),
     createAccount: vi.fn(async () => ({ ok: true, data: { objectCreated: { _id: 'acct_new' } } })),
   };

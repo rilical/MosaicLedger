@@ -64,7 +64,9 @@ async function checkTable(
         name: `Table: ${spec.table}`,
         status: missingStatus,
         detail: `${
-          missingStatus === 'warn' ? 'Optional table missing or incompatible.' : 'Missing or incompatible.'
+          missingStatus === 'warn'
+            ? 'Optional table missing or incompatible.'
+            : 'Missing or incompatible.'
         } (expected columns: ${cols}; error: ${code}). Apply supabase/schema.sql.${note}`,
       };
     }
