@@ -7,8 +7,8 @@ import { ActionsPanel } from '../../../components/ActionsPanel';
 import { Badge, Card, CardBody, CardHeader, CardTitle } from '../../../components/ui';
 import { AnalysisControls } from '../../../components/Analysis/AnalysisControls';
 import {
-  useAnalysisSettings,
   toAnalyzeRequest,
+  useAnalysisSettings,
 } from '../../../components/Analysis/useAnalysisSettings';
 import { useAnalysis } from '../../../components/Analysis/useAnalysis';
 
@@ -17,29 +17,21 @@ export default function MosaicPage() {
   const req = React.useMemo(() => toAnalyzeRequest(settings), [settings]);
   const { artifacts, loading, error, recompute } = useAnalysis(req);
 
+  const spend = artifacts?.summary.totalSpend ?? 0;
+  const txCount = artifacts?.summary.transactionCount ?? 0;
+
   return (
-    <div style={{ display: 'grid', gap: 16 }}>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'baseline',
-          gap: 10,
-        }}
-      >
-        <div>
-          <div className="h1" style={{ fontSize: 20 }}>
-            Mosaic
+    <div className="pageStack">
+      <div className="pageHeader">
+        <h1 className="pageTitle">Mosaic</h1>
+        <div className="pageMeta">
+          <div className="pageTagline">
+            {artifacts ? `${txCount} transactions · $${spend.toFixed(2)} spend` : 'Computing…'}
           </div>
-          <div className="small">
-            {artifacts
-              ? `${artifacts.summary.transactionCount} transactions · $${artifacts.summary.totalSpend.toFixed(
-                  2,
-                )} spend`
-              : 'Computing…'}
-          </div>
+          <Badge tone={error ? 'warn' : loading ? 'warn' : 'good'}>
+            {error ? 'Error' : loading ? 'Busy' : 'Ready'}
+          </Badge>
         </div>
-        <Badge tone={error ? 'warn' : 'good'}>{error ? 'Error' : 'Live'}</Badge>
       </div>
 
       <AnalysisControls

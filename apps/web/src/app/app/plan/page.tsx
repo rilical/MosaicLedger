@@ -5,8 +5,8 @@ import { ActionsPanel } from '../../../components/ActionsPanel';
 import { Badge, Card, CardBody, CardHeader, CardTitle } from '../../../components/ui';
 import { AnalysisControls } from '../../../components/Analysis/AnalysisControls';
 import {
-  useAnalysisSettings,
   toAnalyzeRequest,
+  useAnalysisSettings,
 } from '../../../components/Analysis/useAnalysisSettings';
 import { useAnalysis } from '../../../components/Analysis/useAnalysis';
 import { usePlanGoal } from '../../../components/Plan/usePlanGoal';
@@ -74,15 +74,15 @@ export default function PlanPage() {
   }, [byCategory]);
 
   return (
-    <div style={{ display: 'grid', gap: 16, maxWidth: 980 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
-        <div>
-          <div className="h1" style={{ fontSize: 20 }}>
-            Plan
-          </div>
-          <div className="small">Ranked next actions with quantified monthly savings</div>
+    <div className="pageStack" style={{ maxWidth: 980 }}>
+      <div className="pageHeader">
+        <h1 className="pageTitle">Plan</h1>
+        <div className="pageMeta">
+          <div className="pageTagline">Ranked next actions with quantified monthly savings</div>
+          <Badge tone={error ? 'warn' : loading ? 'warn' : 'good'}>
+            {error ? 'Error' : loading ? 'Busy' : 'Ready'}
+          </Badge>
         </div>
-        <Badge tone={error ? 'warn' : 'good'}>{error ? 'Error' : 'Live'}</Badge>
       </div>
 
       <AnalysisControls

@@ -10,6 +10,8 @@ MosaicLedger is a visual-first budget planner that turns transactions into an ex
 - `pnpm install`
 - `pnpm dev`
 
+**Using VSCode?** See the [VSCode Setup Guide](./VSCODE_SETUP.md) for a complete walkthrough with debugging, tasks, and recommended extensions.
+
 ## 60-90s demo script
 
 1. Open `http://localhost:3000/app`.

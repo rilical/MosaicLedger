@@ -5,8 +5,8 @@ import { RecurringPanel } from '../../../components/RecurringPanel';
 import { Badge, Card, CardBody, CardHeader, CardTitle } from '../../../components/ui';
 import { AnalysisControls } from '../../../components/Analysis/AnalysisControls';
 import {
-  useAnalysisSettings,
   toAnalyzeRequest,
+  useAnalysisSettings,
 } from '../../../components/Analysis/useAnalysisSettings';
 import { useAnalysis } from '../../../components/Analysis/useAnalysis';
 
@@ -15,18 +15,18 @@ export default function RecurringPage() {
   const req = React.useMemo(() => toAnalyzeRequest(settings), [settings]);
   const { artifacts, loading, error, recompute } = useAnalysis(req);
 
+  const count = (artifacts?.recurring ?? []).length;
+
   return (
-    <div style={{ display: 'grid', gap: 16, maxWidth: 980 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
-        <div>
-          <div className="h1" style={{ fontSize: 20 }}>
-            Recurring
-          </div>
-          <div className="small">
-            {(artifacts?.recurring ?? []).length} detected recurring charges
-          </div>
+    <div className="pageStack" style={{ maxWidth: 980 }}>
+      <div className="pageHeader">
+        <h1 className="pageTitle">Recurring</h1>
+        <div className="pageMeta">
+          <div className="pageTagline">{count} detected recurring charges</div>
+          <Badge tone={error ? 'warn' : loading ? 'warn' : 'good'}>
+            {error ? 'Error' : loading ? 'Busy' : 'Ready'}
+          </Badge>
         </div>
-        <Badge tone={error ? 'warn' : 'good'}>{error ? 'Error' : 'Live'}</Badge>
       </div>
 
       <AnalysisControls

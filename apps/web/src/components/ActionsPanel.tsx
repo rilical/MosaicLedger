@@ -140,7 +140,7 @@ export function ActionsPanel(props: {
 
                     {aiShown[a.id] ? (
                       <div className="small" style={{ display: 'grid', gap: 6 }}>
-                        {rewriteById[a.id]?.status === 'loading' ? <div>Rewriting…</div> : null}
+                        {rewriteById[a.id]?.status === 'loading' ? <div>Rewriting...</div> : null}
                         {rewriteById[a.id]?.status === 'error' ? (
                           <div style={{ color: 'rgba(234,179,8,0.95)' }}>
                             {(rewriteById[a.id] as { status: 'error'; error: string }).error}
