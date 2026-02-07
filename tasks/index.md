@@ -91,3 +91,15 @@ Status legend: `TODO` | `DOING` | `BLOCKED` | `REVIEW` | `DONE`
 | ID     | Status | Notes                                         |
 | ------ | ------ | --------------------------------------------- |
 | UX-002 | DONE   | Mosaic loading skeleton + progress + fallback |
+
+## Hardware (HW)
+
+| ID     | Status | Notes                                                                  |
+| ------ | ------ | ---------------------------------------------------------------------- |
+| HW-001 | DONE   | Hardware concept + build spec in `docs/HARDWARE.md`                    |
+| HW-002 | DONE   | BOM + wiring diagram + power safety checklist in `docs/HARDWARE.md`    |
+| HW-003 | DONE   | ESP32 firmware sketch in `hardware/esp32/MosaicFrame/MosaicFrame.ino`  |
+| HW-004 | DONE   | `GET /api/hw/mosaic-grid` returns deterministic 10x10 grid (demo-safe) |
+| HW-005 | TODO   | UI “Send to MosaicFrame” button + retries/simulate                     |
+| HW-006 | TODO   | Hardware demo video + photos                                           |
+| HW-007 | DONE   | Brightness limiting + power guard (firmware) + troubleshooting notes   |
