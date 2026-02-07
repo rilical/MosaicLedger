@@ -10,6 +10,7 @@ import type { ToolTraceStepV1, ToolTraceV1 } from '../../../../components/Trace/
 import { initWasm, Resvg } from '@resvg/resvg-wasm';
 import { createRequire } from 'node:module';
 import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 
 const CoachRequestSchema = z.object({
   message: z.string().min(1).max(2000),
@@ -34,7 +35,9 @@ async function ensureResvgWasm(): Promise<void> {
   if (wasmInitPromise) return wasmInitPromise;
   wasmInitPromise = (async () => {
     const require = createRequire(import.meta.url);
-    const wasmPath = require.resolve('@resvg/resvg-wasm/index_bg.wasm');
+    // Avoid resolving the .wasm as a module (Next/Webpack may try to bundle it).
+    const entryPath = require.resolve('@resvg/resvg-wasm');
+    const wasmPath = path.join(path.dirname(entryPath), 'index_bg.wasm');
     const wasm = await readFile(wasmPath);
     await initWasm(wasm);
   })();
