@@ -42,7 +42,7 @@ export function MosaicView(props: {
   }, [tiles]);
   // Use the current view's total (category view, merchant drill-down, or timeline).
   // If tiles are empty, fall back to the passed totalSpend (used by the HUD "Total" line).
-  const viewTotal = tiles.length > 0 ? tilesTotal : numberTotalSpend ?? 0;
+  const viewTotal = tiles.length > 0 ? tilesTotal : (numberTotalSpend ?? 0);
   const hasPositiveViewTotal = Number.isFinite(viewTotal) && viewTotal > 0;
 
   const moneyFmt = React.useMemo(() => {
@@ -173,10 +173,7 @@ export function MosaicView(props: {
       {showHud ? (
         <div className="mosaicHud" aria-hidden>
           <div className="mosaicHudCard">
-            <div
-              className="mosaicSwatch"
-              style={{ background: hover ? hover.color : undefined }}
-            />
+            <div className="mosaicSwatch" style={{ background: hover ? hover.color : undefined }} />
             <div style={{ display: 'grid', gap: 2 }}>
               <div className="mosaicHudTitle">{hover ? hover.label : 'Hover a tile'}</div>
               <div className="mosaicHudValue">
@@ -271,8 +268,8 @@ export function MosaicView(props: {
                 style={{
                   transform: hover === t ? 'translate(-2px, -4px)' : 'translate(0, 0)',
                   transition: 'transform 180ms ease, opacity 180ms ease',
-                  }}
-                />
+                }}
+              />
               {(() => {
                 if (!nameText) return null;
                 const x0 = t.x + 12;
@@ -293,8 +290,7 @@ export function MosaicView(props: {
                   (insightDim ? PILL_GAP + insightDim.h : 0);
 
                 const canShowInsight = insightDim != null && baseStackH <= maxStackH;
-                const stackHNoInsight =
-                  nameDim.h + (metaDim ? PILL_GAP + metaDim.h : 0);
+                const stackHNoInsight = nameDim.h + (metaDim ? PILL_GAP + metaDim.h : 0);
                 const canShowMeta = metaDim != null && stackHNoInsight <= maxStackH;
 
                 const showMeta = canShowMeta;
@@ -325,72 +321,72 @@ export function MosaicView(props: {
                       {nameText}
                     </text>
 
-                    {showMeta && metaText ? (
-                      (() => {
-                        const my = y0 + nameDim.h + PILL_GAP;
-                        const md = metaDim ?? pillDims(metaText, metaFs, maxPillW);
-                        return (
-                          <g>
-                            <rect
-                              x={x0}
-                              y={my}
-                              width={md.w}
-                              height={md.h}
-                              rx={12}
-                              fill="rgba(0,0,0,0.22)"
-                              stroke="rgba(255,255,255,0.16)"
-                              strokeWidth={1}
-                            />
-                            <text
-                              x={x0 + PILL_XPAD}
-                              y={my + metaFs + PILL_YPAD - 1}
-                              fontSize={metaFs}
-                              fontWeight={750}
-                              fontFamily={BRAND_FONT}
-                              fill="rgba(255,255,255,0.9)"
-                              style={{ fontVariantNumeric: 'tabular-nums' as const }}
-                            >
-                              {metaText}
-                            </text>
-                          </g>
-                        );
-                      })()
-                    ) : null}
+                    {showMeta && metaText
+                      ? (() => {
+                          const my = y0 + nameDim.h + PILL_GAP;
+                          const md = metaDim ?? pillDims(metaText, metaFs, maxPillW);
+                          return (
+                            <g>
+                              <rect
+                                x={x0}
+                                y={my}
+                                width={md.w}
+                                height={md.h}
+                                rx={12}
+                                fill="rgba(0,0,0,0.22)"
+                                stroke="rgba(255,255,255,0.16)"
+                                strokeWidth={1}
+                              />
+                              <text
+                                x={x0 + PILL_XPAD}
+                                y={my + metaFs + PILL_YPAD - 1}
+                                fontSize={metaFs}
+                                fontWeight={750}
+                                fontFamily={BRAND_FONT}
+                                fill="rgba(255,255,255,0.9)"
+                                style={{ fontVariantNumeric: 'tabular-nums' as const }}
+                              >
+                                {metaText}
+                              </text>
+                            </g>
+                          );
+                        })()
+                      : null}
 
-                    {showInsight && insightText && insightText.length > 0 ? (
-                      (() => {
-                        const iy =
-                          y0 +
-                          nameDim.h +
-                          (showMeta && metaText ? PILL_GAP + (metaDim?.h ?? 0) : 0) +
-                          PILL_GAP;
-                        const id = insightDim ?? pillDims(insightText, metaFs, maxPillW);
-                        return (
-                          <g>
-                            <rect
-                              x={x0}
-                              y={iy}
-                              width={id.w}
-                              height={id.h}
-                              rx={12}
-                              fill="rgba(255,255,255,0.14)"
-                              stroke="rgba(255,255,255,0.18)"
-                              strokeWidth={1}
-                            />
-                            <text
-                              x={x0 + PILL_XPAD}
-                              y={iy + metaFs + PILL_YPAD - 1}
-                              fontSize={metaFs}
-                              fontWeight={750}
-                              fontFamily={BRAND_FONT}
-                              fill="rgba(255,255,255,0.9)"
-                            >
-                              {insightText}
-                            </text>
-                          </g>
-                        );
-                      })()
-                    ) : null}
+                    {showInsight && insightText && insightText.length > 0
+                      ? (() => {
+                          const iy =
+                            y0 +
+                            nameDim.h +
+                            (showMeta && metaText ? PILL_GAP + (metaDim?.h ?? 0) : 0) +
+                            PILL_GAP;
+                          const id = insightDim ?? pillDims(insightText, metaFs, maxPillW);
+                          return (
+                            <g>
+                              <rect
+                                x={x0}
+                                y={iy}
+                                width={id.w}
+                                height={id.h}
+                                rx={12}
+                                fill="rgba(255,255,255,0.14)"
+                                stroke="rgba(255,255,255,0.18)"
+                                strokeWidth={1}
+                              />
+                              <text
+                                x={x0 + PILL_XPAD}
+                                y={iy + metaFs + PILL_YPAD - 1}
+                                fontSize={metaFs}
+                                fontWeight={750}
+                                fontFamily={BRAND_FONT}
+                                fill="rgba(255,255,255,0.9)"
+                              >
+                                {insightText}
+                              </text>
+                            </g>
+                          );
+                        })()
+                      : null}
                   </g>
                 );
               })()}
@@ -404,7 +400,8 @@ export function MosaicView(props: {
           const showLabel = t.w >= 14 && t.h >= 14 && displayLabel.length > 0;
           const [parentId] = t.id.split(':');
           const parent = parentId ? tileById.get(parentId) : undefined;
-          const denom = parent && Number.isFinite(parent.value) && parent.value > 0 ? parent.value : 0;
+          const denom =
+            parent && Number.isFinite(parent.value) && parent.value > 0 ? parent.value : 0;
           const nestedShare = denom > 0 ? t.value / denom : 0;
           const nestedMetaText = fitSingleLine(
             `${moneyFmt.format(t.value)}${denom > 0 ? ` · ${pctFmt.format(nestedShare)}` : ''}`,
@@ -437,40 +434,40 @@ export function MosaicView(props: {
                 stroke="rgba(255,255,255,0.5)"
                 strokeWidth={1}
               />
-              {showMeta && nestedMetaText ? (
-                (() => {
-                  const fs2 = 10;
-                  const maxW = Math.max(0, t.w - 12);
-                  const d = pillDims(nestedMetaText, fs2, maxW);
-                  const x0 = t.x + 6;
-                  const y0 = t.y + t.h - d.h - 6;
-                  return (
-                    <g pointerEvents="none" aria-hidden>
-                      <rect
-                        x={x0}
-                        y={y0}
-                        width={d.w}
-                        height={d.h}
-                        rx={10}
-                        fill="rgba(0,0,0,0.22)"
-                        stroke="rgba(255,255,255,0.18)"
-                        strokeWidth={1}
-                      />
-                      <text
-                        x={x0 + PILL_XPAD}
-                        y={y0 + fs2 + PILL_YPAD - 2}
-                        fontSize={fs2}
-                        fontWeight={750}
-                        fontFamily={BRAND_FONT}
-                        fill="rgba(255,255,255,0.9)"
-                        style={{ fontVariantNumeric: 'tabular-nums' as const }}
-                      >
-                        {nestedMetaText}
-                      </text>
-                    </g>
-                  );
-                })()
-              ) : null}
+              {showMeta && nestedMetaText
+                ? (() => {
+                    const fs2 = 10;
+                    const maxW = Math.max(0, t.w - 12);
+                    const d = pillDims(nestedMetaText, fs2, maxW);
+                    const x0 = t.x + 6;
+                    const y0 = t.y + t.h - d.h - 6;
+                    return (
+                      <g pointerEvents="none" aria-hidden>
+                        <rect
+                          x={x0}
+                          y={y0}
+                          width={d.w}
+                          height={d.h}
+                          rx={10}
+                          fill="rgba(0,0,0,0.22)"
+                          stroke="rgba(255,255,255,0.18)"
+                          strokeWidth={1}
+                        />
+                        <text
+                          x={x0 + PILL_XPAD}
+                          y={y0 + fs2 + PILL_YPAD - 2}
+                          fontSize={fs2}
+                          fontWeight={750}
+                          fontFamily={BRAND_FONT}
+                          fill="rgba(255,255,255,0.9)"
+                          style={{ fontVariantNumeric: 'tabular-nums' as const }}
+                        >
+                          {nestedMetaText}
+                        </text>
+                      </g>
+                    );
+                  })()
+                : null}
               {showLabel ? (
                 <text
                   x={cx}
