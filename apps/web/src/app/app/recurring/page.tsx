@@ -17,7 +17,7 @@ export default async function RecurringPage(props: { searchParams: Promise<{ sou
         <h1 className="pageTitle">Recurring</h1>
         <div className="pageMeta">
           <div className="pageTagline">
-            {(artifacts?.recurring ?? []).length} detected recurring charges
+            {summary.recurring.length} detected recurring charges
           </div>
           <Badge tone="good">Demo Data</Badge>
         </div>
