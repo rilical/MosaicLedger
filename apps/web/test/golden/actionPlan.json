@@ -1,0 +1,97 @@
+[
+  {
+    "actionType": "cap",
+    "confidence": 0.7,
+    "effortScore": 0.55,
+    "expectedMonthlySavings": 300,
+    "explanation": "Last month was $1200.00. A 25% reduction frees ~$300.00/mo.",
+    "id": "t_f52a7b4c",
+    "reasons": [
+      "Category is among top spend areas",
+      "Current spend: $1200.00/mo",
+      "Suggested cap (25% reduction): $900/mo",
+      "Delta (savings): $300.00/mo"
+    ],
+    "target": {
+      "kind": "category",
+      "value": "Housing"
+    },
+    "title": "Cap Housing to $900/mo"
+  },
+  {
+    "actionType": "cap",
+    "confidence": 0.7,
+    "effortScore": 0.55,
+    "expectedMonthlySavings": 44.20749999999998,
+    "explanation": "Last month was $176.83. A 25% reduction frees ~$44.21/mo.",
+    "id": "t_89e9c294",
+    "reasons": [
+      "Category is among top spend areas",
+      "Current spend: $176.83/mo",
+      "Suggested cap (25% reduction): $133/mo",
+      "Delta (savings): $44.21/mo"
+    ],
+    "target": {
+      "kind": "category",
+      "value": "Groceries"
+    },
+    "title": "Cap Groceries to $133/mo"
+  },
+  {
+    "actionType": "cancel",
+    "confidence": 0.7923673704757979,
+    "effortScore": 0.15,
+    "expectedMonthlySavings": 6.633333333333333,
+    "explanation": "Detected a biweekly recurring charge. Canceling saves about $6.63/mo.",
+    "id": "t_8e7b6d5b",
+    "reasons": [
+      "Recurring pattern detected",
+      "Cadence: biweekly",
+      "Typical amount: $6.63/mo",
+      "Confidence: 79%"
+    ],
+    "target": {
+      "kind": "merchant",
+      "value": "STARBUCKS"
+    },
+    "title": "Cancel STARBUCKS"
+  },
+  {
+    "actionType": "cap",
+    "confidence": 0.7,
+    "effortScore": 0.55,
+    "expectedMonthlySavings": 20.185000000000002,
+    "explanation": "Last month was $80.74. A 25% reduction frees ~$20.19/mo.",
+    "id": "t_75b318f8",
+    "reasons": [
+      "Category is among top spend areas",
+      "Current spend: $80.74/mo",
+      "Suggested cap (25% reduction): $61/mo",
+      "Delta (savings): $20.19/mo"
+    ],
+    "target": {
+      "kind": "category",
+      "value": "Dining"
+    },
+    "title": "Cap Dining to $61/mo"
+  },
+  {
+    "actionType": "substitute",
+    "confidence": 0.6,
+    "effortScore": 0.65,
+    "expectedMonthlySavings": 21.294,
+    "explanation": "Delivery spend was $60.84. Swapping a couple orders can save roughly $21.29/mo.",
+    "id": "t_5a684bf3",
+    "reasons": [
+      "High discretionary spend detected for delivery",
+      "Current spend: $60.84/mo",
+      "Heuristic: 35% of delivery spend is avoidable",
+      "Delta (savings): $21.29/mo"
+    ],
+    "target": {
+      "kind": "merchant",
+      "value": "DOORDASH"
+    },
+    "title": "Swap 2 delivery orders for groceries"
+  }
+]

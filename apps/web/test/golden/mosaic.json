@@ -1,0 +1,84 @@
+{
+  "tiles": [
+    {
+      "color": "#a78bfa",
+      "h": 630,
+      "id": "Housing",
+      "label": "Housing",
+      "value": 1200,
+      "w": 694,
+      "x": 10,
+      "y": 10
+    },
+    {
+      "color": "#eab308",
+      "h": 223,
+      "id": "Groceries",
+      "label": "Groceries",
+      "value": 176.82999999999998,
+      "w": 276,
+      "x": 714,
+      "y": 10
+    },
+    {
+      "color": "#22c55e",
+      "h": 201,
+      "id": "Dining",
+      "label": "Dining",
+      "value": 80.74000000000001,
+      "w": 134,
+      "x": 714,
+      "y": 243
+    },
+    {
+      "color": "#14b8a6",
+      "h": 201,
+      "id": "Utilities",
+      "label": "Utilities",
+      "value": 79.99,
+      "w": 132,
+      "x": 858,
+      "y": 243
+    },
+    {
+      "color": "#60a5fa",
+      "h": 95,
+      "id": "Shopping",
+      "label": "Shopping",
+      "value": 47.12,
+      "w": 158,
+      "x": 714,
+      "y": 454
+    },
+    {
+      "color": "#fb7185",
+      "h": 81,
+      "id": "Transport",
+      "label": "Transport",
+      "value": 40.47,
+      "w": 158,
+      "x": 714,
+      "y": 559
+    },
+    {
+      "color": "#f97316",
+      "h": 102,
+      "id": "Health",
+      "label": "Health",
+      "value": 35,
+      "w": 108,
+      "x": 882,
+      "y": 454
+    },
+    {
+      "color": "#60a5fa",
+      "h": 74,
+      "id": "Entertainment",
+      "label": "Entertainment",
+      "value": 26.48,
+      "w": 108,
+      "x": 882,
+      "y": 566
+    }
+  ]
+}

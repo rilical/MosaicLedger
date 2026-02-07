@@ -1,0 +1,26 @@
+{
+  "byCategory": {
+    "Dining": 80.74000000000001,
+    "Entertainment": 26.48,
+    "Groceries": 176.82999999999998,
+    "Health": 35,
+    "Housing": 1200,
+    "Shopping": 47.12,
+    "Transport": 40.47,
+    "Utilities": 79.99
+  },
+  "byMerchant": {
+    "AMAZON MKTPLACE": 47.12,
+    "COMCAST CABLE": 79.99,
+    "DOORDASH": 60.84,
+    "GIANT EAGLE": 176.82999999999998,
+    "GYM MEMBERSHIP": 35,
+    "NETFLIX.": 15.49,
+    "RENT": 1200,
+    "SPOTIFY USA": 10.99,
+    "STARBUCKS": 19.9,
+    "UBER TRIP": 40.47
+  },
+  "totalSpend": 1686.63,
+  "transactionCount": 15
+}
