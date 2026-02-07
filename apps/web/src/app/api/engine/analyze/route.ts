@@ -9,6 +9,7 @@ import { hasSupabaseEnv, parseBooleanEnv } from '../../../../lib/env';
 import { envFlags } from '../../../../lib/flags';
 import { hasPlaidEnv, plaidServerClient } from '../../../../lib/plaid/serverClient';
 import { supabaseServer } from '../../../../lib/supabase/server';
+import { applyFixtureSyncState, getPlaidSyncFixture } from '@mosaicledger/banking';
 
 export async function GET() {
   if (envFlags.demoMode || envFlags.judgeMode || !hasSupabaseEnv()) {
@@ -58,34 +59,48 @@ export async function POST(request: Request) {
   let artifacts;
   const { data: plaidItems } = await supabase
     .from('plaid_items')
-    .select('id,access_token')
+    .select('id,access_token,provider')
     .eq('user_id', user.id)
     .eq('status', 'active')
     .order('created_at', { ascending: false })
     .limit(1);
 
   const firstItem = plaidItems?.[0];
-  if (firstItem && hasPlaidEnv()) {
-    const accessToken = firstItem.access_token as string;
-    const end = new Date().toISOString().slice(0, 10);
-    const start = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  if (firstItem) {
+    const provider = (firstItem as { provider?: unknown }).provider;
 
-    const plaid = plaidServerClient();
-    const txnResp = await plaid.transactionsGet({
-      access_token: accessToken,
-      start_date: start,
-      end_date: end,
-      options: { count: 500 },
-    });
+    if (!hasPlaidEnv() || provider === 'plaid_fixture') {
+      const state = applyFixtureSyncState(getPlaidSyncFixture());
+      const raw = state.map((t) => ({
+        date: t.date,
+        name: t.merchant_name ?? t.name,
+        amount: t.amount,
+        category: t.personal_finance_category?.primary ?? t.category?.[0] ?? undefined,
+      }));
 
-    const raw = txnResp.data.transactions.map((t) => ({
-      date: t.date,
-      name: t.merchant_name ?? t.name,
-      amount: t.amount,
-      category: t.personal_finance_category?.primary ?? t.category?.[0] ?? undefined,
-    }));
+      artifacts = computeBankArtifacts(raw, body);
+    } else {
+      const accessToken = firstItem.access_token as string;
+      const end = new Date().toISOString().slice(0, 10);
+      const start = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
-    artifacts = computeBankArtifacts(raw, body);
+      const plaid = plaidServerClient();
+      const txnResp = await plaid.transactionsGet({
+        access_token: accessToken,
+        start_date: start,
+        end_date: end,
+        options: { count: 500 },
+      });
+
+      const raw = txnResp.data.transactions.map((t) => ({
+        date: t.date,
+        name: t.merchant_name ?? t.name,
+        amount: t.amount,
+        category: t.personal_finance_category?.primary ?? t.category?.[0] ?? undefined,
+      }));
+
+      artifacts = computeBankArtifacts(raw, body);
+    }
 
     // Best-effort: record a "last sync" timestamp. Do not block the response if this fails.
     try {

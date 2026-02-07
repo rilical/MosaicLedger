@@ -10,7 +10,7 @@ export async function POST() {
 
   // Never block demos on Plaid availability.
   if (judgeMode || demoMode || !hasPlaidEnv()) {
-    return NextResponse.json({ ok: true, linkToken: 'demo-link-token' });
+    return NextResponse.json({ ok: true, mode: 'fixture' as const });
   }
 
   const supabase = await supabaseServer();
@@ -29,5 +29,5 @@ export async function POST() {
     country_codes: [CountryCode.Us],
   });
 
-  return NextResponse.json({ ok: true, linkToken: resp.data.link_token });
+  return NextResponse.json({ ok: true, mode: 'plaid' as const, linkToken: resp.data.link_token });
 }
