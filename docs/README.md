@@ -13,3 +13,4 @@
 - `docs/BUSINESS.md`: business path and expansion
 - `docs/HACKATHON_RUNBOOK.md`: hour-by-hour plan
 - `docs/MCP.md`: running the MCP server
+- `docs/RELEASE_CHECKLIST.md`: expo day checklist + reset instructions
