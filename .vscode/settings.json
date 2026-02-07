@@ -26,12 +26,7 @@
     "**/.next": true,
     "**/dist": true
   },
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact"
-  ],
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
   "prettier.requireConfig": true,
   "terminal.integrated.defaultProfile.linux": "bash",
   "terminal.integrated.cwd": "${workspaceFolder}"

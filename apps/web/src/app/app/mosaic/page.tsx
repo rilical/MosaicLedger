@@ -1,19 +1,24 @@
-import { getDemoTransactions } from '@mosaicledger/banking';
-import {
-  normalizeRawTransactions,
-  recommendActions,
-  summarizeTransactions,
-} from '@mosaicledger/core';
-import { buildTreemapTiles } from '@mosaicledger/mosaic';
+'use client';
+
+import * as React from 'react';
 import { MosaicView } from '../../../components/MosaicView';
 import { RecurringPanel } from '../../../components/RecurringPanel';
 import { ActionsPanel } from '../../../components/ActionsPanel';
 import { Badge, Card, CardBody, CardHeader, CardTitle } from '../../../components/ui';
+import { AnalysisControls } from '../../../components/Analysis/AnalysisControls';
+import {
+  toAnalyzeRequest,
+  useAnalysisSettings,
+} from '../../../components/Analysis/useAnalysisSettings';
+import { useAnalysis } from '../../../components/Analysis/useAnalysis';
 
 export default function MosaicPage() {
   const { settings, setSettings } = useAnalysisSettings();
   const req = React.useMemo(() => toAnalyzeRequest(settings), [settings]);
   const { artifacts, loading, error, recompute } = useAnalysis(req);
+
+  const spend = artifacts?.summary.totalSpend ?? 0;
+  const txCount = artifacts?.summary.transactionCount ?? 0;
 
   return (
     <div className="pageStack">
@@ -21,13 +26,11 @@ export default function MosaicPage() {
         <h1 className="pageTitle">Mosaic</h1>
         <div className="pageMeta">
           <div className="pageTagline">
-            {artifacts
-              ? `${artifacts.summary.transactionCount} transactions · $${artifacts.summary.totalSpend.toFixed(
-                  2,
-                )} spend`
-              : 'Computing…'}
+            {artifacts ? `${txCount} transactions · $${spend.toFixed(2)} spend` : 'Computing…'}
           </div>
-          <Badge tone="good">Demo Data</Badge>
+          <Badge tone={error ? 'warn' : loading ? 'warn' : 'good'}>
+            {error ? 'Error' : loading ? 'Busy' : 'Ready'}
+          </Badge>
         </div>
       </div>
 
@@ -50,7 +53,7 @@ export default function MosaicPage() {
             <CardTitle>Month Mosaic</CardTitle>
           </CardHeader>
           <CardBody>
-            <MosaicView tiles={tiles} />
+            <MosaicView tiles={artifacts?.mosaic.tiles ?? []} />
           </CardBody>
         </Card>
 
@@ -60,7 +63,7 @@ export default function MosaicPage() {
               <CardTitle>Recurring</CardTitle>
             </CardHeader>
             <CardBody>
-              <RecurringPanel recurring={summary.recurring} />
+              <RecurringPanel recurring={artifacts?.recurring ?? []} />
             </CardBody>
           </Card>
 
@@ -69,7 +72,7 @@ export default function MosaicPage() {
               <CardTitle>Next Actions</CardTitle>
             </CardHeader>
             <CardBody>
-              <ActionsPanel actions={actions.slice(0, 5)} />
+              <ActionsPanel actions={(artifacts?.actionPlan ?? []).slice(0, 5)} />
             </CardBody>
           </Card>
         </div>
