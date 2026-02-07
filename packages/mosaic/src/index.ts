@@ -1,2 +1,2 @@
-export * from './treemap';
-export * from './export';
+export * from './treemap.js';
+export * from './export.js';

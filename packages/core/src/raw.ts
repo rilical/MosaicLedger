@@ -1,5 +1,5 @@
-import { normalizeMerchantName, stableId } from './normalize';
-import type { NormalizedTransaction } from './types';
+import { normalizeMerchantName, stableId } from './normalize.js';
+import type { NormalizedTransaction } from './types.js';
 
 export type RawTransactionInput = {
   date: string; // YYYY-MM-DD

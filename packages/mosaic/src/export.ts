@@ -1,4 +1,4 @@
-import type { TreemapTile } from './treemap';
+import type { TreemapTile } from './treemap.js';
 
 export type ExportPlanItem = {
   title: string;

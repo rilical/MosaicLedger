@@ -1,5 +1,5 @@
-import type { NormalizedTransaction, RecurringCharge } from './types';
-import { stableId } from './normalize';
+import type { NormalizedTransaction, RecurringCharge } from './types.js';
+import { stableId } from './normalize.js';
 
 function median(nums: number[]): number {
   const arr = [...nums].sort((a, b) => a - b);

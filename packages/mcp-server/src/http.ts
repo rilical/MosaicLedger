@@ -8,8 +8,8 @@ import {
   NormalizedTransactionSchema,
   SummarySchema,
   SCHEMA_VERSION,
-} from './schemas';
-import { analyzeTransactionsTool, buildActionPlanTool, buildMosaicSpecTool } from './tools';
+} from './schemas.js';
+import { analyzeTransactionsTool, buildActionPlanTool, buildMosaicSpecTool } from './tools.js';
 
 const DEFAULT_ALLOWED_ORIGINS = new Set([
   'http://localhost:3000',
@@ -76,7 +76,9 @@ function json(res: http.ServerResponse, status: number, data: unknown): void {
 }
 
 export async function startHttpServer(): Promise<void> {
-  const host = process.env.HOST || '127.0.0.1';
+  // In hosted environments we must bind to all interfaces, otherwise the process
+  // can be "up" but unreachable behind the platform proxy.
+  const host = process.env.HOST || '0.0.0.0';
   const rawPort = process.env.PORT;
   const port = rawPort ? Number.parseInt(rawPort, 10) : 8787;
   if (!Number.isFinite(port) || port <= 0 || port > 65535) {

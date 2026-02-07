@@ -1,4 +1,4 @@
-import type { NormalizedTransaction } from './types';
+import type { NormalizedTransaction } from './types.js';
 
 export type TransactionFilters = {
   excludeTransfers: boolean;

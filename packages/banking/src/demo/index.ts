@@ -15,4 +15,4 @@ export function getDemoTransactions(): DemoRawTransaction[] {
   return DEMO_DATASET.map((t) => ({ ...t }));
 }
 
-export * from './plaidSyncFixture';
+export * from './plaidSyncFixture.js';
