@@ -1,32 +1,158 @@
-import { Card, CardBody, CardHeader, CardTitle } from '../../../components/ui';
+'use client';
+
+import * as React from 'react';
+import { useRouter } from 'next/navigation';
+import { usePlaidLink } from 'react-plaid-link';
+import { Button, Badge, Card, CardBody, CardHeader, CardTitle } from '../../../components/ui';
+
+type Step = 'idle' | 'fetching_token' | 'link_ready' | 'exchanging' | 'done' | 'error';
 
 export default function BankConnectPage() {
+  const router = useRouter();
+  const [step, setStep] = React.useState<Step>('idle');
+  const [linkToken, setLinkToken] = React.useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
+
+  // 1. Fetch a link token from our API.
+  const fetchLinkToken = React.useCallback(async () => {
+    setStep('fetching_token');
+    setErrorMsg(null);
+    try {
+      const resp = await fetch('/api/plaid/link-token', { method: 'POST' });
+      const json = (await resp.json()) as { ok: boolean; linkToken?: string; error?: string };
+      if (!resp.ok || !json.ok || !json.linkToken) {
+        throw new Error(json.error ?? 'Failed to create link token');
+      }
+      setLinkToken(json.linkToken);
+      setStep('link_ready');
+    } catch (e: unknown) {
+      setErrorMsg(e instanceof Error ? e.message : 'Failed to create link token');
+      setStep('error');
+    }
+  }, []);
+
+  // 2. Plaid Link hook.
+  const { open, ready } = usePlaidLink({
+    token: linkToken,
+    onSuccess: async (publicToken) => {
+      setStep('exchanging');
+      try {
+        const resp = await fetch('/api/plaid/exchange-token', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ publicToken }),
+        });
+        const json = (await resp.json()) as { ok: boolean; error?: string };
+        if (!resp.ok || !json.ok) {
+          throw new Error(json.error ?? 'Token exchange failed');
+        }
+        setStep('done');
+        // Navigate to Mosaic after a brief pause so the user sees success.
+        setTimeout(() => router.push('/app/mosaic'), 1200);
+      } catch (e: unknown) {
+        setErrorMsg(e instanceof Error ? e.message : 'Token exchange failed');
+        setStep('error');
+      }
+    },
+    onExit: (err) => {
+      if (err) {
+        setErrorMsg(err.display_message ?? err.error_message ?? 'Plaid Link closed with error');
+        setStep('error');
+      } else {
+        // User closed without completing — reset to idle.
+        setStep('idle');
+      }
+    },
+  });
+
+  // Auto-open Plaid Link once the token is ready.
+  React.useEffect(() => {
+    if (step === 'link_ready' && ready) {
+      open();
+    }
+  }, [step, ready, open]);
+
   return (
     <div className="pageStack" style={{ maxWidth: 980 }}>
       <div className="pageHeader">
         <h1 className="pageTitle">Connect Bank</h1>
         <div className="pageMeta">
-          <div className="pageTagline">Plaid scaffolding for future live sync.</div>
+          <div className="pageTagline">Link your bank account via Plaid to import real transactions.</div>
+          <Badge tone="good">Sandbox</Badge>
         </div>
       </div>
+
       <Card>
         <CardHeader>
-          <CardTitle>Connect Bank (Scaffold)</CardTitle>
+          <CardTitle>Bank Connection</CardTitle>
         </CardHeader>
         <CardBody>
-          <div className="small" style={{ display: 'grid', gap: 10 }}>
-            <div>
-              Plaid integration is intentionally not wired in this repo yet. The demo path must
-              never depend on external APIs, provider approvals, or network reliability.
-            </div>
-            <div>
-              Next steps live in:
-              <ul style={{ margin: '8px 0 0', paddingLeft: 18, display: 'grid', gap: 6 }}>
-                <li>`packages/banking`: Plaid-first provider interface + demo fixtures</li>
-                <li>`apps/web`: future `/api/plaid/*` routes (server-only)</li>
-              </ul>
-            </div>
+          <div style={{ display: 'grid', gap: 14 }}>
+            {step === 'idle' && (
+              <>
+                <div className="small">
+                  Click the button below to open Plaid Link. In sandbox mode, use the test
+                  credentials: <strong>user_good</strong> / <strong>pass_good</strong>.
+                </div>
+                <div className="buttonRow">
+                  <Button variant="primary" onClick={fetchLinkToken}>
+                    Connect Bank Account
+                  </Button>
+                  <Button onClick={() => router.push('/app/mosaic?source=demo')}>
+                    Use Demo Data Instead
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {step === 'fetching_token' && (
+              <div className="small">Preparing Plaid Link&hellip;</div>
+            )}
+
+            {step === 'link_ready' && (
+              <div className="small">Opening Plaid Link&hellip;</div>
+            )}
+
+            {step === 'exchanging' && (
+              <div className="small">Linking your account&hellip;</div>
+            )}
+
+            {step === 'done' && (
+              <div className="small" style={{ color: 'rgba(34,197,94,0.95)' }}>
+                Bank linked successfully! Redirecting to Mosaic&hellip;
+              </div>
+            )}
+
+            {step === 'error' && (
+              <>
+                <div className="small" style={{ color: 'rgba(234,179,8,0.95)' }}>
+                  {errorMsg ?? 'Something went wrong.'}
+                </div>
+                <div className="buttonRow">
+                  <Button variant="primary" onClick={fetchLinkToken}>
+                    Try Again
+                  </Button>
+                  <Button onClick={() => router.push('/app/mosaic?source=demo')}>
+                    Use Demo Data Instead
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
+        </CardBody>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>How It Works</CardTitle>
+        </CardHeader>
+        <CardBody>
+          <ol style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 8 }}>
+            <li>Click &ldquo;Connect Bank Account&rdquo; to open Plaid&rsquo;s secure Link modal</li>
+            <li>Select your bank and sign in (sandbox: user_good / pass_good)</li>
+            <li>We exchange the token and store a secure connection</li>
+            <li>Your transactions feed into the Mosaic analysis engine</li>
+          </ol>
         </CardBody>
       </Card>
     </div>

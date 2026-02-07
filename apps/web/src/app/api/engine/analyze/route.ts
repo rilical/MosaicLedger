@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server';
-import { computeDemoArtifacts, type AnalyzeRequestV1 } from '../../../../lib/analysis/compute';
+import {
+  computeBankArtifacts,
+  computeDemoArtifacts,
+  type AnalyzeRequestV1,
+} from '../../../../lib/analysis/compute';
 import { getLatestAnalysisRun, insertAnalysisRun } from '../../../../lib/analysis/storage';
 import { hasSupabaseEnv, parseBooleanEnv } from '../../../../lib/env';
 import { envFlags } from '../../../../lib/flags';
+import { hasPlaidEnv, plaidServerClient } from '../../../../lib/plaid/serverClient';
 import { supabaseServer } from '../../../../lib/supabase/server';
 
 export async function GET() {
@@ -49,9 +54,42 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
   }
 
-  // Hackathon-safe default: run the deterministic engine over the demo dataset.
-  // Real bank sync will replace the input source later.
-  const artifacts = computeDemoArtifacts(body);
+  // If user has a linked bank account, use real transactions.
+  let artifacts;
+  const { data: plaidItems } = await supabase
+    .from('plaid_items')
+    .select('access_token')
+    .eq('user_id', user.id)
+    .eq('status', 'active')
+    .order('created_at', { ascending: false })
+    .limit(1);
+
+  const firstItem = plaidItems?.[0];
+  if (firstItem && hasPlaidEnv()) {
+    const accessToken = firstItem.access_token as string;
+    const end = new Date().toISOString().slice(0, 10);
+    const start = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+    const plaid = plaidServerClient();
+    const txnResp = await plaid.transactionsGet({
+      access_token: accessToken,
+      start_date: start,
+      end_date: end,
+      options: { count: 500 },
+    });
+
+    const raw = txnResp.data.transactions.map((t) => ({
+      date: t.date,
+      name: t.merchant_name ?? t.name,
+      amount: t.amount,
+      category: t.personal_finance_category?.primary ?? t.category?.[0] ?? undefined,
+    }));
+
+    artifacts = computeBankArtifacts(raw, body);
+  } else {
+    // Fallback to demo data if no bank linked.
+    artifacts = computeDemoArtifacts(body);
+  }
 
   try {
     await insertAnalysisRun(supabase, user.id, artifacts);

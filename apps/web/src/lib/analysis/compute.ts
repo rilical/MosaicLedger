@@ -6,6 +6,7 @@ import {
   isWithinRange,
   monthStart,
   normalizeRawTransactions,
+  type RawTransactionInput,
   recommendActions,
   summarizeTransactions,
 } from '@mosaicledger/core';
@@ -57,6 +58,48 @@ function resolveRange(
   const start = monthStart(base);
   const end = endOfMonth(base);
   return { start, end };
+}
+
+export function computeBankArtifacts(
+  raw: RawTransactionInput[],
+  req: AnalyzeRequestV1 = {},
+): AnalysisArtifactsV1 {
+  const txnsAll = normalizeRawTransactions(raw, { source: 'bank', spendOnly: false });
+
+  const filters = {
+    ...DEFAULT_FILTERS,
+    ...req.filters,
+  };
+
+  const range = resolveRange(txnsAll, req);
+
+  const txns = applyTransactionFilters(txnsAll, filters).filter((t) =>
+    isWithinRange(t.date, range),
+  );
+  const summary = summarizeTransactions(txns);
+  const tiles = buildTreemapTiles(summary.byCategory);
+  const actions = recommendActions(
+    summary,
+    req.goal ?? {
+      goalType: 'save_by_date',
+      saveAmount: 200,
+      byDate: '2026-04-01',
+    },
+  );
+
+  return {
+    version: 1,
+    generatedAt: new Date().toISOString(),
+    summary: {
+      transactionCount: txns.length,
+      totalSpend: summary.totalSpend,
+      byCategory: summary.byCategory,
+      byMerchant: summary.byMerchant,
+    },
+    mosaic: { tiles },
+    recurring: summary.recurring,
+    actionPlan: actions,
+  };
 }
 
 export function computeDemoArtifacts(req: AnalyzeRequestV1 = {}): AnalysisArtifactsV1 {
