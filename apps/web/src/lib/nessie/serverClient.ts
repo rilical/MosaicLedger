@@ -125,6 +125,9 @@ export function nessieServerClient(): {
   listAccounts: (customerId: string) => Promise<NessieResult<NessieAccount[]>>;
   listPurchases: (accountId: string) => Promise<NessieResult<NessiePurchase[]>>;
   listDeposits: (accountId: string) => Promise<NessieResult<NessieDeposit[]>>;
+  createMerchant: (
+    payload: Record<string, unknown>,
+  ) => Promise<NessieResult<Record<string, unknown>>>;
 
   // Legacy aliases (keep to avoid churn across branches).
   getCustomers: () => Promise<NessieResult<NessieCustomer[]>>;
@@ -150,12 +153,18 @@ export function nessieServerClient(): {
     nessieFetch<NessiePurchase[]>(`/accounts/${encodeURIComponent(accountId)}/purchases`);
   const listDeposits = (accountId: string) =>
     nessieFetch<NessieDeposit[]>(`/accounts/${encodeURIComponent(accountId)}/deposits`);
+  const createMerchant = (payload: Record<string, unknown>) =>
+    nessieFetch<Record<string, unknown>>('/merchants', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
 
   return {
     listCustomers,
     listAccounts,
     listPurchases,
     listDeposits,
+    createMerchant,
 
     getCustomers: listCustomers,
     createCustomer: (payload) =>

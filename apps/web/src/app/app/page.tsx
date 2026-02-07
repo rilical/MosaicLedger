@@ -90,12 +90,46 @@ export default function ConnectPage() {
                       }),
                     });
                     const syncJson = (await syncResp.json()) as
-                      | { ok: true }
+                      | { ok: true; counts?: { purchases?: number } }
                       | { ok: false; error?: string };
                     if (!syncResp.ok || !syncJson.ok) {
                       throw new Error(
                         ('error' in syncJson ? syncJson.error : null) ?? 'Nessie sync failed',
                       );
+                    }
+
+                    // If the account has no purchases yet, simulate a week of activity so the Mosaic isn't empty.
+                    if (syncJson.counts?.purchases === 0) {
+                      try {
+                        await fetch('/api/nessie/simulate-week', {
+                          method: 'POST',
+                          headers: { 'content-type': 'application/json' },
+                          body: JSON.stringify({
+                            customerId: json.customerId,
+                            accountId: json.accountId,
+                          }),
+                        });
+                      } catch {
+                        // ignore; demo-safe fallback will still work
+                      }
+
+                      const syncResp2 = await fetch('/api/nessie/sync', {
+                        method: 'POST',
+                        headers: { 'content-type': 'application/json' },
+                        body: JSON.stringify({
+                          customerId: json.customerId,
+                          accountId: json.accountId,
+                        }),
+                      });
+                      const syncJson2 = (await syncResp2.json()) as
+                        | { ok: true }
+                        | { ok: false; error?: string };
+                      if (!syncResp2.ok || !syncJson2.ok) {
+                        throw new Error(
+                          ('error' in syncJson2 ? syncJson2.error : null) ??
+                            'Nessie sync failed after simulation',
+                        );
+                      }
                     }
 
                     patchAnalysisSettings({
