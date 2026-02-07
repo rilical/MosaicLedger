@@ -1,4 +1,4 @@
-import type { ActionRecommendation, Summary } from './types';
+import type { ActionRecommendation, Summary } from './types.js';
 
 export type ScenarioResult = {
   beforeSpend: number;

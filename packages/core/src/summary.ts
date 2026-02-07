@@ -1,5 +1,5 @@
-import type { NormalizedTransaction, Summary } from './types';
-import { detectRecurring } from './recurring';
+import type { NormalizedTransaction, Summary } from './types.js';
+import { detectRecurring } from './recurring.js';
 
 export function summarizeTransactions(transactions: NormalizedTransaction[]): Summary {
   const byCategory: Record<string, number> = {};

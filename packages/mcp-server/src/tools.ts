@@ -16,7 +16,7 @@ import {
   BuildMosaicSpecInputSchema,
   BuildMosaicSpecOutputSchema,
   SCHEMA_VERSION,
-} from './schemas';
+} from './schemas.js';
 
 export function analyzeTransactionsTool(input: unknown): {
   version: typeof SCHEMA_VERSION;

@@ -1,5 +1,5 @@
 import { hierarchy, treemap } from 'd3-hierarchy';
-import { colorForLabel } from './colors';
+import { colorForLabel } from './colors.js';
 
 export type TreemapTile = {
   id: string;

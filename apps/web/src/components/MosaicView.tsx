@@ -5,10 +5,11 @@ import type { TreemapTile } from '@mosaicledger/mosaic';
 
 export function MosaicView(props: {
   tiles: TreemapTile[];
+  totalSpend?: number;
   selectedId?: string;
   onTileClick?: (tile: TreemapTile) => void;
 }) {
-  const { tiles, selectedId, onTileClick } = props;
+  const { tiles, totalSpend, selectedId, onTileClick } = props;
   const [hover, setHover] = React.useState<TreemapTile | null>(null);
   const [isTransitioning, setIsTransitioning] = React.useState(false);
 
@@ -21,6 +22,8 @@ export function MosaicView(props: {
 
   const PADDING = 16;
   const CHAR_WIDTH_RATIO = 0.58;
+  const hasTotalSpend = typeof totalSpend === 'number' && Number.isFinite(totalSpend);
+  const hasPositiveTotalSpend = hasTotalSpend && totalSpend > 0;
 
   // Calculate dynamic font size based on tile area
   const calculateFontSize = (tile: TreemapTile): number => {
@@ -37,17 +40,39 @@ export function MosaicView(props: {
   };
 
   // Only show label if it fits inside the box (avoid overflow)
-  const labelFitsInTile = (tile: TreemapTile): boolean => {
-    const fs = calculateFontSize(tile);
+  const fitLabel = (tile: TreemapTile, fs: number): string | null => {
     const availW = tile.w - PADDING * 2;
     const availH = tile.h - PADDING * 2;
-    const estimatedWidth = tile.label.length * fs * CHAR_WIDTH_RATIO;
+    const maxChars = Math.floor(availW / (fs * CHAR_WIDTH_RATIO));
     const lineHeight = fs * 1.2;
-    return estimatedWidth <= availW && lineHeight <= availH;
+    if (availW <= 24 || availH <= lineHeight) return null;
+    if (maxChars <= 4) return null;
+    if (tile.label.length <= maxChars) return tile.label;
+    return tile.label.slice(0, Math.max(0, maxChars - 1)).trimEnd() + '…';
   };
+
+  const hoverPct =
+    hover && hasPositiveTotalSpend ? Math.min(1, Math.max(0, hover.value / totalSpend)) : 0;
 
   return (
     <div className="mosaicFrame">
+      <div className="mosaicHud" aria-hidden>
+        <div className="mosaicHudCard">
+          <div className="mosaicSwatch" style={{ background: hover ? hover.color : undefined }} />
+          <div style={{ display: 'grid', gap: 2 }}>
+            <div className="mosaicHudTitle">{hover ? hover.label : 'Hover a tile'}</div>
+            <div className="mosaicHudValue">
+              {hover
+                ? `$${hover.value.toFixed(2)}${
+                    hasPositiveTotalSpend ? ` · ${(hoverPct * 100).toFixed(1)}%` : ''
+                  }`
+                : hasTotalSpend
+                  ? `Total: $${totalSpend.toFixed(2)}`
+                  : 'Click a tile to drill down'}
+            </div>
+          </div>
+        </div>
+      </div>
       <svg viewBox="0 0 1000 650" className="mosaicCanvas" role="img">
         <defs>
           <filter id="glass-shadow" x="-20%" y="-20%" width="140%" height="140%">
@@ -58,76 +83,74 @@ export function MosaicView(props: {
           </filter>
         </defs>
         <rect x={0} y={0} width={1000} height={650} fill="rgba(255,255,255,0.02)" />
-        {tiles.map((t, index) => (
-          <g
-            key={t.id}
-            onMouseEnter={() => setHover(t)}
-            onMouseLeave={() => setHover(null)}
-            onClick={onTileClick ? () => onTileClick(t) : undefined}
-            onKeyDown={
-              onTileClick
-                ? (e) => {
-                    if (e.key === 'Enter' || e.key === ' ') onTileClick(t);
-                  }
-                : undefined
-            }
-            role={onTileClick ? 'button' : undefined}
-            tabIndex={onTileClick ? 0 : -1}
-            aria-label={onTileClick ? `Open ${t.label}` : undefined}
-            style={{
-              cursor: onTileClick ? 'pointer' : 'default',
-              transform: isTransitioning ? 'scale(0.8)' : 'scale(1)',
-              transformOrigin: '500px 325px',
-              opacity: isTransitioning ? 0 : 1,
-              transition: `transform 400ms ease ${index * 30}ms, opacity 400ms ease ${index * 30}ms`,
-            }}
-          >
-            <title>
-              {t.label} · ${t.value.toFixed(2)}
-            </title>
-            <rect
-              x={t.x}
-              y={t.y}
-              width={t.w}
-              height={t.h}
-              rx={10}
-              fill={t.color}
-              opacity={selectedId && selectedId !== t.id ? 0.35 : 0.78}
-              filter="url(#glass-shadow)"
-              stroke={selectedId === t.id ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.35)'}
-              strokeWidth={selectedId === t.id ? 2 : 1}
+        {tiles.map((t, index) => {
+          const fs = calculateFontSize(t);
+          const label = t.w > 80 && t.h > 30 ? fitLabel(t, fs) : null;
+
+          return (
+            <g
+              key={t.id}
+              onMouseEnter={() => setHover(t)}
+              onMouseLeave={() => setHover(null)}
+              onClick={onTileClick ? () => onTileClick(t) : undefined}
+              onKeyDown={
+                onTileClick
+                  ? (e) => {
+                      if (e.key === 'Enter' || e.key === ' ') onTileClick(t);
+                    }
+                  : undefined
+              }
+              role={onTileClick ? 'button' : undefined}
+              tabIndex={onTileClick ? 0 : -1}
+              aria-label={onTileClick ? `Open ${t.label}` : undefined}
               style={{
-                transform: hover === t ? 'translate(-2px, -4px)' : 'translate(0, 0)',
-                transition: 'transform 180ms ease, opacity 180ms ease',
+                cursor: onTileClick ? 'pointer' : 'default',
+                transform: isTransitioning ? 'scale(0.8)' : 'scale(1)',
+                transformOrigin: '500px 325px',
+                opacity: isTransitioning ? 0 : 1,
+                transition: `transform 400ms ease ${index * 30}ms, opacity 400ms ease ${
+                  index * 30
+                }ms`,
               }}
-            />
-            {t.w > 80 && t.h > 30 && labelFitsInTile(t) ? (
-              <text
-                x={t.x + 12}
-                y={t.y + calculateFontSize(t) + 8}
-                fontSize={calculateFontSize(t)}
-                fontWeight={600}
-                fill="rgba(255,255,255,0.95)"
-                filter="url(#text-shadow)"
+            >
+              <title>
+                {t.label} · ${t.value.toFixed(2)}
+              </title>
+              <rect
+                x={t.x}
+                y={t.y}
+                width={t.w}
+                height={t.h}
+                rx={10}
+                fill={t.color}
+                opacity={selectedId && selectedId !== t.id ? 0.35 : 0.78}
+                filter="url(#glass-shadow)"
+                stroke={selectedId === t.id ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.35)'}
+                strokeWidth={selectedId === t.id ? 2 : 1}
                 style={{
-                  transition: 'font-size 180ms ease',
+                  transform: hover === t ? 'translate(-2px, -4px)' : 'translate(0, 0)',
+                  transition: 'transform 180ms ease, opacity 180ms ease',
                 }}
-              >
-                {t.label}
-              </text>
-            ) : null}
-          </g>
-        ))}
+              />
+              {label ? (
+                <text
+                  x={t.x + 12}
+                  y={t.y + fs + 8}
+                  fontSize={fs}
+                  fontWeight={600}
+                  fill="rgba(255,255,255,0.95)"
+                  filter="url(#text-shadow)"
+                  style={{
+                    transition: 'font-size 180ms ease',
+                  }}
+                >
+                  {label}
+                </text>
+              ) : null}
+            </g>
+          );
+        })}
       </svg>
-      <div className="small" style={{ marginTop: 10 }}>
-        {hover ? (
-          <div>
-            <strong>{hover.label}</strong> · ${hover.value.toFixed(2)}
-          </div>
-        ) : (
-          <div>Hover a tile to see details.</div>
-        )}
-      </div>
     </div>
   );
 }

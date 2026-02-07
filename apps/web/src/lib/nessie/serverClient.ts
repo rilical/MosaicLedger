@@ -24,7 +24,10 @@ export type NessieResult<T> = NessieOk<T> | NessieError;
 function getBaseUrl(): string {
   // Hackathon docs commonly use `http://api.reimaginebanking.com`.
   // Allow override so teams can pin other hosts if needed.
-  return (process.env.NESSIE_BASE_URL ?? 'http://api.reimaginebanking.com').replace(/\/+$/, '');
+  const raw = (process.env.NESSIE_BASE_URL ?? 'http://api.nessieisreal.com').replace(/\/+$/, '');
+  // Nessie historically runs on plain HTTP; many environments fail on HTTPS for this host.
+  if (raw.startsWith('https://api.nessieisreal.com')) return raw.replace('https://', 'http://');
+  return raw;
 }
 
 function hasKey(): boolean {

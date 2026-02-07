@@ -8,7 +8,7 @@ import type { AnalysisSettings } from '../../components/Analysis/types';
 
 export default function ConnectPage() {
   const router = useRouter();
-  const { flags, setFlag } = useFlags();
+  const { flags } = useFlags();
   const [nessieStep, setNessieStep] = React.useState<'idle' | 'bootstrapping' | 'syncing'>('idle');
   const [nessieError, setNessieError] = React.useState<string | null>(null);
 
@@ -23,6 +23,85 @@ export default function ConnectPage() {
       // non-blocking
     }
   }
+
+  const canUseNessie = flags.nessieEnabled;
+
+  const connectNessie = React.useCallback(async () => {
+    setNessieStep('bootstrapping');
+    setNessieError(null);
+    try {
+      const resp = await fetch('/api/nessie/bootstrap', { method: 'POST' });
+      const json = (await resp.json()) as
+        | { ok: true; customerId?: string; accountId?: string; mode?: string }
+        | { ok: false; error?: string };
+      if (!resp.ok || !json.ok) {
+        throw new Error(('error' in json ? json.error : null) ?? 'Nessie bootstrap failed');
+      }
+
+      const customerId = typeof json.customerId === 'string' ? json.customerId.trim() : '';
+      const accountId = typeof json.accountId === 'string' ? json.accountId.trim() : '';
+      if (!customerId || !accountId) {
+        throw new Error('Nessie bootstrap did not return a customer/account id (check env + key).');
+      }
+
+      // Best-effort sync: if Supabase/auth are configured, persist purchases to avoid repeated sponsor calls.
+      // If sync fails (common in judge/demo deployments), we still proceed with live Nessie fetch.
+      if (json.mode !== 'env_noauth') {
+        try {
+          setNessieStep('syncing');
+          const syncResp = await fetch('/api/nessie/sync', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+              customerId,
+              accountId,
+            }),
+          });
+          const syncJson = (await syncResp.json()) as
+            | { ok: true; counts?: { purchases?: number } }
+            | { ok: false; error?: string };
+          if (syncResp.ok && syncJson.ok && (syncJson.counts?.purchases ?? 0) === 0) {
+            try {
+              await fetch('/api/nessie/simulate-week', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({
+                  customerId,
+                  accountId,
+                }),
+              });
+              await fetch('/api/nessie/sync', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({
+                  customerId,
+                  accountId,
+                }),
+              });
+            } catch {
+              // ignore
+            }
+          }
+        } catch {
+          // ignore (still proceed to live fetch)
+        }
+      }
+
+      patchAnalysisSettings({
+        source: 'nessie',
+        nessieCustomerId: customerId,
+        nessieAccountId: accountId,
+      });
+      router.push('/app/mosaic?source=nessie');
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Nessie bootstrap failed';
+      setNessieError(msg);
+      patchAnalysisSettings({ source: 'demo' });
+      router.push('/app/mosaic?source=demo');
+    } finally {
+      setNessieStep('idle');
+    }
+  }, [router]);
 
   return (
     <div className="pageStack" style={{ maxWidth: 980 }}>
@@ -39,130 +118,9 @@ export default function ConnectPage() {
         <CardBody>
           <div style={{ display: 'grid', gap: 14 }}>
             <div className="small">
-              Bank sync is optional and may fail live. Demo data is the always-works path and is
-              what the deterministic engine is tested against in CI.
-            </div>
-
-            <div className="buttonRow">
-              <Button
-                variant="primary"
-                disabled={!flags.plaidEnabled}
-                onClick={() => router.push('/app/bank')}
-              >
-                Connect Bank (Plaid)
-              </Button>
-
-              <Button
-                onClick={() => {
-                  patchAnalysisSettings({ source: 'demo' });
-                  router.push('/app/mosaic?source=demo');
-                }}
-              >
-                Use Demo Data
-              </Button>
-
-              <Button
-                disabled={!flags.nessieEnabled || nessieStep !== 'idle'}
-                onClick={async () => {
-                  setNessieStep('bootstrapping');
-                  setNessieError(null);
-                  try {
-                    const resp = await fetch('/api/nessie/bootstrap', { method: 'POST' });
-                    const json = (await resp.json()) as
-                      | { ok: true; customerId?: string; accountId?: string }
-                      | { ok: false; error?: string };
-                    if (!resp.ok || !json.ok) {
-                      throw new Error(
-                        ('error' in json ? json.error : null) ?? 'Nessie bootstrap failed',
-                      );
-                    }
-
-                    // Pull accounts + purchases and persist into `transactions_normalized`
-                    // so the engine can re-run without sponsor network calls.
-                    setNessieStep('syncing');
-                    const syncResp = await fetch('/api/nessie/sync', {
-                      method: 'POST',
-                      headers: { 'content-type': 'application/json' },
-                      body: JSON.stringify({
-                        customerId: json.customerId,
-                        accountId: json.accountId,
-                      }),
-                    });
-                    const syncJson = (await syncResp.json()) as
-                      | { ok: true; counts?: { purchases?: number } }
-                      | { ok: false; error?: string };
-                    if (!syncResp.ok || !syncJson.ok) {
-                      throw new Error(
-                        ('error' in syncJson ? syncJson.error : null) ?? 'Nessie sync failed',
-                      );
-                    }
-
-                    // If the account has no purchases yet, simulate a week of activity so the Mosaic isn't empty.
-                    if (syncJson.counts?.purchases === 0) {
-                      try {
-                        await fetch('/api/nessie/simulate-week', {
-                          method: 'POST',
-                          headers: { 'content-type': 'application/json' },
-                          body: JSON.stringify({
-                            customerId: json.customerId,
-                            accountId: json.accountId,
-                          }),
-                        });
-                      } catch {
-                        // ignore; demo-safe fallback will still work
-                      }
-
-                      const syncResp2 = await fetch('/api/nessie/sync', {
-                        method: 'POST',
-                        headers: { 'content-type': 'application/json' },
-                        body: JSON.stringify({
-                          customerId: json.customerId,
-                          accountId: json.accountId,
-                        }),
-                      });
-                      const syncJson2 = (await syncResp2.json()) as
-                        | { ok: true }
-                        | { ok: false; error?: string };
-                      if (!syncResp2.ok || !syncJson2.ok) {
-                        throw new Error(
-                          ('error' in syncJson2 ? syncJson2.error : null) ??
-                            'Nessie sync failed after simulation',
-                        );
-                      }
-                    }
-
-                    patchAnalysisSettings({
-                      source: 'nessie',
-                      nessieCustomerId: json.customerId,
-                      nessieAccountId: json.accountId,
-                    });
-                    router.push('/app/mosaic?source=nessie');
-                  } catch (e: unknown) {
-                    const msg = e instanceof Error ? e.message : 'Nessie bootstrap failed';
-                    setNessieError(msg);
-                    // Demo-safe fallback: force the always-works path.
-                    setFlag('demoMode', true);
-                    setFlag('judgeMode', true);
-                    patchAnalysisSettings({ source: 'demo' });
-                    router.push('/app/mosaic?source=demo');
-                  } finally {
-                    setNessieStep('idle');
-                  }
-                }}
-              >
-                {nessieStep === 'bootstrapping'
-                  ? 'Connecting…'
-                  : nessieStep === 'syncing'
-                    ? 'Syncing…'
-                    : 'Connect Capital One Nessie'}
-              </Button>
-
-              {flags.demoMode ? (
-                <Badge tone="good">Demo Mode default ON</Badge>
-              ) : (
-                <Badge>Demo OFF</Badge>
-              )}
-              {flags.judgeMode ? <Badge tone="warn">Judge Mode ON</Badge> : null}
+              Demo data is the always-works path (and the deterministic engine is tested against it
+              in CI). Sponsor connectors are optional and intentionally fail fast to keep the demo
+              smooth.
             </div>
 
             {nessieError ? (
@@ -171,18 +129,119 @@ export default function ConnectPage() {
               </div>
             ) : null}
 
-            {!flags.plaidEnabled ? (
-              <div className="small">
-                Plaid is currently disabled. Toggle it in Settings or set
-                `NEXT_PUBLIC_PLAID_ENABLED=1`.
+            <div className="choiceGrid">
+              <div className="choiceCard">
+                <div className="choiceHeader">
+                  <div>
+                    <div className="choiceTitle">Demo Data</div>
+                    <div className="small">Always works. Best path for judges.</div>
+                  </div>
+                  <Badge tone="good">Recommended</Badge>
+                </div>
+                <div className="buttonRow">
+                  <Button
+                    variant="primary"
+                    onClick={() => {
+                      patchAnalysisSettings({ source: 'demo' });
+                      router.push('/app/mosaic?source=demo');
+                    }}
+                  >
+                    Start Demo
+                  </Button>
+                  <Button onClick={() => router.push('/app/export?privacy=1')}>
+                    Export Poster
+                  </Button>
+                </div>
               </div>
-            ) : null}
-            {!flags.nessieEnabled ? (
-              <div className="small">
-                Nessie is currently disabled. Toggle it in Settings or set
-                `NEXT_PUBLIC_NESSIE_ENABLED=1`.
+
+              <div className="choiceCard">
+                <div className="choiceHeader">
+                  <div>
+                    <div className="choiceTitle">Plaid (Sandbox)</div>
+                    <div className="small">Optional live-ish bank linking via Plaid Link.</div>
+                  </div>
+                  <Badge tone={flags.plaidEnabled ? 'neutral' : 'warn'}>
+                    {flags.plaidEnabled ? 'Enabled' : 'Disabled'}
+                  </Badge>
+                </div>
+                <div className="buttonRow">
+                  <Button
+                    variant="primary"
+                    disabled={!flags.plaidEnabled}
+                    onClick={() => router.push('/app/bank')}
+                  >
+                    Connect Bank
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      patchAnalysisSettings({ source: 'demo' });
+                      router.push('/app/mosaic?source=demo');
+                    }}
+                  >
+                    Use Demo
+                  </Button>
+                </div>
+                {!flags.plaidEnabled ? (
+                  <div className="small" style={{ marginTop: 10 }}>
+                    Toggle in Settings or set `NEXT_PUBLIC_PLAID_ENABLED=1`.
+                  </div>
+                ) : null}
               </div>
-            ) : null}
+
+              <div className="choiceCard">
+                <div className="choiceHeader">
+                  <div>
+                    <div className="choiceTitle">Capital One Nessie</div>
+                    <div className="small">
+                      Sponsor connector. Pulls purchases into the same engine.
+                    </div>
+                  </div>
+                  <Badge tone={canUseNessie ? 'neutral' : 'warn'}>
+                    {canUseNessie ? 'Ready' : 'Needs setup'}
+                  </Badge>
+                </div>
+                <div className="buttonRow">
+                  <Button
+                    variant="primary"
+                    disabled={!canUseNessie || nessieStep !== 'idle'}
+                    onClick={() => void connectNessie()}
+                  >
+                    {nessieStep === 'bootstrapping'
+                      ? 'Connecting…'
+                      : nessieStep === 'syncing'
+                        ? 'Syncing…'
+                        : 'Connect Nessie'}
+                  </Button>
+                  <Button onClick={() => router.push('/app/settings')}>Settings</Button>
+                </div>
+                {!flags.nessieEnabled ? (
+                  <div className="small" style={{ marginTop: 10 }}>
+                    Toggle in Settings or set `NEXT_PUBLIC_NESSIE_ENABLED=1`.
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="choiceCard">
+                <div className="choiceHeader">
+                  <div>
+                    <div className="choiceTitle">15KB Minesweeper</div>
+                    <div className="small">Tiny static side quest. First click is safe.</div>
+                  </div>
+                  <Badge tone="neutral">Game</Badge>
+                </div>
+                <div className="buttonRow">
+                  <Button variant="primary" onClick={() => router.push('/game')}>
+                    Play Minesweeper
+                  </Button>
+                  <Button onClick={() => router.push('/mosaic-game')}>Mosaic Sprint</Button>
+                </div>
+              </div>
+            </div>
+
+            <div className="buttonRow" style={{ alignItems: 'center' }}>
+              {flags.demoMode ? <Badge tone="good">Demo Mode ON</Badge> : <Badge>Demo OFF</Badge>}
+              {flags.judgeMode ? <Badge tone="warn">Judge Mode ON</Badge> : null}
+            </div>
           </div>
         </CardBody>
       </Card>

@@ -1,5 +1,5 @@
-import type { ActionRecommendation, GoalInput, Summary } from './types';
-import { stableId } from './normalize';
+import type { ActionRecommendation, GoalInput, Summary } from './types.js';
+import { stableId } from './normalize.js';
 
 export function recommendActions(summary: Summary, goal: GoalInput): ActionRecommendation[] {
   const actions: ActionRecommendation[] = [];

@@ -13,7 +13,7 @@ function effortLabel(effortScore: number): 'low' | 'med' | 'high' {
 type RewriteState =
   | { status: 'idle' }
   | { status: 'loading' }
-  | { status: 'done'; text: string }
+  | { status: 'done'; text: string; usedAI: boolean; error?: string }
   | { status: 'error'; error: string };
 
 export function ActionsPanel(props: {
@@ -33,7 +33,7 @@ export function ActionsPanel(props: {
     try {
       const resp = await fetch('/api/ai/rewrite', {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: { 'content-type': 'application/json', 'x-ml-force-ai': '1' },
         body: JSON.stringify({ text }),
       });
       const json = (await resp.json()) as unknown;
@@ -42,10 +42,16 @@ export function ActionsPanel(props: {
       }
       const ok = Boolean((json as { ok?: unknown }).ok);
       const rewritten = (json as { rewrittenText?: unknown }).rewrittenText;
+      const usedAI = Boolean((json as { usedAI?: unknown }).usedAI);
+      const err = (json as { error?: unknown }).error;
+      const error = err ? String(err) : undefined;
       if (!ok || typeof rewritten !== 'string') {
         throw new Error('Rewrite failed');
       }
-      setRewriteById((prev) => ({ ...prev, [id]: { status: 'done', text: rewritten } }));
+      setRewriteById((prev) => ({
+        ...prev,
+        [id]: { status: 'done', text: rewritten, usedAI, error },
+      }));
     } catch (e: unknown) {
       const msg =
         e && typeof e === 'object' && 'message' in e
@@ -151,8 +157,31 @@ export function ActionsPanel(props: {
                           <>
                             <div style={{ fontWeight: 650 }}>AI rewrite</div>
                             <div>
-                              {(rewriteById[a.id] as { status: 'done'; text: string }).text}
+                              {
+                                (
+                                  rewriteById[a.id] as {
+                                    status: 'done';
+                                    text: string;
+                                    usedAI: boolean;
+                                    error?: string;
+                                  }
+                                ).text
+                              }
                             </div>
+                            {(() => {
+                              const s = rewriteById[a.id] as {
+                                status: 'done';
+                                text: string;
+                                usedAI: boolean;
+                                error?: string;
+                              };
+                              if (s.usedAI) return null;
+                              return (
+                                <div style={{ color: 'rgba(234,179,8,0.95)' }}>
+                                  AI fallback: {s.error ?? 'not used'}.
+                                </div>
+                              );
+                            })()}
                           </>
                         ) : null}
 

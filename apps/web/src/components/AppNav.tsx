@@ -10,9 +10,12 @@ const navItemsBase = [
   { href: '/app/mosaic', label: 'Mosaic', badge: 'v0' },
   { href: '/app/recurring', label: 'Recurring', badge: 'v0' },
   { href: '/app/plan', label: 'Plan', badge: 'v0' },
+  { href: '/app/ops', label: 'Ops', badge: 'ops' },
+  { href: '/app/coach', label: 'Coach', badge: 'agent' },
   { href: '/app/export', label: 'Export', badge: 'soon' },
+  { href: '/app/evidence', label: 'Evidence', badge: 'prize' },
   { href: '/app/settings', label: 'Settings', badge: 'v0' },
-  { href: '/game', label: 'Play Minesweeper', badge: 'game' },
+  { href: '/game', label: 'Play Minesweeper', badge: '15KB' },
 ];
 
 type AppNavProps = {

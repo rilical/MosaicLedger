@@ -47,6 +47,37 @@ export async function POST(request: Request) {
 
   // Demo/judge safe mode: never require auth or schema.
   if (demoMode || judgeMode || !hasSupabaseEnv()) {
+    // Sponsor connector exception: allow Nessie demo even in safe mode, but never store.
+    if (body.source === 'nessie') {
+      try {
+        if (!hasNessieEnv()) throw new Error('Missing NESSIE_API_KEY (server-only).');
+        const accountId = body.nessie?.accountId?.trim() || process.env.NESSIE_ACCOUNT_ID?.trim();
+        if (!accountId) throw new Error('Missing NESSIE_ACCOUNT_ID (or request.nessie.accountId).');
+        const nessie = nessieServerClient();
+        const purchases = await nessie.getPurchases(accountId);
+        if (!purchases.ok) throw new Error(purchases.message);
+
+        const txnsAll = (purchases.data ?? [])
+          .map((p) =>
+            nessiePurchaseToNormalized(p, {
+              source: 'nessie',
+              accountId,
+            }),
+          )
+          .filter((t) => t != null);
+
+        if (!txnsAll.length) throw new Error('No valid Nessie transactions');
+
+        const artifacts = computeArtifactsFromNormalized(txnsAll, body, {
+          artifactsSource: 'nessie',
+        });
+        return NextResponse.json({ ok: true, artifacts, stored: false });
+      } catch {
+        const artifacts = computeDemoArtifacts(body);
+        return NextResponse.json({ ok: true, artifacts, stored: false });
+      }
+    }
+
     const artifacts = computeDemoArtifacts(body);
     return NextResponse.json({ ok: true, artifacts, stored: false });
   }
@@ -160,6 +191,8 @@ export async function POST(request: Request) {
           }),
         )
         .filter((t) => t != null);
+
+      if (!txnsAll.length) throw new Error('No valid Nessie transactions');
 
       const artifacts = computeArtifactsFromNormalized(txnsAll, body, {
         artifactsSource: 'nessie',

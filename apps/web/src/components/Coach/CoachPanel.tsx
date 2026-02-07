@@ -219,7 +219,7 @@ async function rewriteWithAi(text: string): Promise<{
   try {
     resp = await fetch('/api/ai/rewrite', {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: { 'content-type': 'application/json', 'x-ml-force-ai': '1' },
       body: JSON.stringify({ text, style: 'friendly' }),
       signal: controller.signal,
     });
@@ -665,6 +665,17 @@ export function CoachPanel({
                         <div className="small" style={{ whiteSpace: 'pre-wrap' }}>
                           {flags.aiEnabled && t.ai?.rewritten ? t.ai.rewritten : t.answer}
                         </div>
+                        {flags.aiEnabled ? (
+                          <div className="small" style={{ opacity: 0.9 }}>
+                            AI rewrite:{' '}
+                            {t.ai?.usedAI ? (
+                              <span style={{ color: 'rgba(34,197,94,0.95)' }}>used</span>
+                            ) : (
+                              <span style={{ color: 'rgba(234,179,8,0.95)' }}>fallback</span>
+                            )}
+                            {t.ai?.error ? <span> ({t.ai.error})</span> : null}
+                          </div>
+                        ) : null}
                         {flags.aiEnabled && t.ai?.rewritten ? (
                           <details>
                             <summary className="small" style={{ cursor: 'pointer' }}>

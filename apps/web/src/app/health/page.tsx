@@ -107,7 +107,7 @@ export default async function HealthPage() {
       name: 'Capital One Nessie (optional)',
       status: process.env.NESSIE_API_KEY ? 'ok' : 'warn',
       detail: process.env.NESSIE_API_KEY
-        ? `NESSIE_API_KEY present. Base URL: ${process.env.NESSIE_BASE_URL ?? 'https://api.nessieisreal.com'}`
+        ? `NESSIE_API_KEY present. Base URL: ${process.env.NESSIE_BASE_URL ?? 'http://api.nessieisreal.com'}`
         : 'Missing NESSIE_API_KEY (optional sponsor connector).',
     },
     {
