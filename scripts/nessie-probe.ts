@@ -53,7 +53,7 @@ function envOrThrow(key: string): string {
 function baseUrl(): string {
   // Keep aligned with apps/web default.
   const raw = (process.env.NESSIE_BASE_URL ?? 'http://api.nessieisreal.com').replace(/\/+$/, '');
-  if (raw.startsWith('https://api.nessieisreal.com')) return 'http://api.nessieisreal.com';
+  if (raw.startsWith('https://api.nessieisreal.com')) return raw.replace('https://', 'http://');
   return raw;
 }
 
@@ -95,7 +95,6 @@ async function main(): Promise<void> {
   const repoRoot = path.resolve(here, '..');
   loadDotEnvFile(path.join(repoRoot, 'apps/web/.env.local'));
   loadDotEnvFile(path.join(repoRoot, 'apps/web/.env'));
-  loadDotEnvFile(path.join(repoRoot, 'apps/web/.env.example'));
 
   const key = envOrThrow('NESSIE_API_KEY');
   const base = baseUrl();

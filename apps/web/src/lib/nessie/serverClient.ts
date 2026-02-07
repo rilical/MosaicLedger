@@ -26,7 +26,7 @@ function getBaseUrl(): string {
   // Allow override so teams can pin other hosts if needed.
   const raw = (process.env.NESSIE_BASE_URL ?? 'http://api.nessieisreal.com').replace(/\/+$/, '');
   // Nessie historically runs on plain HTTP; many environments fail on HTTPS for this host.
-  if (raw.startsWith('https://api.nessieisreal.com')) return 'http://api.nessieisreal.com';
+  if (raw.startsWith('https://api.nessieisreal.com')) return raw.replace('https://', 'http://');
   return raw;
 }
 

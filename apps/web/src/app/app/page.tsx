@@ -38,6 +38,12 @@ export default function ConnectPage() {
         throw new Error(('error' in json ? json.error : null) ?? 'Nessie bootstrap failed');
       }
 
+      const customerId = typeof json.customerId === 'string' ? json.customerId.trim() : '';
+      const accountId = typeof json.accountId === 'string' ? json.accountId.trim() : '';
+      if (!customerId || !accountId) {
+        throw new Error('Nessie bootstrap did not return a customer/account id (check env + key).');
+      }
+
       // Best-effort sync: if Supabase/auth are configured, persist purchases to avoid repeated sponsor calls.
       // If sync fails (common in judge/demo deployments), we still proceed with live Nessie fetch.
       if (json.mode !== 'env_noauth') {
@@ -47,8 +53,8 @@ export default function ConnectPage() {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({
-              customerId: json.customerId,
-              accountId: json.accountId,
+              customerId,
+              accountId,
             }),
           });
           const syncJson = (await syncResp.json()) as
@@ -60,16 +66,16 @@ export default function ConnectPage() {
                 method: 'POST',
                 headers: { 'content-type': 'application/json' },
                 body: JSON.stringify({
-                  customerId: json.customerId,
-                  accountId: json.accountId,
+                  customerId,
+                  accountId,
                 }),
               });
               await fetch('/api/nessie/sync', {
                 method: 'POST',
                 headers: { 'content-type': 'application/json' },
                 body: JSON.stringify({
-                  customerId: json.customerId,
-                  accountId: json.accountId,
+                  customerId,
+                  accountId,
                 }),
               });
             } catch {
@@ -83,8 +89,8 @@ export default function ConnectPage() {
 
       patchAnalysisSettings({
         source: 'nessie',
-        nessieCustomerId: json.customerId,
-        nessieAccountId: json.accountId,
+        nessieCustomerId: customerId,
+        nessieAccountId: accountId,
       });
       router.push('/app/mosaic?source=nessie');
     } catch (e: unknown) {
@@ -164,7 +170,14 @@ export default function ConnectPage() {
                   >
                     Connect Bank
                   </Button>
-                  <Button onClick={() => router.push('/app/mosaic?source=demo')}>Use Demo</Button>
+                  <Button
+                    onClick={() => {
+                      patchAnalysisSettings({ source: 'demo' });
+                      router.push('/app/mosaic?source=demo');
+                    }}
+                  >
+                    Use Demo
+                  </Button>
                 </div>
                 {!flags.plaidEnabled ? (
                   <div className="small" style={{ marginTop: 10 }}>

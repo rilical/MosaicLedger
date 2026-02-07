@@ -76,9 +76,10 @@ function json(res: http.ServerResponse, status: number, data: unknown): void {
 }
 
 export async function startHttpServer(): Promise<void> {
-  // In hosted environments we must bind to all interfaces, otherwise the process
-  // can be "up" but unreachable behind the platform proxy.
-  const host = process.env.HOST || '0.0.0.0';
+  // Default to loopback for local dev safety; hosted deployments should set HOST
+  // explicitly (or run with NODE_ENV=production).
+  const host =
+    process.env.HOST || (process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1');
   const rawPort = process.env.PORT;
   const port = rawPort ? Number.parseInt(rawPort, 10) : 8787;
   if (!Number.isFinite(port) || port <= 0 || port > 65535) {
