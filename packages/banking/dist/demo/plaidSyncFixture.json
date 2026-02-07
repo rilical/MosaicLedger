@@ -1,0 +1,52 @@
+{
+  "added": [
+    {
+      "transaction_id": "tx_demo_001",
+      "date": "2026-01-05",
+      "name": "STARBUCKS 0001",
+      "merchant_name": "STARBUCKS",
+      "amount": 6.63,
+      "pending": false,
+      "personal_finance_category": { "primary": "Dining" }
+    },
+    {
+      "transaction_id": "tx_demo_002",
+      "date": "2026-01-08",
+      "name": "DOORDASH",
+      "merchant_name": "DOORDASH",
+      "amount": 18.45,
+      "pending": true,
+      "personal_finance_category": { "primary": "Dining" }
+    },
+    {
+      "transaction_id": "tx_demo_003",
+      "date": "2026-01-10",
+      "name": "GIANT EAGLE",
+      "merchant_name": "GIANT EAGLE",
+      "amount": 64.12,
+      "pending": false,
+      "personal_finance_category": { "primary": "Groceries" }
+    },
+    {
+      "transaction_id": "tx_demo_004",
+      "date": "2026-01-01",
+      "name": "RENT",
+      "merchant_name": "RENT",
+      "amount": 1200,
+      "pending": false,
+      "personal_finance_category": { "primary": "Housing" }
+    }
+  ],
+  "modified": [
+    {
+      "transaction_id": "tx_demo_002",
+      "date": "2026-01-08",
+      "name": "DOORDASH",
+      "merchant_name": "DOORDASH",
+      "amount": 20.31,
+      "pending": false,
+      "personal_finance_category": { "primary": "Dining" }
+    }
+  ],
+  "removed": ["tx_demo_999"]
+}
