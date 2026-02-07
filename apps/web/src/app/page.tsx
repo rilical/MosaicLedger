@@ -7,12 +7,9 @@ export default function LandingPage() {
     <main className="landing">
       <div className="landingNav">
         <div className="landingNavBrand">MosaicLedger</div>
-        <div className="buttonRow">
+        <div className="buttonRow" style={{ justifyContent: 'flex-end', flex: 1 }}>
           <Link className="btn btnGhost" href="/login">
             Login
-          </Link>
-          <Link className="btn btnPrimary" href="/app">
-            Enter the app
           </Link>
         </div>
       </div>
@@ -27,10 +24,7 @@ export default function LandingPage() {
           </p>
           <div className="landingActions">
             <Link className="btn btnPrimary" href="/app/mosaic?source=demo">
-              See the mosaic
-            </Link>
-            <Link className="btn" href="/app/plan?source=demo">
-              View the plan
+              Go to Dashboard with Demo Data
             </Link>
           </div>
         </div>

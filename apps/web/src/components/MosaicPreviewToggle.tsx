@@ -63,6 +63,7 @@ export function MosaicPreviewToggle() {
   const [active, setActive] = React.useState<PresetKey>('deterministic');
   const [visible, setVisible] = React.useState<PresetKey>('deterministic');
   const [fading, setFading] = React.useState(false);
+  const [hoveredIndex, setHoveredIndex] = React.useState<number | null>(null);
   const pendingRef = React.useRef<PresetKey | null>(null);
 
   const switchTo = React.useCallback(
@@ -86,7 +87,7 @@ export function MosaicPreviewToggle() {
   return (
     <>
       <div className="pageMeta" style={{ marginBottom: 12 }}>
-        <div className="pageTagline">Glass mosaic preview</div>
+        <div className="pageTagline" style={{ fontWeight: 650, fontSize: 16 }}>Glass mosaic preview</div>
         <div className="previewTabs">
           {presetKeys.map((key) => (
             <button
@@ -106,6 +107,7 @@ export function MosaicPreviewToggle() {
           transform: fading ? 'scale(0.97)' : 'scale(1)',
           transition: `opacity ${FADE_MS}ms ease, transform ${FADE_MS}ms ease`,
         }}
+        onMouseLeave={() => setHoveredIndex(null)}
       >
         {tiles.map((tile, index) => (
           <div
@@ -116,8 +118,11 @@ export function MosaicPreviewToggle() {
                 '--tile': tile.color,
                 gridColumn: `span ${tile.colSpan}`,
                 gridRow: `span ${tile.rowSpan}`,
+                opacity: hoveredIndex !== null && hoveredIndex !== index ? 0.4 : 1,
+                transition: 'opacity 220ms ease, transform 260ms ease, box-shadow 260ms ease, border-color 260ms ease',
               } as CSSProperties
             }
+            onMouseEnter={() => setHoveredIndex(index)}
           >
             {tile.label && <span className="tileLabel">{tile.label}</span>}
           </div>

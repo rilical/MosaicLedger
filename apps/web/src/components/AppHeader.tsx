@@ -1,9 +1,11 @@
 'use client';
 
+import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { SettingsDrawer } from './SettingsDrawer';
 import { SignOutButton } from './Auth/SignOutButton';
+import { useFlags } from '../lib/flags-client';
 
 const sectionMeta: Array<{ match: string; title: string; subtitle: string }> = [
   { match: '/app/mosaic', title: 'Mosaic', subtitle: 'Primary UI is the Mosaic mural.' },
@@ -34,6 +36,28 @@ function getSection(pathname: string) {
 export function AppHeader() {
   const pathname = usePathname();
   const section = getSection(pathname);
+  const { flags } = useFlags();
+  const [isLoggedIn, setIsLoggedIn] = React.useState(false);
+
+  React.useEffect(() => {
+    // Check if user is logged in by checking for Supabase session
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/auth/session');
+        const data = await response.json();
+        setIsLoggedIn(!!data?.user);
+      } catch {
+        setIsLoggedIn(false);
+      }
+    };
+
+    // If in demo mode, assume not logged in
+    if (flags.demoMode) {
+      setIsLoggedIn(false);
+    } else {
+      void checkAuth();
+    }
+  }, [flags.demoMode]);
 
   return (
     <div className="topBar">
@@ -42,10 +66,12 @@ export function AppHeader() {
         <div className="small">{section.subtitle}</div>
       </div>
       <div className="buttonRow" style={{ justifyContent: 'flex-end' }}>
-        <Link className="btn btnGhost" href="/login">
-          Login
-        </Link>
-        <SignOutButton />
+        {!isLoggedIn && (
+          <Link className="btn btnGhost" href="/login">
+            Login
+          </Link>
+        )}
+        {isLoggedIn && <SignOutButton />}
         <SettingsDrawer />
       </div>
     </div>

@@ -10,6 +10,28 @@ export function MosaicView(props: {
 }) {
   const { tiles, selectedId, onTileClick } = props;
   const [hover, setHover] = React.useState<TreemapTile | null>(null);
+  const [isTransitioning, setIsTransitioning] = React.useState(false);
+
+  // Trigger transition animation when tiles change (e.g., drilling down)
+  React.useEffect(() => {
+    setIsTransitioning(true);
+    const timer = setTimeout(() => setIsTransitioning(false), 50);
+    return () => clearTimeout(timer);
+  }, [tiles.length, tiles.map(t => t.id).join(',')]);
+
+  // Calculate dynamic font size based on tile area
+  const calculateFontSize = (tile: TreemapTile): number => {
+    const area = tile.w * tile.h;
+    const baseSize = 13;
+    const maxSize = 24;
+    const minSize = 11;
+    
+    // Scale font size based on area (larger tiles = larger text)
+    const scaleFactor = Math.sqrt(area) / 40;
+    const fontSize = baseSize * scaleFactor;
+    
+    return Math.min(maxSize, Math.max(minSize, fontSize));
+  };
 
   return (
     <div className="mosaicFrame">
@@ -23,7 +45,7 @@ export function MosaicView(props: {
           </filter>
         </defs>
         <rect x={0} y={0} width={1000} height={650} fill="rgba(255,255,255,0.02)" />
-        {tiles.map((t) => (
+        {tiles.map((t, index) => (
           <g
             key={t.id}
             onMouseEnter={() => setHover(t)}
@@ -39,7 +61,13 @@ export function MosaicView(props: {
             role={onTileClick ? 'button' : undefined}
             tabIndex={onTileClick ? 0 : -1}
             aria-label={onTileClick ? `Open ${t.label}` : undefined}
-            style={{ cursor: onTileClick ? 'pointer' : 'default' }}
+            style={{ 
+              cursor: onTileClick ? 'pointer' : 'default',
+              transform: isTransitioning ? 'scale(0.8)' : 'scale(1)',
+              transformOrigin: '500px 325px',
+              opacity: isTransitioning ? 0 : 1,
+              transition: `transform 400ms ease ${index * 30}ms, opacity 400ms ease ${index * 30}ms`,
+            }}
           >
             <title>
               {t.label} · ${t.value.toFixed(2)}
@@ -55,15 +83,22 @@ export function MosaicView(props: {
               filter="url(#glass-shadow)"
               stroke={selectedId === t.id ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.35)'}
               strokeWidth={selectedId === t.id ? 2 : 1}
+              style={{
+                transform: hover === t ? 'translate(-2px, -4px)' : 'translate(0, 0)',
+                transition: 'transform 180ms ease, opacity 180ms ease',
+              }}
             />
             {t.w > 80 && t.h > 30 ? (
               <text
                 x={t.x + 12}
-                y={t.y + 24}
-                fontSize={13}
+                y={t.y + calculateFontSize(t) + 8}
+                fontSize={calculateFontSize(t)}
                 fontWeight={600}
                 fill="rgba(255,255,255,0.95)"
                 filter="url(#text-shadow)"
+                style={{
+                  transition: 'font-size 180ms ease',
+                }}
               >
                 {t.label}
               </text>
