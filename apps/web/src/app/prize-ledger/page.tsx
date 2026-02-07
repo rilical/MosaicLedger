@@ -1,14 +1,27 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-export default async function PrizeLedgerPage() {
-  const filePath = path.join(process.cwd(), 'docs', 'PRIZE_MONEY_LEDGER.md');
-  let text = '';
-  try {
-    text = await readFile(filePath, 'utf8');
-  } catch {
-    text = `Missing docs/PRIZE_MONEY_LEDGER.md`;
+const DOC_FILENAME = 'PRIZE_MONEY_LEDGER.md';
+
+/** Try docs/ at cwd (repo root) or two levels up from cwd (when cwd is apps/web). */
+async function readLedgerDoc(): Promise<string> {
+  const cwd = process.cwd();
+  const candidates = [
+    path.join(cwd, 'docs', DOC_FILENAME),
+    path.join(cwd, '..', '..', 'docs', DOC_FILENAME),
+  ].map((p) => path.resolve(p));
+  for (const filePath of candidates) {
+    try {
+      return await readFile(filePath, 'utf8');
+    } catch {
+      continue;
+    }
   }
+  return `Missing docs/${DOC_FILENAME}`;
+}
+
+export default async function PrizeLedgerPage() {
+  const text = await readLedgerDoc();
 
   return (
     <main className="container" style={{ maxWidth: 980 }}>

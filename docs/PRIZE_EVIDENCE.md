@@ -48,18 +48,14 @@ Keep it honest: only claim what the app can do in the current branch/commit.
 - In-app Coach UI: `/app/coach`
 - Server route: `POST /api/coach/run`
 - Tool calling: local deterministic tools executed server-side (engine analysis, scenario, poster render)
-- Optional hosted MCP tool calling via `DEDALUS_MCP_SERVER_URL`
+- (Removed) Dedalus-hosted tool calling (no longer used)
 - Multi-model handoff: coordinator model produces structured output, narrator model writes the final answer
 - Multimodal (vision): `Poster audit (vision)` mode renders a poster PNG and asks a vision-capable model to audit it
 - Trace viewer: "View tool trace" drawer is screenshot-ready (timing + redacted I/O)
 
 **Env vars**
 
-- `DEDALUS_API_KEY`
-- `DEDALUS_MCP_SERVER_URL` (optional)
-- `DEDALUS_COORDINATOR_MODEL` (optional)
-- `DEDALUS_NARRATOR_MODEL` (optional)
-- `DEDALUS_VISION_MODEL` (optional)
+- (Removed) `DEDALUS_*` environment variables
 
 **Screenshot checklist**
 

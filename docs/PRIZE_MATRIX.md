@@ -50,7 +50,7 @@ behind a feature flag and must not block the core demo path (`Use Demo Data`).
   - optional `OPENAI_MODEL`
   - optional `OPENAI_BASE_URL`
 - Optional Dedalus/MCP:
-  - `DEDALUS_API_KEY`
+  - (Removed) `DEDALUS_*` (no longer used)
 - Optional XRPL:
   - `XRPL_TESTNET_SEED`
   - `XRPL_RPC_URL` (default testnet websocket: `wss://s.altnet.rippletest.net:51233`)

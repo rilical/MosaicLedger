@@ -45,39 +45,42 @@ export async function POST(request: Request) {
     body = {};
   }
 
-  // Demo/judge safe mode: never require auth or schema.
-  if (demoMode || judgeMode || !hasSupabaseEnv()) {
-    // Sponsor connector exception: allow Nessie demo even in safe mode, but never store.
-    if (body.source === 'nessie') {
+  const requestedLiveSource =
+    body.source === 'plaid' || body.source === 'nessie' || body.source === 'auto';
+
+  // Explicit demo: always return demo data (no auth).
+  if (body.source === 'demo') {
+    const artifacts = computeDemoArtifacts(body);
+    return NextResponse.json({ ok: true, artifacts, stored: false });
+  }
+
+  // No DB or judge mode: must use demo (except Nessie can be tried with env keys).
+  if (judgeMode || !hasSupabaseEnv()) {
+    if (body.source === 'nessie' && hasNessieEnv()) {
       try {
-        if (!hasNessieEnv()) throw new Error('Missing NESSIE_API_KEY (server-only).');
         const accountId = body.nessie?.accountId?.trim() || process.env.NESSIE_ACCOUNT_ID?.trim();
         if (!accountId) throw new Error('Missing NESSIE_ACCOUNT_ID (or request.nessie.accountId).');
         const nessie = nessieServerClient();
         const purchases = await nessie.getPurchases(accountId);
         if (!purchases.ok) throw new Error(purchases.message);
-
         const txnsAll = (purchases.data ?? [])
-          .map((p) =>
-            nessiePurchaseToNormalized(p, {
-              source: 'nessie',
-              accountId,
-            }),
-          )
+          .map((p) => nessiePurchaseToNormalized(p, { source: 'nessie', accountId }))
           .filter((t) => t != null);
-
         if (!txnsAll.length) throw new Error('No valid Nessie transactions');
-
         const artifacts = computeArtifactsFromNormalized(txnsAll, body, {
           artifactsSource: 'nessie',
         });
         return NextResponse.json({ ok: true, artifacts, stored: false });
       } catch {
-        const artifacts = computeDemoArtifacts(body);
-        return NextResponse.json({ ok: true, artifacts, stored: false });
+        // fall through to demo
       }
     }
+    const artifacts = computeDemoArtifacts(body);
+    return NextResponse.json({ ok: true, artifacts, stored: false });
+  }
 
+  // Env demoMode but user requested live data: require auth and run real path below.
+  if (demoMode && !requestedLiveSource) {
     const artifacts = computeDemoArtifacts(body);
     return NextResponse.json({ ok: true, artifacts, stored: false });
   }
@@ -89,17 +92,6 @@ export async function POST(request: Request) {
 
   if (!user) {
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
-  }
-
-  // Explicit demo request: always compute demo artifacts, even if a bank is linked.
-  if (body.source === 'demo') {
-    const artifacts = computeDemoArtifacts(body);
-    try {
-      await insertAnalysisRun(supabase, user.id, artifacts);
-    } catch {
-      // ignore
-    }
-    return NextResponse.json({ ok: true, artifacts, stored: true });
   }
 
   // Explicit Nessie request: pull sponsor mock transactions server-side and feed the same deterministic engine.
