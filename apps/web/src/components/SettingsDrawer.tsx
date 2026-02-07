@@ -19,6 +19,24 @@ function forgetThisDevice() {
   }
 }
 
+function parseBoolean(input: string | undefined, defaultValue: boolean): boolean {
+  if (input == null) return defaultValue;
+  const v = input.trim().toLowerCase();
+  if (v === '1' || v === 'true' || v === 'yes' || v === 'on') return true;
+  if (v === '0' || v === 'false' || v === 'no' || v === 'off') return false;
+  return defaultValue;
+}
+
+function resetDemoStateLocal() {
+  try {
+    window.localStorage.removeItem('mosaicledger.analysisSettings.v1');
+    window.localStorage.removeItem('mosaicledger.planGoal.v1');
+    window.localStorage.removeItem('mosaicledger.flags.v1');
+  } catch {
+    // ignore
+  }
+}
+
 function labelFor(key: FlagKey): string {
   switch (key) {
     case 'judgeMode':
@@ -56,6 +74,7 @@ function helpFor(key: FlagKey): string {
 export function SettingsDrawer() {
   const [open, setOpen] = React.useState(false);
   const { flags, setFlag, resetFlags } = useFlags();
+  const expoResetUiEnabled = parseBoolean(process.env.NEXT_PUBLIC_EXPO_RESET_ENABLED, false);
 
   return (
     <>
@@ -97,6 +116,31 @@ export function SettingsDrawer() {
               <Button variant="ghost" onClick={resetFlags}>
                 Reset
               </Button>
+              {expoResetUiEnabled ? (
+                <Button
+                  variant="ghost"
+                  onClick={async () => {
+                    // Force the always-works path for judges.
+                    setFlag('demoMode', true);
+                    setFlag('judgeMode', true);
+
+                    // Clear local derived state.
+                    resetDemoStateLocal();
+
+                    // Best-effort: clear server-side cached analysis for this user (if enabled).
+                    try {
+                      await fetch('/api/admin/expo-reset', { method: 'POST' });
+                    } catch {
+                      // ignore
+                    }
+
+                    // Hard reload to ensure all hooks re-read localStorage defaults.
+                    window.location.href = '/app/mosaic?source=demo';
+                  }}
+                >
+                  Expo reset
+                </Button>
+              ) : null}
               <Button
                 variant="danger"
                 onClick={() => {
@@ -114,6 +158,12 @@ export function SettingsDrawer() {
 
           <div className="small">
             Overrides are stored in localStorage (no rebuild). Env vars still define the defaults.
+            {expoResetUiEnabled ? (
+              <div style={{ marginTop: 8 }}>
+                Expo reset is enabled. It clears local demo state and (optionally) clears cached
+                analysis server-side when `EXPO_RESET_ENABLED=1`.
+              </div>
+            ) : null}
           </div>
         </div>
       </Drawer>

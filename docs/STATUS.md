@@ -15,6 +15,9 @@ This file is updated in every PR.
 
 ## Latest Changes
 
+- QA-021 (branch: `codex/qa-021-release-reset`): added expo release checklist and an optional
+  "Expo reset" button (guarded by env flags) to clear local demo state and best-effort clear cached
+  analysis server-side.
 - QA-019 (branch: `codex/qa-019-dep-audit`): added a non-blocking dependency audit job to CI and
   documented lockfile/upgrade policy.
 - QA-017/QA-022 (branch: `codex/qa-017-022-health-schema-integrations`): expanded `/health` with
