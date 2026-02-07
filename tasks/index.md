@@ -78,3 +78,4 @@ Status legend: `TODO` | `DOING` | `BLOCKED` | `REVIEW` | `DONE`
 | ID     | Status | Notes                                                |
 | ------ | ------ | ---------------------------------------------------- |
 | QA-001 | REVIEW | Playwright e2e harness + smoke test (/health,/login) |
+| QA-012 | REVIEW | Gitleaks secret scanning in CI + rotation docs       |

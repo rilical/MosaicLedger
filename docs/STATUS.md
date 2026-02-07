@@ -40,6 +40,8 @@ This file is updated in every PR.
   secrets are displayed.
 - QA-001 (branch: `codex/qa-001-playwright-harness`): adds Playwright e2e harness + CI job and a
   smoke test that loads `/health` and `/login`.
+- QA-012 (branch: `codex/qa-012-gitleaks`): adds gitleaks secret scanning to CI and documents key
+  rotation steps.
 
 ## Known Risks / TODO
 
