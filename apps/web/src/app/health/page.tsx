@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { getDemoTransactions } from '@mosaicledger/banking';
 import { Badge, Card, CardBody, CardHeader, CardTitle } from '../../components/ui';
 import { parseBooleanEnv } from '../../lib/env';
@@ -141,6 +142,12 @@ export default async function HealthPage() {
           <div className="small">Presence checks only. No secrets are displayed.</div>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <Link className="btn btnGhost" href="/app">
+            Dashboard
+          </Link>
+          <Link className="btn btnGhost" href="/">
+            Back
+          </Link>
           <Badge tone={demoMode ? 'good' : 'neutral'}>DEMO {demoMode ? 'ON' : 'OFF'}</Badge>
           <Badge tone={judgeMode ? 'warn' : 'neutral'}>JUDGE {judgeMode ? 'ON' : 'OFF'}</Badge>
         </div>
