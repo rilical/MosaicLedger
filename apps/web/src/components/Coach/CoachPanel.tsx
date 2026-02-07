@@ -21,6 +21,11 @@ type CoachTurn = {
 
 const STORAGE_KEY = 'mosaicledger.coachHistory.v1';
 
+type SafetyResult =
+  | { kind: 'ok' }
+  | { kind: 'blocked'; answer: string; reason: string }
+  | { kind: 'limited'; answer: string; reason: string };
+
 function stableId(parts: string[]): string {
   return parts
     .join('|')
@@ -227,6 +232,95 @@ async function rewriteWithAi(text: string): Promise<{
   };
 }
 
+function evaluateSafety(questionRaw: string): SafetyResult {
+  const q = questionRaw.trim().toLowerCase();
+  if (!q) return { kind: 'ok' };
+
+  const has = (s: string) => q.includes(s);
+
+  const selfHarm =
+    has('suicide') ||
+    has('kill myself') ||
+    has('self harm') ||
+    has('self-harm') ||
+    has('hurt myself') ||
+    has('end my life');
+  if (selfHarm) {
+    return {
+      kind: 'blocked',
+      reason: 'self_harm',
+      answer:
+        `I can’t help with that. If you’re in immediate danger, call 911.\n` +
+        `If you’re in the U.S., you can call or text 988 (Suicide & Crisis Lifeline) right now.\n` +
+        `If you want, ask me something about your budget plan (subscriptions, caps, upcoming bills) and I’ll help.`,
+    };
+  }
+
+  const secrets =
+    has('password') ||
+    has('passcode') ||
+    has('2fa') ||
+    has('otp') ||
+    has('ssn') ||
+    has('social security') ||
+    has('routing number') ||
+    has('account number') ||
+    has('credit card') ||
+    has('cvv') ||
+    has('pin') ||
+    has('seed phrase') ||
+    has('private key') ||
+    has('access token') ||
+    has('plaid secret') ||
+    has('supabase service role');
+  if (secrets) {
+    return {
+      kind: 'blocked',
+      reason: 'secrets',
+      answer:
+        `I can’t help with secrets or account credentials.\n` +
+        `For safety, never share passwords, SSNs, bank account details, or API keys here.\n` +
+        `I can still help with budgeting questions using your computed totals and plan actions.`,
+    };
+  }
+
+  const illegal =
+    has('launder') ||
+    has('money laundering') ||
+    has('fraud') ||
+    has('steal') ||
+    has('evade tax') ||
+    has('tax evasion');
+  if (illegal) {
+    return {
+      kind: 'blocked',
+      reason: 'illegal',
+      answer:
+        `I can’t help with wrongdoing.\n` +
+        `If you want, I can help you reduce spending, identify subscriptions, and set category caps using deterministic outputs.`,
+    };
+  }
+
+  const investing =
+    has('stock') ||
+    has('crypto') ||
+    has('bitcoin') ||
+    has('ethereum') ||
+    has('option') ||
+    has('day trade');
+  if (investing) {
+    return {
+      kind: 'limited',
+      reason: 'investing',
+      answer:
+        `I can’t provide investment advice or tell you what to buy/sell.\n` +
+        `What I can do here: find subscription savings, upcoming obligations, and deterministic budget caps from your spending history.`,
+    };
+  }
+
+  return { kind: 'ok' };
+}
+
 export function CoachPanel({
   artifacts,
   onJumpToAction,
@@ -255,6 +349,27 @@ export function CoachPanel({
 
     setLoading(true);
     try {
+      const safety = evaluateSafety(q);
+      if (safety.kind !== 'ok') {
+        const id = stableId(['coach', new Date().toISOString(), q.slice(0, 40)]);
+        const turn: CoachTurn = {
+          id,
+          at: new Date().toISOString(),
+          question: q,
+          intent: {
+            kind: 'safety',
+            safety: safety.kind,
+            reason: (safety as { reason?: string }).reason ?? 'unknown',
+          },
+          answer: safety.answer,
+          recommendedActionIds: [],
+          recommendedActionTitles: {},
+        };
+        setTurns((prev) => [...prev.slice(-9), turn]);
+        setQuestion('');
+        return;
+      }
+
       const intent = parseIntent(q);
       // CONWAY-002 fallback trace: don't log PII; intent only.
       try {
@@ -332,6 +447,14 @@ export function CoachPanel({
             </CardHeader>
             <CardBody>
               <div style={{ display: 'grid', gap: 10 }}>
+                <div className="small" style={{ opacity: 0.95 }}>
+                  Not financial advice. Don’t share secrets. Numbers are deterministic.
+                  {!flags.aiEnabled ? (
+                    <span style={{ marginLeft: 8, color: 'rgba(34,197,94,0.95)' }}>
+                      Offline mode
+                    </span>
+                  ) : null}
+                </div>
                 <input
                   className="input"
                   placeholder="e.g., What is my top savings action? What bills are coming up?"
