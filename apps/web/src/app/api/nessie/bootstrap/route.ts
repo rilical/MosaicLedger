@@ -305,15 +305,6 @@ export async function POST() {
     } catch {
       // ignore
     }
-    // As a last resort (write-enabled key), create a demo binding even without auth.
-    if (!envCustomerId && !envAccountId && noauthCreated) {
-      return NextResponse.json({
-        ok: true,
-        customerId: noauthCreated.customerId,
-        accountId: noauthCreated.accountId,
-        mode: 'env_noauth',
-      });
-    }
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
   }
 
