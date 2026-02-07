@@ -54,9 +54,18 @@ export default function XrplPage() {
     (async () => {
       try {
         const resp = await fetch('/api/xrpl/health', { method: 'GET' });
-        const json = (await resp.json()) as XrplHealth;
+        const json = (await resp.json()) as unknown;
         if (!alive) return;
-        setHealth(json);
+        if (
+          json &&
+          typeof json === 'object' &&
+          'ok' in json &&
+          typeof (json as { ok: unknown }).ok === 'boolean'
+        ) {
+          setHealth(json as XrplHealth);
+        } else {
+          setHealth({ ok: false, error: 'invalid_response' });
+        }
       } catch {
         if (!alive) return;
         setHealth({ ok: false, error: 'health_failed' });

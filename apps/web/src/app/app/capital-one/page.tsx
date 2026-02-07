@@ -111,10 +111,12 @@ export default function CapitalOnePage() {
     }
   }, [lat, lng, rad]);
 
+  const loadRef = React.useRef(load);
+  loadRef.current = load;
   React.useEffect(() => {
-    // Autoload for demos; endpoint is demo-safe and falls back when unconfigured.
-    void load();
-  }, [load]);
+    // Autoload once on mount; avoid calling on every keystroke.
+    void loadRef.current();
+  }, []);
 
   if (!flags.nessieEnabled) {
     return (
@@ -136,8 +138,8 @@ export default function CapitalOnePage() {
               still run in demo mode without it.
             </div>
             <div className="buttonRow" style={{ marginTop: 12 }}>
-              <Link className="btn btnPrimary" href="/app/settings">
-                Open Settings
+              <Link className="btn btnPrimary" href="/app">
+                Go to App
               </Link>
               <Link className="btn btnGhost" href="/app/evidence">
                 Open Evidence
@@ -280,8 +282,8 @@ export default function CapitalOnePage() {
                     <Badge tone="warn">Upcoming 30d: {data.billsUpcoming30d.upcomingCount}</Badge>
                   ) : null}
                 </div>
-                {data.bills.slice(0, 12).map((b) => (
-                  <div key={String(b._id ?? Math.random())} style={{ display: 'grid', gap: 2 }}>
+                {data.bills.slice(0, 12).map((b, idx) => (
+                  <div key={String(b._id ?? `bill-${idx}`)} style={{ display: 'grid', gap: 2 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
                       <div style={{ fontWeight: 650 }}>{b.nickname || b.payee || 'Bill'}</div>
                       <div className="small" style={{ opacity: 0.9 }}>
@@ -311,13 +313,13 @@ export default function CapitalOnePage() {
           <CardBody>
             {ok && data.atms && data.atms.length ? (
               <div style={{ display: 'grid', gap: 10 }}>
-                {data.atms.slice(0, 10).map((a) => {
+                {data.atms.slice(0, 10).map((a, idx) => {
                   const alat = Number(a.geocode?.lat);
                   const alng = Number(a.geocode?.lng);
                   const hasGeo = Number.isFinite(alat) && Number.isFinite(alng);
                   return (
                     <div
-                      key={String(a._id ?? Math.random())}
+                      key={String(a._id ?? `atm-${idx}`)}
                       style={{
                         display: 'grid',
                         gap: 4,
@@ -364,11 +366,11 @@ export default function CapitalOnePage() {
           <CardBody>
             {ok && data.branches && data.branches.length ? (
               <div style={{ display: 'grid', gap: 10 }}>
-                {data.branches.slice(0, 10).map((b) => {
+                {data.branches.slice(0, 10).map((b, idx) => {
                   const addr = fmtAddr(b.address);
                   return (
                     <div
-                      key={String(b._id ?? Math.random())}
+                      key={String(b._id ?? `branch-${idx}`)}
                       style={{
                         display: 'grid',
                         gap: 4,
