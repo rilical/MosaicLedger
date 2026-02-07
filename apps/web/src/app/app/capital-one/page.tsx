@@ -369,7 +369,15 @@ export default function CapitalOnePage() {
           </CardBody>
         </Card>
 
-        <div style={{ gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16, alignItems: 'start' }}>
+        <div
+          style={{
+            gridColumn: '1 / -1',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: 16,
+            alignItems: 'start',
+          }}
+        >
           <Card>
             <CardHeader>
               <CardTitle>Branch Locations</CardTitle>
@@ -393,7 +401,9 @@ export default function CapitalOnePage() {
                       >
                         <div style={{ fontWeight: 650 }}>{b.name || 'Branch'}</div>
                         {addr ? <div className="small">{addr}</div> : null}
-                        {b.phone_number ? <div className="small">Phone: {b.phone_number}</div> : null}
+                        {b.phone_number ? (
+                          <div className="small">Phone: {b.phone_number}</div>
+                        ) : null}
                         {addr ? (
                           <a
                             className="small"

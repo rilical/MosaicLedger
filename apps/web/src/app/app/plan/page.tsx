@@ -237,7 +237,9 @@ export default function PlanPage() {
                     <div className="small">{p.subtitle}</div>
                   </div>
                   <div style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
-                    <div style={{ fontSize: 16, fontWeight: 700 }}>+{formatMoney(p.result.estimatedMonthlySavings)}/mo</div>
+                    <div style={{ fontSize: 16, fontWeight: 700 }}>
+                      +{formatMoney(p.result.estimatedMonthlySavings)}/mo
+                    </div>
                     <div className="small">After: {formatMoney(p.result.afterSpend)}</div>
                   </div>
                 </div>
@@ -273,7 +275,14 @@ export default function PlanPage() {
         </CardHeader>
         <CardBody>
           <div style={{ display: 'grid', gap: 10 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                gap: 10,
+                alignItems: 'center',
+              }}
+            >
               <div style={{ fontSize: 15, fontWeight: 600 }}>
                 Goal:{' '}
                 {goal.goalType === 'monthly_cap'

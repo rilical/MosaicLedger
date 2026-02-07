@@ -124,7 +124,7 @@ export default function MosaicPage() {
   // Compute tiles based on mode and level
   const tiles = React.useMemo(() => {
     if (!artifacts) return [];
-    
+
     // Drill-down to merchant level uses category tiles
     if (level === 'merchant') {
       if (!selectedCategory) return [];

@@ -179,14 +179,14 @@ export async function GET(request: Request) {
     const binding = await resolveBinding();
     const nessie = nessieServerClient();
 
-  const accountsP = nessie.listAssignedAccounts();
-  const accountsResp = await accountsP;
-  const accounts = ensureArray<{ _id?: string }>(okOrNull(accountsResp), 'accounts');
+    const accountsP = nessie.listAssignedAccounts();
+    const accountsResp = await accountsP;
+    const accounts = ensureArray<{ _id?: string }>(okOrNull(accountsResp), 'accounts');
 
-  const accountId =
-    binding.accountId ??
-    accounts.find((a) => typeof a._id === 'string' && a._id.trim())?._id ??
-    null;
+    const accountId =
+      binding.accountId ??
+      accounts.find((a) => typeof a._id === 'string' && a._id.trim())?._id ??
+      null;
 
     const purchasesP = accountId ? nessie.listPurchases(accountId) : Promise.resolve(null);
     const billsP = accountId ? nessie.listBillsByAccount(accountId) : Promise.resolve(null);
@@ -245,7 +245,9 @@ export async function GET(request: Request) {
       errors: {
         accounts: accountsResp.ok ? null : accountsResp.message,
         purchases:
-          purchasesResp && 'ok' in purchasesResp && !purchasesResp.ok ? purchasesResp.message : null,
+          purchasesResp && 'ok' in purchasesResp && !purchasesResp.ok
+            ? purchasesResp.message
+            : null,
         bills: billsResp && 'ok' in billsResp && !billsResp.ok ? billsResp.message : null,
         branches: branchesResp.ok ? null : branchesResp.message,
         atms: atmsResp.ok ? null : atmsResp.message,
@@ -259,10 +261,7 @@ export async function GET(request: Request) {
         { status: 200 },
       );
     } catch {
-      return NextResponse.json(
-        { ok: false, error: message },
-        { status: 500 },
-      );
+      return NextResponse.json({ ok: false, error: message }, { status: 500 });
     }
   }
 }
