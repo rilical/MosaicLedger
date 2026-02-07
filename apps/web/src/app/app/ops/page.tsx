@@ -3,9 +3,10 @@ import { analyzeOps } from '@mosaicledger/engine';
 import type { DateRange, NormalizedTransaction, OpsBrief, OpsFinding } from '@mosaicledger/contracts';
 import { MosaicView } from '../../../components/MosaicView';
 import { Badge, Card, CardBody, CardHeader, CardTitle } from '../../../components/ui';
+import { OpsMemoPanel } from '../../../components/Ops/OpsMemoPanel';
 import { computeDemoArtifacts } from '../../../lib/analysis/compute';
 import { envFlags } from '../../../lib/flags';
-import { hasSupabaseEnv } from '../../../lib/env';
+import { hasSupabaseEnv, parseBooleanEnv } from '../../../lib/env';
 import { supabaseServer } from '../../../lib/supabase/server';
 
 function latestDate(dates: string[]): string | null {
@@ -137,6 +138,7 @@ export default async function OpsPage(props: {
   const { txns, source } = await loadTransactions(range);
   const analysis = analyzeOps(txns, range);
   const mosaicTiles: TreemapTile[] = buildTreemap(analysis.tiles, 'ops');
+  const aiEnabled = parseBooleanEnv(process.env.NEXT_PUBLIC_AI_ENABLED, false);
 
   return (
     <div className="pageStack" style={{ maxWidth: 1100 }}>
@@ -269,6 +271,8 @@ export default async function OpsPage(props: {
           )}
         </CardBody>
       </Card>
+
+      <OpsMemoPanel briefs={analysis.briefs} range={range} aiEnabled={aiEnabled} />
     </div>
   );
 }
