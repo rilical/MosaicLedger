@@ -4,10 +4,6 @@ import * as React from 'react';
 import Link from 'next/link';
 import { Badge, Button, Card, CardBody, CardHeader, CardTitle } from '../../../components/ui';
 
-type McpHealthResponse =
-  | { ok: true; configured: boolean; healthUrl?: string; status?: number; body?: unknown }
-  | { ok: false; error?: string };
-
 type NessieProbeResponse =
   | {
       ok: true;
@@ -25,13 +21,6 @@ type XrplHealthResponse =
   | { ok: false; error?: string };
 
 export default function EvidencePage() {
-  const [mcpStatus, setMcpStatus] = React.useState<
-    | { state: 'idle' }
-    | { state: 'loading' }
-    | { state: 'done'; resp: McpHealthResponse }
-    | { state: 'error'; error: string }
-  >({ state: 'idle' });
-
   const [nessieStatus, setNessieStatus] = React.useState<
     | { state: 'idle' }
     | { state: 'loading' }
@@ -45,18 +34,6 @@ export default function EvidencePage() {
     | { state: 'done'; resp: XrplHealthResponse }
     | { state: 'error'; error: string }
   >({ state: 'idle' });
-
-  async function checkMcp() {
-    setMcpStatus({ state: 'loading' });
-    try {
-      const resp = await fetch('/api/mcp/health', { method: 'GET' });
-      const json = (await resp.json()) as McpHealthResponse;
-      if (!resp.ok || !json) throw new Error('MCP health failed');
-      setMcpStatus({ state: 'done', resp: json });
-    } catch (e: unknown) {
-      setMcpStatus({ state: 'error', error: e instanceof Error ? e.message : 'MCP health failed' });
-    }
-  }
 
   async function checkNessie() {
     setNessieStatus({ state: 'loading' });
@@ -88,18 +65,6 @@ export default function EvidencePage() {
     }
   }
 
-  const mcpBadge = (() => {
-    if (mcpStatus.state === 'loading') return <Badge tone="warn">Checking…</Badge>;
-    if (mcpStatus.state === 'error') return <Badge tone="warn">Error</Badge>;
-    if (mcpStatus.state === 'done') {
-      const r = mcpStatus.resp;
-      if (!r.ok) return <Badge tone="warn">Fail</Badge>;
-      if (!r.configured) return <Badge tone="warn">Not configured</Badge>;
-      return <Badge tone="good">OK</Badge>;
-    }
-    return <Badge tone="neutral">Idle</Badge>;
-  })();
-
   const nessieBadge = (() => {
     if (nessieStatus.state === 'loading') return <Badge tone="warn">Checking…</Badge>;
     if (nessieStatus.state === 'error') return <Badge tone="warn">Error</Badge>;
@@ -129,7 +94,6 @@ export default function EvidencePage() {
       <div className="pageHeader">
         <div className="pageMeta">
           <div className="pageTagline">One screen to prove the prize-relevant parts work.</div>
-          {mcpBadge}
         </div>
       </div>
 
@@ -171,45 +135,6 @@ export default function EvidencePage() {
       </Card>
 
       <div className="grid">
-        <Card>
-          <CardHeader>
-            <CardTitle>MCP (Tool Calling Transport)</CardTitle>
-          </CardHeader>
-          <CardBody>
-            <div className="small">
-              If you set <code>DEDALUS_MCP_SERVER_URL</code>, Coach can call tools via MCP. This
-              check pings the configured server’s <code>/health</code>.
-            </div>
-            <div className="buttonRow" style={{ marginTop: 12, alignItems: 'center' }}>
-              <Button
-                variant="primary"
-                onClick={() => void checkMcp()}
-                disabled={mcpStatus.state === 'loading'}
-              >
-                Check MCP Health
-              </Button>
-              {mcpBadge}
-            </div>
-            {mcpStatus.state === 'done' ? (
-              <details style={{ marginTop: 12 }}>
-                <summary className="small" style={{ cursor: 'pointer', userSelect: 'none' }}>
-                  Details
-                </summary>
-                <pre
-                  className="small"
-                  style={{ marginTop: 10, whiteSpace: 'pre-wrap', opacity: 0.9 }}
-                >
-                  {JSON.stringify(mcpStatus.resp, null, 2)}
-                </pre>
-              </details>
-            ) : mcpStatus.state === 'error' ? (
-              <div className="small" style={{ marginTop: 12, color: 'rgba(234,179,8,0.95)' }}>
-                {mcpStatus.error}
-              </div>
-            ) : null}
-          </CardBody>
-        </Card>
-
         <Card>
           <CardHeader>
             <CardTitle>Capital One Nessie</CardTitle>
