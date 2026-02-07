@@ -45,6 +45,9 @@ create table if not exists public.plaid_items (
   -- For hackathon MVP only. Replace with Vault/KMS encryption before any real deployment.
   access_token text not null,
 
+  -- Plaid Transactions Sync cursor (for incremental sync).
+  transactions_cursor text,
+
   status text not null default 'active'
 );
 
@@ -67,6 +70,49 @@ with check (auth.uid() = user_id);
 drop policy if exists "plaid_items_update_own" on public.plaid_items;
 create policy "plaid_items_update_own"
 on public.plaid_items
+for update
+using (auth.uid() = user_id);
+
+-- 2b) Plaid transactions (per user). Enables cursor-based sync + modified/removed reconciliation.
+create table if not exists public.plaid_transactions (
+  user_id uuid not null references auth.users (id) on delete cascade,
+  transaction_id text not null,
+  item_id text,
+
+  date date not null,
+  name text not null,
+  merchant_name text,
+  amount numeric not null,
+  category text,
+  pending boolean not null default false,
+  deleted boolean not null default false,
+
+  raw_json jsonb not null,
+  updated_at timestamptz not null default now(),
+
+  primary key (user_id, transaction_id)
+);
+
+create index if not exists plaid_transactions_user_date_idx on public.plaid_transactions (user_id, date desc);
+create index if not exists plaid_transactions_user_item_idx on public.plaid_transactions (user_id, item_id);
+
+alter table public.plaid_transactions enable row level security;
+
+drop policy if exists "plaid_tx_select_own" on public.plaid_transactions;
+create policy "plaid_tx_select_own"
+on public.plaid_transactions
+for select
+using (auth.uid() = user_id);
+
+drop policy if exists "plaid_tx_insert_own" on public.plaid_transactions;
+create policy "plaid_tx_insert_own"
+on public.plaid_transactions
+for insert
+with check (auth.uid() = user_id);
+
+drop policy if exists "plaid_tx_update_own" on public.plaid_transactions;
+create policy "plaid_tx_update_own"
+on public.plaid_transactions
 for update
 using (auth.uid() = user_id);
 
