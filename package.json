@@ -3,6 +3,7 @@
   "private": true,
   "main": "index.js",
   "workspaces": [
+    "apps/*",
     "packages/*"
   ],
   "packageManager": "pnpm@9.15.4",
@@ -18,7 +19,7 @@
     "zod": "^4.3.6"
   },
   "scripts": {
-    "postinstall": "pnpm -r --filter \"@mosaicledger/*\" --filter \"!@mosaicledger/web\" --filter \"!@mosaicledger/mobile\" build",
+    "postinstall": "node scripts/postinstall.mjs",
     "dev": "pnpm -C apps/web dev",
     "build": "pnpm -r --filter \"@mosaicledger/*\" --filter \"!@mosaicledger/web\" --filter \"!@mosaicledger/mobile\" build",
     "build:all": "pnpm -r build",
