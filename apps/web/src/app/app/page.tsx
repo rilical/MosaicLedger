@@ -259,9 +259,6 @@ export default function ConnectPage() {
                     <Button variant="primary" onClick={() => router.push('/game')}>
                       Minesweeper
                     </Button>
-                    <Button variant="ghost" onClick={() => router.push('/mosaic-game')}>
-                      Mosaic Sprint
-                    </Button>
                     <Button variant="ghost" onClick={() => router.push('/app/xrpl')}>
                       XRPL
                     </Button>

@@ -299,12 +299,14 @@ a {
 .drawer {
   width: min(520px, 92vw);
   height: 100%;
+  max-height: 100vh;
   background: rgba(14, 18, 26, 0.92);
   border-left: 1px solid var(--border);
   box-shadow: var(--shadow);
   padding: 14px;
   display: grid;
   grid-template-rows: auto 1fr;
+  overflow: hidden;
 }
 
 .drawerHeader {
@@ -323,6 +325,7 @@ a {
 .drawerBody {
   padding-top: 12px;
   overflow: auto;
+  min-height: 0;
 }
 
 .flagRow {
@@ -652,11 +655,12 @@ a {
 
 .mosaicHud {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  bottom: 12px;
   left: 12px;
+  right: auto;
+  top: auto;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 10px;
   pointer-events: none;
 }

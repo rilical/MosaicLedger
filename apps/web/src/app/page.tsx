@@ -8,18 +8,6 @@ export default function LandingPage() {
       <div className="landingNav">
         <div className="landingNavBrand">MosaicLedger</div>
         <div className="buttonRow" style={{ justifyContent: 'flex-end', flex: 1 }}>
-          <a className="btn btnGhost" href="#product">
-            Product
-          </a>
-          <a className="btn btnGhost" href="#integrations">
-            Integrations
-          </a>
-          <a className="btn btnGhost" href="#proof">
-            Proof
-          </a>
-          <Link className="btn btnGhost" href="/prize-ledger">
-            Prize Ledger
-          </Link>
           <Link className="btn btnGhost" href="/login">
             Login
           </Link>
@@ -36,13 +24,7 @@ export default function LandingPage() {
           </p>
           <div className="landingActions">
             <Link className="btn btnPrimary" href="/app">
-              Open Dashboard
-            </Link>
-            <Link className="btn btnGhost" href="/app/mosaic?source=demo">
-              Launch Demo Mosaic
-            </Link>
-            <Link className="btn btnGhost" href="/game">
-              Play 15KB Minesweeper
+              Open Dashboard with Demo Data
             </Link>
           </div>
         </div>
@@ -142,35 +124,6 @@ export default function LandingPage() {
           <Link className="btn btnGhost" href="/health">
             Health Checks
           </Link>
-        </div>
-      </section>
-
-      <section className="section" id="proof">
-        <div className="sectionHeader">
-          <h2 className="sectionTitle">Proof, not promises</h2>
-          <Badge>CI-gated</Badge>
-        </div>
-        <div className="stepGrid">
-          <div className="stepCard">
-            <div style={{ fontWeight: 600, marginBottom: 6 }}>15KB Minesweeper</div>
-            <div className="small">
-              Size is enforced in CI and E2E, and the page includes a dashboard button.
-            </div>
-          </div>
-          <div className="stepCard">
-            <div style={{ fontWeight: 600, marginBottom: 6 }}>Golden snapshots</div>
-            <div className="small">
-              Demo artifacts (summary/recurring/plan/mosaic) are pinned with a stable date for
-              regression safety.
-            </div>
-          </div>
-          <div className="stepCard">
-            <div style={{ fontWeight: 600, marginBottom: 6 }}>Fail-open demos</div>
-            <div className="small">
-              Sponsor APIs and AI never block the flow. When something flakes, we fall back to
-              deterministic demo data.
-            </div>
-          </div>
         </div>
       </section>
     </main>
