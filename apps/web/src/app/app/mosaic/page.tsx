@@ -26,6 +26,12 @@ import { useFlags } from '../../../lib/flags-client';
 
 type MosaicLevel = 'category' | 'merchant';
 
+function addDays(iso: string, days: number): string {
+  const d = new Date(iso + 'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
 function stageLabel(stage: 'idle' | 'syncing' | 'analyzing' | 'rendering'): string {
   switch (stage) {
     case 'syncing':
@@ -75,6 +81,37 @@ export default function MosaicPage() {
 
   const spend = artifacts?.summary.totalSpend ?? 0;
   const txCount = artifacts?.summary.transactionCount ?? 0;
+  const byCategory = artifacts?.summary.byCategory ?? {};
+  const byMerchant = artifacts?.summary.byMerchant ?? {};
+
+  const topCategories = React.useMemo(() => {
+    return Object.entries(byCategory)
+      .slice()
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8);
+  }, [byCategory]);
+
+  const topMerchants = React.useMemo(() => {
+    return Object.entries(byMerchant)
+      .slice()
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8);
+  }, [byMerchant]);
+
+  const upcoming = React.useMemo(() => {
+    const now = new Date().toISOString().slice(0, 10);
+    const end = addDays(now, 30);
+    return (artifacts?.recurring ?? [])
+      .filter((r) => r.nextDate >= now && r.nextDate <= end)
+      .slice()
+      .sort((a, b) => (a.nextDate < b.nextDate ? -1 : a.nextDate > b.nextDate ? 1 : 0))
+      .slice(0, 6);
+  }, [artifacts?.recurring]);
+
+  const upcomingTotal = React.useMemo(
+    () => upcoming.reduce((sum, r) => sum + r.expectedAmount, 0),
+    [upcoming],
+  );
 
   const tiles = React.useMemo(() => {
     if (!artifacts) return [];
@@ -215,10 +252,144 @@ export default function MosaicPage() {
         <div style={{ display: 'grid', gap: 16 }}>
           <Card>
             <CardHeader>
-              <CardTitle>Recurring</CardTitle>
+              <CardTitle>Spend Breakdown</CardTitle>
+            </CardHeader>
+            <CardBody>
+              {!artifacts ? (
+                <div className="small">Waiting for analysis…</div>
+              ) : (
+                <div style={{ display: 'grid', gap: 12 }}>
+                  <div className="small" style={{ opacity: 0.9 }}>
+                    Click a category to drill into merchants. Use this list to narrate what the
+                    Mosaic is showing in plain language.
+                  </div>
+
+                  <div style={{ display: 'grid', gap: 8 }}>
+                    {topCategories.length ? (
+                      topCategories.map(([cat, amt]) => {
+                        const pct = spend > 0 ? (amt / spend) * 100 : 0;
+                        const active = level === 'merchant' && selectedCategory === cat;
+                        return (
+                          <button
+                            key={cat}
+                            type="button"
+                            className="btn"
+                            onClick={() => {
+                              setSelectedCategory(cat);
+                              setSelectedMerchant(null);
+                              setLevel('merchant');
+                            }}
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              gap: 10,
+                              padding: '10px 12px',
+                              borderRadius: 14,
+                              background: active
+                                ? 'rgba(56,189,248,0.16)'
+                                : 'rgba(255,255,255,0.03)',
+                              borderColor: active
+                                ? 'rgba(56,189,248,0.35)'
+                                : 'rgba(255,255,255,0.10)',
+                              fontVariantNumeric: 'tabular-nums',
+                            }}
+                            aria-pressed={active}
+                          >
+                            <span style={{ textAlign: 'left' }}>
+                              <span style={{ fontWeight: 650 }}>{cat}</span>
+                              <span className="small" style={{ marginLeft: 10, opacity: 0.85 }}>
+                                {pct.toFixed(1)}%
+                              </span>
+                            </span>
+                            <span style={{ fontWeight: 700 }}>${amt.toFixed(2)}</span>
+                          </button>
+                        );
+                      })
+                    ) : (
+                      <div className="small">No spend in range.</div>
+                    )}
+                  </div>
+
+                  <details>
+                    <summary className="small" style={{ cursor: 'pointer', userSelect: 'none' }}>
+                      Top merchants (all categories)
+                    </summary>
+                    <div style={{ display: 'grid', gap: 8, marginTop: 10 }}>
+                      {topMerchants.length ? (
+                        topMerchants.map(([m, amt]) => (
+                          <div
+                            key={m}
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              gap: 10,
+                              fontVariantNumeric: 'tabular-nums',
+                            }}
+                          >
+                            <div className="small" style={{ opacity: 0.95 }}>
+                              {m}
+                            </div>
+                            <div className="small" style={{ opacity: 0.9 }}>
+                              ${amt.toFixed(2)}
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="small">No merchants yet.</div>
+                      )}
+                    </div>
+                  </details>
+                </div>
+              )}
+            </CardBody>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Recurring Payments</CardTitle>
             </CardHeader>
             <CardBody>
               <RecurringPanel recurring={artifacts?.recurring ?? []} />
+            </CardBody>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Future Outflows (Next 30 Days)</CardTitle>
+            </CardHeader>
+            <CardBody>
+              {!artifacts ? (
+                <div className="small">Waiting for analysis…</div>
+              ) : upcoming.length === 0 ? (
+                <div className="small">No predicted recurring outflows in the next 30 days.</div>
+              ) : (
+                <div style={{ display: 'grid', gap: 10 }}>
+                  <div className="small">
+                    Total upcoming: <strong>${upcomingTotal.toFixed(2)}</strong>
+                  </div>
+                  <div style={{ display: 'grid', gap: 8 }}>
+                    {upcoming.map((r) => (
+                      <div
+                        key={`up_${r.id}`}
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          gap: 12,
+                          fontVariantNumeric: 'tabular-nums',
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontWeight: 650 }}>{r.merchant}</div>
+                          <div className="small">
+                            {r.nextDate} · {r.cadence} · {(r.confidence * 100).toFixed(0)}%
+                          </div>
+                        </div>
+                        <div className="money">${r.expectedAmount.toFixed(2)}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </CardBody>
           </Card>
 

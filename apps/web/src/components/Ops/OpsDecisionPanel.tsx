@@ -14,8 +14,9 @@ export function OpsDecisionPanel(props: {
   findings: OpsFinding[];
   range: { start: string; end: string };
   aiEnabled: boolean;
+  capitalOneSignals?: { billsUpcoming30dCount: number } | null;
 }) {
-  const { dashboard, findings, range, aiEnabled } = props;
+  const { dashboard, findings, range, aiEnabled, capitalOneSignals } = props;
   const [status, setStatus] = React.useState<'idle' | 'loading'>('idle');
   const [text, setText] = React.useState<string>('');
   const [usedAI, setUsedAI] = React.useState<boolean>(false);
@@ -36,6 +37,7 @@ export function OpsDecisionPanel(props: {
         body: JSON.stringify({
           dashboard,
           range,
+          capitalOneSignals: capitalOneSignals ?? undefined,
           topFindings: top.map((f) => ({
             analyst: f.analyst,
             kind: f.kind,
@@ -111,6 +113,12 @@ export function OpsDecisionPanel(props: {
           This turns risk/compliance/recon signals into concrete back-office decisions: what to
           review, what to reconcile, and what to escalate. AI is optional and must not invent
           numbers.
+          {capitalOneSignals ? (
+            <div style={{ marginTop: 8 }}>
+              Capital One signals: <b>{capitalOneSignals.billsUpcoming30dCount}</b> bills due in
+              the next 30 days.
+            </div>
+          ) : null}
         </div>
 
         {error ? (

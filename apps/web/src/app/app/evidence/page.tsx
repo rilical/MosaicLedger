@@ -143,6 +143,9 @@ export default function EvidencePage() {
             <Link className="btn btnPrimary" href="/app/mosaic?source=demo">
               Demo Mosaic
             </Link>
+            <Link className="btn btnGhost" href="/app/capital-one">
+              Capital One
+            </Link>
             <Link className="btn btnGhost" href="/app/ops">
               Ops
             </Link>

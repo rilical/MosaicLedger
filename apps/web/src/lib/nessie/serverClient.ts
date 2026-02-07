@@ -21,6 +21,41 @@ export type NessieError = {
 export type NessieOk<T> = { ok: true; data: T };
 export type NessieResult<T> = NessieOk<T> | NessieError;
 
+// Minimal types for extra Nessie endpoints we use in the UI (ATM/branches/bills).
+export type NessieAtm = {
+  _id?: string;
+  name?: string;
+  geocode?: { lat?: number; lng?: number };
+  hours?: string[];
+  accessibility?: boolean;
+  amount_left?: number;
+};
+
+export type NessieBranch = {
+  _id?: string;
+  name?: string;
+  phone_number?: string;
+  address?: {
+    street_number?: string;
+    street_name?: string;
+    city?: string;
+    state?: string;
+    zip?: string;
+  };
+};
+
+export type NessieBill = {
+  _id?: string;
+  status?: string;
+  payee?: string;
+  nickname?: string;
+  creation_date?: string;
+  payment_date?: string;
+  recurring_date?: number;
+  upcoming_payment_date?: string;
+  account_id?: string;
+};
+
 function getBaseUrl(): string {
   // Hackathon docs commonly use `http://api.reimaginebanking.com`.
   // Allow override so teams can pin other hosts if needed.
@@ -133,6 +168,9 @@ export function nessieServerClient(): {
   listAccounts: (customerId: string) => Promise<NessieResult<NessieAccount[]>>;
   listPurchases: (accountId: string) => Promise<NessieResult<NessiePurchase[]>>;
   listDeposits: (accountId: string) => Promise<NessieResult<NessieDeposit[]>>;
+  listBillsByAccount: (accountId: string) => Promise<NessieResult<NessieBill[]>>;
+  listBranches: () => Promise<NessieResult<NessieBranch[]>>;
+  listAtms: (params: { lat: number; lng: number; rad: number }) => Promise<NessieResult<NessieAtm[]>>;
   createMerchant: (
     payload: Record<string, unknown>,
   ) => Promise<NessieResult<Record<string, unknown>>>;
@@ -153,6 +191,7 @@ export function nessieServerClient(): {
   ) => Promise<NessieResult<Record<string, unknown>>>;
   getPurchases: (accountId: string) => Promise<NessieResult<NessiePurchase[]>>;
   getDeposits: (accountId: string) => Promise<NessieResult<NessieDeposit[]>>;
+  getBillsByAccount: (accountId: string) => Promise<NessieResult<NessieBill[]>>;
   createPurchase: (
     accountId: string,
     payload: Record<string, unknown>,
@@ -172,6 +211,16 @@ export function nessieServerClient(): {
     nessieFetch<NessiePurchase[]>(`/accounts/${encodeURIComponent(accountId)}/purchases`);
   const listDeposits = (accountId: string) =>
     nessieFetch<NessieDeposit[]>(`/accounts/${encodeURIComponent(accountId)}/deposits`);
+  const listBillsByAccount = (accountId: string) =>
+    nessieFetch<NessieBill[]>(`/accounts/${encodeURIComponent(accountId)}/bills`);
+  const listBranches = () => nessieFetch<NessieBranch[]>('/branches');
+  const listAtms = (params: { lat: number; lng: number; rad: number }) => {
+    const qp = new URLSearchParams();
+    qp.set('lat', String(params.lat));
+    qp.set('lng', String(params.lng));
+    qp.set('rad', String(params.rad));
+    return nessieFetch<NessieAtm[]>(`/atms?${qp.toString()}`);
+  };
   const createMerchant = (payload: Record<string, unknown>) =>
     nessieFetch<Record<string, unknown>>('/merchants', {
       method: 'POST',
@@ -184,6 +233,9 @@ export function nessieServerClient(): {
     listAccounts,
     listPurchases,
     listDeposits,
+    listBillsByAccount,
+    listBranches,
+    listAtms,
     createMerchant,
 
     getCustomers: listCustomers,
@@ -198,6 +250,7 @@ export function nessieServerClient(): {
       }),
     getPurchases: listPurchases,
     getDeposits: listDeposits,
+    getBillsByAccount: listBillsByAccount,
     createPurchase: (accountId, payload) =>
       nessieFetch(`/accounts/${encodeURIComponent(accountId)}/purchases`, {
         method: 'POST',

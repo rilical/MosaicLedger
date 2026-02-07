@@ -7,6 +7,7 @@ import { useFlags } from '../lib/flags-client';
 
 const navItemsBase = [
   { href: '/app', label: 'Start' },
+  { href: '/app/capital-one', label: 'Capital One' },
   { href: '/app/mosaic', label: 'Mosaic' },
   { href: '/app/recurring', label: 'Recurring' },
   { href: '/app/plan', label: 'Plan' },
@@ -30,13 +31,12 @@ export function AppNav({ demoMode }: AppNavProps) {
   const pathname = usePathname();
   const { flags } = useFlags();
 
-  const navItems = flags.xrplEnabled
-    ? [
-        ...navItemsBase.slice(0, 5),
-        { href: '/app/xrpl', label: 'XRPL', badge: 'opt' },
-        ...navItemsBase.slice(5),
-      ]
-    : navItemsBase;
+  const navItems = [
+    navItemsBase[0]!,
+    ...(flags.nessieEnabled ? [navItemsBase[1]!] : []),
+    ...navItemsBase.slice(2),
+    ...(flags.xrplEnabled ? [{ href: '/app/xrpl', label: 'XRPL' }] : []),
+  ];
 
   return (
     <div className="navList">
