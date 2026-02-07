@@ -16,7 +16,12 @@ const sectionMeta: Array<{ match: string; title: string; subtitle: string }> = [
 ];
 
 function getSection(pathname: string) {
-  return sectionMeta.find((item) => pathname.startsWith(item.match)) ?? sectionMeta[sectionMeta.length - 1];
+  return (
+    sectionMeta.find((item) => pathname.startsWith(item.match)) ?? {
+      title: 'MosaicLedger',
+      subtitle: '',
+    }
+  );
 }
 
 export function AppHeader() {
