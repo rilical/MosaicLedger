@@ -8,7 +8,6 @@ import { useFlags } from '../lib/flags-client';
 const navItemsBase = [
   { href: '/app', label: 'Connect', badge: 'LIVE' },
   { href: '/app/mosaic', label: 'Mosaic', badge: 'v0' },
-  { href: '/app/ops', label: 'Ops', badge: 'v0' },
   { href: '/app/recurring', label: 'Recurring', badge: 'v0' },
   { href: '/app/plan', label: 'Plan', badge: 'v0' },
   { href: '/app/export', label: 'Export', badge: 'soon' },
