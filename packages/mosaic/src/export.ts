@@ -66,7 +66,7 @@ export function exportToSvg(input: ExportPosterInput): string {
         `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="${esc(t.color)}" opacity="0.78" stroke="rgba(255,255,255,0.35)" stroke-width="1" />`,
         `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="url(#glass-shine)" opacity="0.45" />`,
         showLabel
-          ? `<text x="${x + w/2}" y="${y + h/2}" text-anchor="middle" dominant-baseline="middle" font-size="16" fill="rgba(0,0,0,0.78)" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial">${label}</text>`
+          ? `<text x="${x + w / 2}" y="${y + h / 2}" text-anchor="middle" dominant-baseline="middle" font-size="16" fill="rgba(0,0,0,0.78)" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial">${label}</text>`
           : '',
         `</g>`,
       ].join('');

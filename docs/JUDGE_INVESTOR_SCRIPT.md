@@ -6,7 +6,7 @@ This document explains **every aspect** of the MosaicLedger web app so judges an
 
 ## 1. What MosaicLedger Is
 
-**Tagline:** *Enter with fragments. Leave with something whole.*
+**Tagline:** _Enter with fragments. Leave with something whole._
 
 MosaicLedger is a **visual-first budget planner** that:
 
@@ -35,11 +35,11 @@ The core engine is **deterministic**: numbers (totals, tiles, recurring, actions
 
 ## 3. Data Sources
 
-| Source | When it’s used | Requirements |
-|--------|-----------------|--------------|
-| **Demo data** | Default for judges; “Use Demo Data” or Demo Mode ON; or no bank linked. | None. Always works. No keys. |
-| **Bank (Plaid)** | User clicks “Connect Bank” and completes Plaid Link; then analyze uses DB-backed or live Plaid transactions. | Plaid env vars; Supabase for storing items/transactions. |
-| **Plaid fixture** | When Plaid is disabled or server uses fixture mode (e.g. sandbox fallback). | Same as demo from the user’s perspective. |
+| Source            | When it’s used                                                                                               | Requirements                                             |
+| ----------------- | ------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------- |
+| **Demo data**     | Default for judges; “Use Demo Data” or Demo Mode ON; or no bank linked.                                      | None. Always works. No keys.                             |
+| **Bank (Plaid)**  | User clicks “Connect Bank” and completes Plaid Link; then analyze uses DB-backed or live Plaid transactions. | Plaid env vars; Supabase for storing items/transactions. |
+| **Plaid fixture** | When Plaid is disabled or server uses fixture mode (e.g. sandbox fallback).                                  | Same as demo from the user’s perspective.                |
 
 - **Demo dataset:** Lives in `packages/banking` (`demoDataset.json`). Curated transactions so the mosaic is non-empty, recurring items are detected, and the plan has meaningful actions. Used in CI and as the “always works” path.
 - **Judge Mode / Demo Mode:** In **Settings** → **Settings** drawer, judges can turn **Judge Mode** and **Demo Mode** ON. That forces the always-works path (no auth, no live Plaid), so the demo doesn’t depend on external services.
@@ -125,7 +125,7 @@ Contracts (types) live in **packages/core/src/types.ts**. The web app and API on
 
 ### What to say in one line
 
-*“The mural is the primary UI; the plan turns fragments into a ranked list of next actions with quantified monthly savings, and everything is deterministic and explainable.”*
+_“The mural is the primary UI; the plan turns fragments into a ranked list of next actions with quantified monthly savings, and everything is deterministic and explainable.”_
 
 ---
 
@@ -140,31 +140,31 @@ Contracts (types) live in **packages/core/src/types.ts**. The web app and API on
 
 ## 9. Judging Tips & Troubleshooting
 
-| Issue | What to do |
-|------|------------|
-| Mosaic empty or “Error” | Use **Use Demo Data**. If already on demo, open **Settings** → turn **Judge Mode** and **Demo Mode** ON, then reload. Or go to **/app** and click **Use Demo Data** again. |
-| Slow or hanging | On Mosaic, if a “Switch to demo data” button appears, click it. Or enable Judge + Demo in Settings and reload. |
-| Want to verify environment | Open **/health**. Check demo dataset and optional integrations. |
-| Plaid / bank not needed | Demo is the judged path. Bank connection is optional; “Use Demo Data” is the recommended path for competition. |
-| Clear local state | **Settings** → **Forget this device** (or **Expo reset** if shown). Then **Use Demo Data** again. |
+| Issue                      | What to do                                                                                                                                                                 |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Mosaic empty or “Error”    | Use **Use Demo Data**. If already on demo, open **Settings** → turn **Judge Mode** and **Demo Mode** ON, then reload. Or go to **/app** and click **Use Demo Data** again. |
+| Slow or hanging            | On Mosaic, if a “Switch to demo data” button appears, click it. Or enable Judge + Demo in Settings and reload.                                                             |
+| Want to verify environment | Open **/health**. Check demo dataset and optional integrations.                                                                                                            |
+| Plaid / bank not needed    | Demo is the judged path. Bank connection is optional; “Use Demo Data” is the recommended path for competition.                                                             |
+| Clear local state          | **Settings** → **Forget this device** (or **Expo reset** if shown). Then **Use Demo Data** again.                                                                          |
 
 ---
 
 ## 10. Quick Reference — Where Things Live
 
-| What | Where |
-|------|--------|
-| Demo dataset | `packages/banking` (demo) |
-| Engine (normalize, summarize, recurring, recommend) | `packages/core` |
-| Treemap + export | `packages/mosaic` |
-| Analyze API (POST/GET) | `apps/web/src/app/api/engine/analyze/route.ts` |
-| Compute (demo vs bank) | `apps/web/src/lib/analysis/compute.ts` |
-| Mosaic UI | `apps/web/src/components/MosaicView.tsx`, `app/app/mosaic/page.tsx` |
-| Recurring panel + Subscription choices | `RecurringPanel.tsx`, `lib/subscriptions/choices.ts` |
-| Plan page (goals, scenario, actions) | `app/app/plan/page.tsx`, `ActionsPanel`, `usePlanGoal` |
-| AnalysisControls (range, filters, Recompute) | `components/Analysis/AnalysisControls.tsx` |
-| Types (single source of truth) | `packages/core/src/types.ts` |
-| Health check | `/health` |
+| What                                                | Where                                                               |
+| --------------------------------------------------- | ------------------------------------------------------------------- |
+| Demo dataset                                        | `packages/banking` (demo)                                           |
+| Engine (normalize, summarize, recurring, recommend) | `packages/core`                                                     |
+| Treemap + export                                    | `packages/mosaic`                                                   |
+| Analyze API (POST/GET)                              | `apps/web/src/app/api/engine/analyze/route.ts`                      |
+| Compute (demo vs bank)                              | `apps/web/src/lib/analysis/compute.ts`                              |
+| Mosaic UI                                           | `apps/web/src/components/MosaicView.tsx`, `app/app/mosaic/page.tsx` |
+| Recurring panel + Subscription choices              | `RecurringPanel.tsx`, `lib/subscriptions/choices.ts`                |
+| Plan page (goals, scenario, actions)                | `app/app/plan/page.tsx`, `ActionsPanel`, `usePlanGoal`              |
+| AnalysisControls (range, filters, Recompute)        | `components/Analysis/AnalysisControls.tsx`                          |
+| Types (single source of truth)                      | `packages/core/src/types.ts`                                        |
+| Health check                                        | `/health`                                                           |
 
 ---
 

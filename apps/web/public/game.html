@@ -173,8 +173,14 @@
           <h1>Minesweeper (180s)</h1>
           <div class="meta">10x10 · 15 mines · first click safe</div>
         </div>
-        <a class="pill primary" id="dashboardBtn" href="/app" style="text-decoration:none;color:inherit;display:inline-flex">Dashboard</a>
-        <div class="pill" id="status" style="display:none">READY</div>
+        <a
+          class="pill primary"
+          id="dashboardBtn"
+          href="/app"
+          style="text-decoration: none; color: inherit; display: inline-flex"
+          >Dashboard</a
+        >
+        <div class="pill" id="status" style="display: none">READY</div>
       </div>
 
       <div class="card">
@@ -253,8 +259,9 @@
           return a;
         }
         function setStatus(t, tone) {
-          elD.style.display = 'inline-flex';
-          elS.style.display = 'none';
+          elS.textContent = t;
+          elD.style.display = 'none';
+          elS.style.display = 'inline-flex';
         }
         function mk() {
           grid.innerHTML = '';
