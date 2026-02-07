@@ -9,9 +9,7 @@ import type { AnalysisSettings } from '../../components/Analysis/types';
 export default function ConnectPage() {
   const router = useRouter();
   const { flags, setFlag } = useFlags();
-  const [nessieStep, setNessieStep] = React.useState<'idle' | 'bootstrapping' | 'syncing'>(
-    'idle',
-  );
+  const [nessieStep, setNessieStep] = React.useState<'idle' | 'bootstrapping' | 'syncing'>('idle');
   const [nessieError, setNessieError] = React.useState<string | null>(null);
 
   function patchAnalysisSettings(patch: Partial<AnalysisSettings>) {
