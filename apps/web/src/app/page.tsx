@@ -1,12 +1,10 @@
 import Link from 'next/link';
 import { Badge } from '../components/ui';
-import { CursorGlow } from '../components/CursorGlow';
 import { MosaicPreviewToggle } from '../components/MosaicPreviewToggle';
 
 export default function LandingPage() {
   return (
     <main className="landing">
-      <CursorGlow />
 
       <div className="landingNav">
         <div className="landingNavBrand">MosaicLedger</div>
