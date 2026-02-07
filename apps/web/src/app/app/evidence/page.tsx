@@ -127,7 +127,6 @@ export default function EvidencePage() {
   return (
     <div className="pageStack" style={{ maxWidth: 980 }}>
       <div className="pageHeader">
-        <h1 className="pageTitle">Evidence</h1>
         <div className="pageMeta">
           <div className="pageTagline">One screen to prove the prize-relevant parts work.</div>
           {mcpBadge}
@@ -166,9 +165,6 @@ export default function EvidencePage() {
             </Link>
             <Link className="btn btnGhost" href="/game">
               Minesweeper (15KB)
-            </Link>
-            <Link className="btn btnGhost" href="/mosaic-game">
-              Mosaic Sprint
             </Link>
           </div>
         </CardBody>

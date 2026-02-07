@@ -97,7 +97,7 @@ export function SettingsDrawer() {
   return (
     <>
       <Button variant="ghost" onClick={() => setOpen(true)}>
-        Judge Controls
+        Runtime Flags
       </Button>
       <Drawer open={open} onOpenChange={setOpen} title="Runtime Flags">
         <div style={{ display: 'grid', gap: 12 }}>
