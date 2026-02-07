@@ -65,18 +65,27 @@ importers:
       '@mosaicledger/banking':
         specifier: workspace:*
         version: link:../../packages/banking
+      '@mosaicledger/connectors':
+        specifier: workspace:*
+        version: link:../../packages/connectors
       '@mosaicledger/core':
         specifier: workspace:*
         version: link:../../packages/core
       '@mosaicledger/mosaic':
         specifier: workspace:*
         version: link:../../packages/mosaic
+      '@resvg/resvg-wasm':
+        specifier: ^2.6.2
+        version: 2.6.2
       '@supabase/ssr':
         specifier: ^0.5.2
         version: 0.5.2(@supabase/supabase-js@2.95.3)
       '@supabase/supabase-js':
         specifier: ^2.49.1
         version: 2.95.3
+      dedalus-labs:
+        specifier: 0.1.0-alpha.8
+        version: 0.1.0-alpha.8(zod@3.25.76)
       next:
         specifier: 15.1.6
         version: 15.1.6(@playwright/test@1.58.2)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -120,6 +129,19 @@ importers:
       typescript:
         specifier: ^5.7.3
         version: 5.9.3
+
+  packages/connectors:
+    dependencies:
+      '@mosaicledger/core':
+        specifier: workspace:*
+        version: link:../core
+    devDependencies:
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.19.9)(lightningcss@1.27.0)(terser@5.46.0)
 
   packages/core:
     devDependencies:
@@ -2561,6 +2583,13 @@ packages:
       '@types/react':
         optional: true
 
+  '@resvg/resvg-wasm@2.6.2':
+    resolution:
+      {
+        integrity: sha512-FqALmHI8D4o6lk/LRWDnhw95z5eO+eAa6ORjVg09YRR7BkcM6oPHU9uyC0gtQG5vpFLvgpeU4+zEAz2H8APHNw==,
+      }
+    engines: { node: '>= 10' }
+
   '@rollup/rollup-android-arm-eabi@4.57.1':
     resolution:
       {
@@ -4089,6 +4118,17 @@ packages:
       supports-color: '*'
     peerDependenciesMeta:
       supports-color:
+        optional: true
+
+  dedalus-labs@0.1.0-alpha.8:
+    resolution:
+      {
+        integrity: sha512-aN8TSBINvm5ApE1yMTXqojDPLeNxeQji6++PE6z3PLZTjMltfMO0mQFwAVC3q+s/zJEsXKbKhj5+p76o/R08Rg==,
+      }
+    peerDependencies:
+      zod: ^3.25 || ^4.0
+    peerDependenciesMeta:
+      zod:
         optional: true
 
   deep-eql@5.0.2:
@@ -10159,6 +10199,8 @@ snapshots:
     optionalDependencies:
       '@types/react': 18.3.28
 
+  '@resvg/resvg-wasm@2.6.2': {}
+
   '@rollup/rollup-android-arm-eabi@4.57.1':
     optional: true
 
@@ -11111,6 +11153,10 @@ snapshots:
   debug@4.4.3:
     dependencies:
       ms: 2.1.3
+
+  dedalus-labs@0.1.0-alpha.8(zod@3.25.76):
+    optionalDependencies:
+      zod: 3.25.76
 
   deep-eql@5.0.2: {}
 

@@ -1,5 +1,14 @@
 import 'server-only';
 
+import type {
+  NessieAccount,
+  NessieCustomer,
+  NessieDeposit,
+  NessiePurchase,
+} from '@mosaicledger/connectors';
+
+export type { NessieAccount, NessieCustomer, NessieDeposit, NessiePurchase };
+
 export type NessieMode = 'readwrite' | 'readonly';
 
 export type NessieError = {
@@ -13,7 +22,9 @@ export type NessieOk<T> = { ok: true; data: T };
 export type NessieResult<T> = NessieOk<T> | NessieError;
 
 function getBaseUrl(): string {
-  return (process.env.NESSIE_BASE_URL ?? 'https://api.nessieisreal.com').replace(/\/+$/, '');
+  // Hackathon docs commonly use `http://api.reimaginebanking.com`.
+  // Allow override so teams can pin other hosts if needed.
+  return (process.env.NESSIE_BASE_URL ?? 'http://api.reimaginebanking.com').replace(/\/+$/, '');
 }
 
 function hasKey(): boolean {
@@ -100,29 +111,6 @@ async function nessieFetch<T>(path: string, init?: RequestInit): Promise<NessieR
   }
 }
 
-export type NessieCustomer = {
-  _id: string;
-  first_name?: string;
-  last_name?: string;
-};
-
-export type NessieAccount = {
-  _id: string;
-  type?: string;
-  nickname?: string;
-  balance?: number;
-  customer_id?: string;
-};
-
-export type NessiePurchase = {
-  _id: string;
-  amount: number;
-  description?: string;
-  purchase_date?: string; // YYYY-MM-DD
-  status?: string;
-  type?: string;
-};
-
 export function hasNessieEnv(): boolean {
   return hasKey();
 }
@@ -132,6 +120,13 @@ export function getNessieBaseUrl(): string {
 }
 
 export function nessieServerClient(): {
+  // Preferred naming for routes / story.
+  listCustomers: () => Promise<NessieResult<NessieCustomer[]>>;
+  listAccounts: (customerId: string) => Promise<NessieResult<NessieAccount[]>>;
+  listPurchases: (accountId: string) => Promise<NessieResult<NessiePurchase[]>>;
+  listDeposits: (accountId: string) => Promise<NessieResult<NessieDeposit[]>>;
+
+  // Legacy aliases (keep to avoid churn across branches).
   getCustomers: () => Promise<NessieResult<NessieCustomer[]>>;
   createCustomer: (
     payload: Record<string, unknown>,
@@ -142,24 +137,37 @@ export function nessieServerClient(): {
     payload: Record<string, unknown>,
   ) => Promise<NessieResult<Record<string, unknown>>>;
   getPurchases: (accountId: string) => Promise<NessieResult<NessiePurchase[]>>;
+  getDeposits: (accountId: string) => Promise<NessieResult<NessieDeposit[]>>;
   createPurchase: (
     accountId: string,
     payload: Record<string, unknown>,
   ) => Promise<NessieResult<Record<string, unknown>>>;
 } {
+  const listCustomers = () => nessieFetch<NessieCustomer[]>('/customers');
+  const listAccounts = (customerId: string) =>
+    nessieFetch<NessieAccount[]>(`/customers/${encodeURIComponent(customerId)}/accounts`);
+  const listPurchases = (accountId: string) =>
+    nessieFetch<NessiePurchase[]>(`/accounts/${encodeURIComponent(accountId)}/purchases`);
+  const listDeposits = (accountId: string) =>
+    nessieFetch<NessieDeposit[]>(`/accounts/${encodeURIComponent(accountId)}/deposits`);
+
   return {
-    getCustomers: () => nessieFetch('/customers'),
+    listCustomers,
+    listAccounts,
+    listPurchases,
+    listDeposits,
+
+    getCustomers: listCustomers,
     createCustomer: (payload) =>
       nessieFetch('/customers', { method: 'POST', body: JSON.stringify(payload) }),
-    getAccountsByCustomer: (customerId) =>
-      nessieFetch(`/customers/${encodeURIComponent(customerId)}/accounts`),
+    getAccountsByCustomer: listAccounts,
     createAccount: (customerId, payload) =>
       nessieFetch(`/customers/${encodeURIComponent(customerId)}/accounts`, {
         method: 'POST',
         body: JSON.stringify(payload),
       }),
-    getPurchases: (accountId) =>
-      nessieFetch(`/accounts/${encodeURIComponent(accountId)}/purchases`),
+    getPurchases: listPurchases,
+    getDeposits: listDeposits,
     createPurchase: (accountId, payload) =>
       nessieFetch(`/accounts/${encodeURIComponent(accountId)}/purchases`, {
         method: 'POST',

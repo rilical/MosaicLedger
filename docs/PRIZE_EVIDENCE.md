@@ -43,4 +43,29 @@ Keep it honest: only claim what the app can do in the current branch/commit.
 
 ## Dedalus (MosaicCoach)
 
-Pending in this file until `DED-PRIZE-001` is implemented (coach run + tool trace + multi-model handoff evidence).
+**What we built**
+
+- In-app Coach UI: `/app/coach`
+- Server route: `POST /api/coach/run`
+- Tool calling: local deterministic tools executed server-side (engine analysis, scenario, poster render)
+- Optional hosted MCP tool calling via `DEDALUS_MCP_SERVER_URL`
+- Multi-model handoff: coordinator model produces structured output, narrator model writes the final answer
+- Multimodal (vision): `Poster audit (vision)` mode renders a poster PNG and asks a vision-capable model to audit it
+- Trace viewer: "View tool trace" drawer is screenshot-ready (timing + redacted I/O)
+
+**Env vars**
+
+- `DEDALUS_API_KEY`
+- `DEDALUS_MCP_SERVER_URL` (optional)
+- `DEDALUS_COORDINATOR_MODEL` (optional)
+- `DEDALUS_NARRATOR_MODEL` (optional)
+- `DEDALUS_VISION_MODEL` (optional)
+
+**Screenshot checklist**
+
+- `/app/coach` showing `Models: ... -> ...` and `Tools: ...`
+- Tool trace drawer showing at least:
+  - `run_engine_analysis`
+  - `render_latest_poster_png`
+  - `simulate_scenario` (optional but good)
+- Poster audit run showing the vision model included in `Models: ...`

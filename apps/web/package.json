@@ -12,10 +12,13 @@
   },
   "dependencies": {
     "@mosaicledger/banking": "workspace:*",
+    "@mosaicledger/connectors": "workspace:*",
     "@mosaicledger/core": "workspace:*",
     "@mosaicledger/mosaic": "workspace:*",
+    "@resvg/resvg-wasm": "^2.6.2",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.49.1",
+    "dedalus-labs": "0.1.0-alpha.8",
     "next": "15.1.6",
     "plaid": "^31.0.0",
     "react": "19.0.0",
