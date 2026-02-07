@@ -8,6 +8,11 @@
    - Add redirect URLs:
      - `http://localhost:3000/auth/callback`
      - Your Vercel preview/prod `https://<domain>/auth/callback`
+   - For server-side magic link verification, customize the **Magic Link** email template. Replace the default link with one that sends users to your callback with `token_hash`:
+     ```
+     <a href="{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=magiclink">Log In</a>
+     ```
+     (If `{{ .RedirectTo }}` already has query params, use `&`; otherwise the app builds it.)
 3. Copy keys:
    - Project URL
    - Publishable (anon) key
