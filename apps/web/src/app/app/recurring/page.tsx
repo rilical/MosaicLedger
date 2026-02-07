@@ -16,17 +16,15 @@ export default function RecurringPage() {
   const { artifacts, loading, error, recompute } = useAnalysis(req);
 
   return (
-    <div style={{ display: 'grid', gap: 16, maxWidth: 980 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
-        <div>
-          <div className="h1" style={{ fontSize: 20 }}>
-            Recurring
-          </div>
-          <div className="small">
+    <div className="pageStack" style={{ maxWidth: 980 }}>
+      <div className="pageHeader">
+        <h1 className="pageTitle">Recurring</h1>
+        <div className="pageMeta">
+          <div className="pageTagline">
             {(artifacts?.recurring ?? []).length} detected recurring charges
           </div>
+          <Badge tone="good">Demo Data</Badge>
         </div>
-        <Badge tone={error ? 'warn' : 'good'}>{error ? 'Error' : 'Live'}</Badge>
       </div>
 
       <AnalysisControls

@@ -21,7 +21,13 @@ export default function SettingsPage() {
   const [done, setDone] = React.useState(false);
 
   return (
-    <div style={{ display: 'grid', gap: 16, maxWidth: 980 }}>
+    <div className="pageStack" style={{ maxWidth: 980 }}>
+      <div className="pageHeader">
+        <h1 className="pageTitle">Settings</h1>
+        <div className="pageMeta">
+          <div className="pageTagline">Runtime flags and device overrides.</div>
+        </div>
+      </div>
       <Card>
         <CardHeader>
           <CardTitle>Settings</CardTitle>

@@ -16,15 +16,13 @@ export default function PlanPage() {
   const { artifacts, loading, error, recompute } = useAnalysis(req);
 
   return (
-    <div style={{ display: 'grid', gap: 16, maxWidth: 980 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
-        <div>
-          <div className="h1" style={{ fontSize: 20 }}>
-            Plan
-          </div>
-          <div className="small">Ranked next actions with quantified monthly savings</div>
+    <div className="pageStack" style={{ maxWidth: 980 }}>
+      <div className="pageHeader">
+        <h1 className="pageTitle">Plan</h1>
+        <div className="pageMeta">
+          <div className="pageTagline">Ranked next actions with quantified monthly savings</div>
+          <Badge tone="good">Demo Data</Badge>
         </div>
-        <Badge tone={error ? 'warn' : 'good'}>{error ? 'Error' : 'Live'}</Badge>
       </div>
 
       <AnalysisControls

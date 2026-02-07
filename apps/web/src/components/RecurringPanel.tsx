@@ -8,25 +8,17 @@ export function RecurringPanel({ recurring }: { recurring: RecurringCharge[] }) 
   }
 
   return (
-    <div style={{ display: 'grid', gap: 10 }}>
+    <div className="recurringList">
       {recurring.map((r) => (
-        <div
-          key={r.id}
-          style={{
-            border: '1px solid rgba(255,255,255,0.12)',
-            borderRadius: 12,
-            padding: 10,
-            background: 'rgba(255,255,255,0.04)',
-          }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+        <div key={r.id} className="recurringItem">
+          <div className="recurringHeader">
             <div>
-              <div style={{ fontWeight: 650 }}>{r.merchant}</div>
+              <div className="recurringTitle">{r.merchant}</div>
               <div className="small">
                 {r.cadence} · next {r.nextDate} · confidence {(r.confidence * 100).toFixed(0)}%
               </div>
             </div>
-            <div style={{ fontVariantNumeric: 'tabular-nums' }}>${r.expectedAmount.toFixed(2)}</div>
+            <div className="money">${r.expectedAmount.toFixed(2)}</div>
           </div>
         </div>
       ))}

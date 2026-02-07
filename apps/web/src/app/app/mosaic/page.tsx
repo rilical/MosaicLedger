@@ -18,28 +18,19 @@ export default function MosaicPage() {
   const { artifacts, loading, error, recompute } = useAnalysis(req);
 
   return (
-    <div style={{ display: 'grid', gap: 16 }}>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'baseline',
-          gap: 10,
-        }}
-      >
-        <div>
-          <div className="h1" style={{ fontSize: 20 }}>
-            Mosaic
-          </div>
-          <div className="small">
+    <div className="pageStack">
+      <div className="pageHeader">
+        <h1 className="pageTitle">Mosaic</h1>
+        <div className="pageMeta">
+          <div className="pageTagline">
             {artifacts
               ? `${artifacts.summary.transactionCount} transactions · $${artifacts.summary.totalSpend.toFixed(
                   2,
                 )} spend`
               : 'Computing…'}
           </div>
+          <Badge tone="good">Demo Data</Badge>
         </div>
-        <Badge tone={error ? 'warn' : 'good'}>{error ? 'Error' : 'Live'}</Badge>
       </div>
 
       <AnalysisControls

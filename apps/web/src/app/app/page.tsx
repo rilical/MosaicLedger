@@ -9,7 +9,14 @@ export default function ConnectPage() {
   const { flags } = useFlags();
 
   return (
-    <div style={{ display: 'grid', gap: 16, maxWidth: 980 }}>
+    <div className="pageStack" style={{ maxWidth: 980 }}>
+      <div className="pageHeader">
+        <h1 className="pageTitle">Connect</h1>
+        <div className="pageMeta">
+          <div className="pageTagline">Pick a data source to start the demo flow.</div>
+          <Badge tone="good">Demo-first</Badge>
+        </div>
+      </div>
       <Card>
         <CardHeader>
           <CardTitle>Choose a Data Source</CardTitle>
