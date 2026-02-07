@@ -2,6 +2,9 @@
   "name": "mosaicledger",
   "private": true,
   "main": "index.js",
+  "workspaces": [
+    "packages/*"
+  ],
   "packageManager": "pnpm@9.15.4",
   "engines": {
     "node": ">=20"
