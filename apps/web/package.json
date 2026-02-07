@@ -21,7 +21,7 @@
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.49.1",
     "leaflet": "^1.9.4",
-    "next": "15.1.9",
+    "next": "15.1.11",
     "plaid": "^31.0.0",
     "react": "19.0.1",
     "react-dom": "19.0.1",
