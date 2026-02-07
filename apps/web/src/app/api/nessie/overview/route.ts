@@ -207,8 +207,10 @@ export async function GET(request: Request) {
     }));
 
   const bills = billsResp && 'ok' in billsResp && billsResp.ok ? (billsResp.data ?? []) : [];
-  const branches = okOrNull(branchesResp) ?? [];
-  const atms = okOrNull(atmsResp) ?? [];
+  const branchesRaw = okOrNull(branchesResp);
+  const atmsRaw = okOrNull(atmsResp);
+  const branches = Array.isArray(branchesRaw) ? branchesRaw : [];
+  const atms = Array.isArray(atmsRaw) ? atmsRaw : [];
   const up = upcomingBills(bills as NessieBill[]);
 
   return NextResponse.json({

@@ -142,11 +142,11 @@ export default function MosaicPage() {
               <Badge tone="neutral">
                 Source:{' '}
                 {artifacts.source === 'nessie'
-                  ? 'Nessie (Capital One)'
+                  ? 'Banking Connector'
                   : artifacts.source === 'plaid_fixture'
-                    ? 'Plaid (fixture)'
+                    ? 'Bank (fixture)'
                     : artifacts.source === 'plaid'
-                      ? 'Plaid'
+                      ? 'Bank'
                       : 'Demo'}
               </Badge>
             ) : null}
