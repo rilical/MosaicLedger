@@ -14,3 +14,17 @@
 4. Close with one line:
    - “The mural is the primary UI, and the plan turns fragments into a ranked list of next actions
      with quantified monthly savings.”
+
+## Conway Track Segment (30s) (CONWAY-012)
+
+1. Start at `/app` and click **Use Demo Data** (fail-safe path).
+2. Go to **Plan** and open **Coach**.
+3. Ask: “What subscriptions should I cancel?”
+   - Call out: “The coach routes the question into deterministic tools: recurring detection + action
+     plan. It does not invent numbers.”
+   - Point to the coach response listing recurring items and a recommended cancel action with
+     `$ / mo`.
+4. Click **Jump** on the recommended action to scroll to that action in the plan list.
+5. Backup prompt if network/AI is down:
+   - Toggle **AI Explanations** OFF and ask again. The coach still responds in Offline mode with
+     deterministic numbers.
