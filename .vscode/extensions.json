@@ -1,0 +1,15 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss",
+    "ms-vscode.vscode-typescript-next",
+    "prisma.prisma",
+    "ms-playwright.playwright",
+    "formulahendry.auto-rename-tag",
+    "styled-components.vscode-styled-components",
+    "christian-kohler.npm-intellisense",
+    "christian-kohler.path-intellisense"
+  ],
+  "unwantedRecommendations": []
+}
