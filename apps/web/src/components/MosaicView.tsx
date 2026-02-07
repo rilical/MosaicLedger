@@ -3,7 +3,12 @@
 import * as React from 'react';
 import type { TreemapTile } from '@mosaicledger/mosaic';
 
-export function MosaicView({ tiles }: { tiles: TreemapTile[] }) {
+export function MosaicView(props: {
+  tiles: TreemapTile[];
+  selectedId?: string;
+  onTileClick?: (tile: TreemapTile) => void;
+}) {
+  const { tiles, selectedId, onTileClick } = props;
   const [hover, setHover] = React.useState<TreemapTile | null>(null);
 
   return (
@@ -25,8 +30,22 @@ export function MosaicView({ tiles }: { tiles: TreemapTile[] }) {
             key={t.id}
             onMouseEnter={() => setHover(t)}
             onMouseLeave={() => setHover(null)}
-            style={{ cursor: 'default' }}
+            onClick={onTileClick ? () => onTileClick(t) : undefined}
+            onKeyDown={
+              onTileClick
+                ? (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') onTileClick(t);
+                  }
+                : undefined
+            }
+            role={onTileClick ? 'button' : undefined}
+            tabIndex={onTileClick ? 0 : -1}
+            aria-label={onTileClick ? `Open ${t.label}` : undefined}
+            style={{ cursor: onTileClick ? 'pointer' : 'default' }}
           >
+            <title>
+              {t.label} · ${t.value.toFixed(2)}
+            </title>
             <rect
               x={t.x}
               y={t.y}
@@ -34,10 +53,10 @@ export function MosaicView({ tiles }: { tiles: TreemapTile[] }) {
               height={t.h}
               rx={10}
               fill={t.color}
-              opacity={0.78}
+              opacity={selectedId && selectedId !== t.id ? 0.35 : 0.78}
               filter="url(#glass-shadow)"
-              stroke="rgba(255,255,255,0.35)"
-              strokeWidth={1}
+              stroke={selectedId === t.id ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.35)'}
+              strokeWidth={selectedId === t.id ? 2 : 1}
             />
             <rect
               x={t.x}
