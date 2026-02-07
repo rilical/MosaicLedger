@@ -107,6 +107,12 @@ a.btn {
   display: inline-block;
 }
 
+.btn:focus-visible,
+a.btn:focus-visible {
+  outline: 2px solid rgba(56, 189, 248, 0.7);
+  outline-offset: 2px;
+}
+
 .overlay {
   position: fixed;
   inset: 0;

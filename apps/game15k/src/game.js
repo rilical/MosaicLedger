@@ -4,7 +4,7 @@
   const $ = (id) => document.getElementById(id);
 
   const canvas = $('c');
-  const ctx = canvas.getContext('2d', { alpha: false });
+  const ctx = canvas ? canvas.getContext('2d', { alpha: false }) : null;
 
   const overlay = $('overlay');
   const titleEl = $('title');
@@ -20,6 +20,13 @@
   const crashOverlay = $('crash');
   const crashMsgEl = $('crashMsg');
   const reloadBtn = $('reload');
+
+  if (!canvas || !ctx) {
+    if (crashMsgEl) crashMsgEl.textContent = 'Canvas 2D context not available.';
+    if (crashOverlay) crashOverlay.classList.remove('hidden');
+    if (reloadBtn) reloadBtn.addEventListener('click', () => window.location.reload());
+    return;
+  }
 
   const LS = 'mosaicledger.game15k.';
   const BUDGET = 60_000;
