@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useSearchParams } from 'next/navigation';
 import { MosaicView } from '../../../components/MosaicView';
 import { MosaicSkeleton } from '../../../components/MosaicSkeleton';
 import { RecurringPanel } from '../../../components/RecurringPanel';
@@ -66,11 +67,22 @@ function sumByMerchant(
   return out;
 }
 
+const URL_SOURCE_KEYS = ['demo', 'plaid', 'nessie', 'auto'] as const;
+
 export default function MosaicPage() {
+  const searchParams = useSearchParams();
   const { settings, setSettings } = useAnalysisSettings();
   const req = React.useMemo(() => toAnalyzeRequest(settings), [settings]);
   const { artifacts, loading, error, stage, isSlow, recompute } = useAnalysis(req);
   const { setFlag } = useFlags();
+
+  // Sync URL ?source= to analysis settings so /app/mosaic?source=nessie or ?source=demo works
+  React.useEffect(() => {
+    const sourceParam = searchParams.get('source');
+    if (sourceParam && URL_SOURCE_KEYS.includes(sourceParam as (typeof URL_SOURCE_KEYS)[number])) {
+      setSettings((s) => (s.source === sourceParam ? s : { ...s, source: sourceParam as typeof s.source }));
+    }
+  }, [searchParams, setSettings]);
 
   const [level, setLevel] = React.useState<MosaicLevel>('category');
   const [mode, setMode] = React.useState<MosaicMode>('deterministic');

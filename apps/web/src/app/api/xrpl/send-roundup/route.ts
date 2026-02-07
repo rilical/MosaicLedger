@@ -14,6 +14,11 @@ function clamp(n: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, n));
 }
 
+/** XRPL allows at most 6 decimal places for XRP; round to avoid xrpToDrops precision errors. */
+function roundXrpTo6(amountXrp: number): number {
+  return Math.round(amountXrp * 1e6) / 1e6;
+}
+
 function explorerUrl(txHash: string): string {
   return `https://testnet.xrpl.org/transactions/${encodeURIComponent(txHash)}`;
 }
@@ -41,7 +46,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const amountXrp = clamp(parsed.data.amountXrp, 0, 50); // demo-safe cap (testnet only)
+  const amountXrp = roundXrpTo6(clamp(parsed.data.amountXrp, 0, 50)); // demo-safe cap (testnet only)
   const memo = parsed.data.memo;
 
   if (parsed.data.mode === 'simulate') {

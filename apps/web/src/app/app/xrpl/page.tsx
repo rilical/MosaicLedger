@@ -97,11 +97,22 @@ export default function XrplPage() {
         }),
       });
       const json = (await resp.json()) as unknown;
-      if (!resp.ok || !json || typeof json !== 'object')
-        throw new Error(`Transfer failed (${resp.status})`);
+      if (!resp.ok || !json || typeof json !== 'object') {
+        const apiError =
+          json && typeof json === 'object' && 'error' in json && typeof (json as { error?: unknown }).error === 'string'
+            ? (json as { error: string }).error
+            : null;
+        throw new Error(apiError || `Transfer failed (${resp.status})`);
+      }
       const ok = Boolean((json as { ok?: unknown }).ok);
       const rec = (json as { receipt?: unknown }).receipt;
-      if (!ok || !rec || typeof rec !== 'object') throw new Error('Transfer failed');
+      if (!ok || !rec || typeof rec !== 'object') {
+        const apiError =
+          json && typeof json === 'object' && 'error' in json && typeof (json as { error?: unknown }).error === 'string'
+            ? (json as { error: string }).error
+            : null;
+        throw new Error(apiError || 'Transfer failed');
+      }
       const ex = (json as { explorerUrl?: unknown }).explorerUrl;
       const explorerUrl = typeof ex === 'string' ? ex : undefined;
       setReceipt({ status: 'done', receipt: rec as RoundupResult, explorerUrl });
