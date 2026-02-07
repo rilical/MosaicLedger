@@ -11,6 +11,7 @@
     "dev": "pnpm -C apps/web dev",
     "build": "pnpm -r --filter \"@mosaicledger/*\" --filter \"!@mosaicledger/web\" --filter \"!@mosaicledger/mobile\" build",
     "build:all": "pnpm -r build",
+    "prepare": "pnpm build",
     "prestart": "pnpm build",
     "start": "node index.js",
     "typecheck": "pnpm -r typecheck",
