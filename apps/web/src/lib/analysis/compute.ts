@@ -90,6 +90,7 @@ export function computeBankArtifacts(
   return {
     version: 1,
     generatedAt: new Date().toISOString(),
+    transactions: txns,
     summary: {
       transactionCount: txns.length,
       totalSpend: summary.totalSpend,
@@ -130,6 +131,7 @@ export function computeDemoArtifacts(req: AnalyzeRequestV1 = {}): AnalysisArtifa
   return {
     version: 1,
     generatedAt: new Date().toISOString(),
+    transactions: txns,
     summary: {
       transactionCount: txns.length,
       totalSpend: summary.totalSpend,
