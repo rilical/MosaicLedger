@@ -48,6 +48,47 @@ export async function POST(request: Request) {
   const requestedLiveSource =
     body.source === 'plaid' || body.source === 'nessie' || body.source === 'auto';
 
+  async function resolveNessieAccountId(): Promise<string> {
+    const configured = body.nessie?.accountId?.trim() || process.env.NESSIE_ACCOUNT_ID?.trim();
+    if (configured) return configured;
+
+    const nessie = nessieServerClient();
+    const accountsResp = await nessie.listAssignedAccounts();
+    if (!accountsResp.ok) throw new Error(accountsResp.message);
+    const accounts = Array.isArray(accountsResp.data) ? accountsResp.data : [];
+    if (!accounts.length) throw new Error('No Nessie accounts assigned to this API key');
+
+    const pickScore = (t: string) =>
+      t.toLowerCase().includes('checking') ? 0 : t.toLowerCase().includes('credit') ? 1 : 2;
+
+    const ranked = [...accounts].sort((a, b) => {
+      const at = a && typeof a === 'object' && 'type' in a ? String(a.type ?? '') : '';
+      const bt = b && typeof b === 'object' && 'type' in b ? String(b.type ?? '') : '';
+      return pickScore(at) - pickScore(bt);
+    });
+
+    const best = ranked[0];
+    const id =
+      best && typeof best === 'object' && '_id' in best ? String(best._id ?? '').trim() : '';
+    if (!id) throw new Error('Unable to resolve Nessie account id');
+    return id;
+  }
+
+  async function computeNessieArtifactsUnauthed() {
+    if (!hasNessieEnv()) throw new Error('Missing NESSIE_API_KEY (server-only).');
+    const accountId = await resolveNessieAccountId();
+    const nessie = nessieServerClient();
+    const purchases = await nessie.getPurchases(accountId);
+    if (!purchases.ok) throw new Error(purchases.message);
+    const txnsAll = (purchases.data ?? [])
+      .map((p) => nessiePurchaseToNormalized(p, { source: 'nessie', accountId }))
+      .filter((t) => t != null);
+    if (!txnsAll.length) throw new Error('No valid Nessie transactions');
+    return computeArtifactsFromNormalized(txnsAll, body, {
+      artifactsSource: 'nessie',
+    });
+  }
+
   // Explicit demo: always return demo data (no auth).
   if (body.source === 'demo') {
     const artifacts = computeDemoArtifacts(body);
@@ -58,18 +99,7 @@ export async function POST(request: Request) {
   if (judgeMode || !hasSupabaseEnv()) {
     if (body.source === 'nessie' && hasNessieEnv()) {
       try {
-        const accountId = body.nessie?.accountId?.trim() || process.env.NESSIE_ACCOUNT_ID?.trim();
-        if (!accountId) throw new Error('Missing NESSIE_ACCOUNT_ID (or request.nessie.accountId).');
-        const nessie = nessieServerClient();
-        const purchases = await nessie.getPurchases(accountId);
-        if (!purchases.ok) throw new Error(purchases.message);
-        const txnsAll = (purchases.data ?? [])
-          .map((p) => nessiePurchaseToNormalized(p, { source: 'nessie', accountId }))
-          .filter((t) => t != null);
-        if (!txnsAll.length) throw new Error('No valid Nessie transactions');
-        const artifacts = computeArtifactsFromNormalized(txnsAll, body, {
-          artifactsSource: 'nessie',
-        });
+        const artifacts = await computeNessieArtifactsUnauthed();
         return NextResponse.json({ ok: true, artifacts, stored: false });
       } catch {
         // fall through to demo
@@ -91,7 +121,106 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
 
   if (!user) {
+    // Allow judge-safe sponsor demos without forcing auth.
+    // - `source=nessie`: always try Nessie (server-only key)
+    // - `source=auto`: try Nessie before falling back to demo
+    if ((body.source === 'nessie' || body.source === 'auto') && hasNessieEnv() && !judgeMode) {
+      try {
+        const artifacts = await computeNessieArtifactsUnauthed();
+        return NextResponse.json({ ok: true, artifacts, stored: false });
+      } catch {
+        if (body.source === 'nessie') {
+          const artifacts = computeDemoArtifacts(body);
+          return NextResponse.json({ ok: true, artifacts, stored: false });
+        }
+      }
+    }
+
+    // Plaid / user-specific data requires auth.
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+  }
+
+  // `auto`: if no Plaid item is linked, try Nessie before falling back to demo.
+  if (body.source === 'auto' && hasNessieEnv() && !judgeMode) {
+    // If we've already synced Nessie into the DB, re-use it.
+    // Otherwise do a live fetch. Either way: deterministic engine output.
+    try {
+      // Prefer cached normalized transactions in DB.
+      try {
+        const { data: rows, error: txErr } = await supabase
+          .from('transactions_normalized')
+          .select('txn_id,date,amount,merchant_raw,merchant,category,account_id,pending')
+          .eq('user_id', user.id)
+          .eq('source', 'nessie')
+          .order('date', { ascending: false })
+          .limit(20000);
+
+        if (!txErr && rows && rows.length) {
+          const txnsAll = rows
+            .map((r) => {
+              const row = r as unknown as {
+                txn_id?: unknown;
+                date?: unknown;
+                amount?: unknown;
+                merchant_raw?: unknown;
+                merchant?: unknown;
+                category?: unknown;
+                account_id?: unknown;
+                pending?: unknown;
+              };
+
+              const id = typeof row.txn_id === 'string' ? row.txn_id : '';
+              const date = String(row.date ?? '').slice(0, 10);
+              const amount = Number(row.amount);
+              const merchantRaw = String(row.merchant_raw ?? '');
+              const merchant = String(row.merchant ?? '');
+              const category = String(row.category ?? 'Uncategorized');
+              const accountId = typeof row.account_id === 'string' ? row.account_id : undefined;
+              const pending = Boolean(row.pending);
+
+              if (!id || !date || !merchantRaw || !Number.isFinite(amount)) return null;
+
+              return {
+                id,
+                date,
+                amount,
+                merchantRaw,
+                merchant,
+                category,
+                source: 'nessie' as const,
+                accountId,
+                pending,
+              };
+            })
+            .filter((t): t is NonNullable<typeof t> => Boolean(t));
+
+          if (txnsAll.length) {
+            const artifacts = computeArtifactsFromNormalized(txnsAll, body, {
+              artifactsSource: 'nessie',
+            });
+
+            try {
+              await insertAnalysisRun(supabase, user.id, artifacts);
+            } catch {
+              // ignore
+            }
+            return NextResponse.json({ ok: true, artifacts, stored: true });
+          }
+        }
+      } catch {
+        // ignore
+      }
+
+      const artifacts = await computeNessieArtifactsUnauthed();
+      try {
+        await insertAnalysisRun(supabase, user.id, artifacts);
+      } catch {
+        // ignore
+      }
+      return NextResponse.json({ ok: true, artifacts, stored: true });
+    } catch {
+      // If Nessie fails, proceed to Plaid/demo logic below.
+    }
   }
 
   // Explicit Nessie request: pull sponsor mock transactions server-side and feed the same deterministic engine.
