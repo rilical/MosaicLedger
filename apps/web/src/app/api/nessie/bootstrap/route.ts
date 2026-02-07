@@ -45,9 +45,21 @@ async function upsertNessieCustomerRow(params: {
   try {
     await sb.from('user_overrides').upsert(
       [
-        { user_id: params.userId, kind: 'nessie', key: 'customer_id', value: { id: params.customerId } },
+        {
+          user_id: params.userId,
+          kind: 'nessie',
+          key: 'customer_id',
+          value: { id: params.customerId },
+        },
         ...(params.accountId
-          ? [{ user_id: params.userId, kind: 'nessie', key: 'account_id', value: { id: params.accountId } }]
+          ? [
+              {
+                user_id: params.userId,
+                kind: 'nessie',
+                key: 'account_id',
+                value: { id: params.accountId },
+              },
+            ]
           : []),
       ],
       { onConflict: 'user_id,kind,key' },

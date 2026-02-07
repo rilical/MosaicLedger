@@ -94,7 +94,9 @@ export async function POST(request: Request) {
         )
         .filter((t) => t != null);
 
-      const artifacts = computeArtifactsFromNormalized(txnsAll, body, { artifactsSource: 'nessie' });
+      const artifacts = computeArtifactsFromNormalized(txnsAll, body, {
+        artifactsSource: 'nessie',
+      });
 
       try {
         await insertAnalysisRun(supabase, user.id, artifacts);
