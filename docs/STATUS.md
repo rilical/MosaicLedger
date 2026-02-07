@@ -15,6 +15,8 @@ This file is updated in every PR.
 
 ## Latest Changes
 
+- CONWAY-006 (branch: `codex/conway-006-ask-why`): added an "Ask why" deep link on each plan action
+  that opens the Coach with a prefilled prompt and keeps the original action explanation visible.
 - DED-002/003/004/005/006 (branch: `codex/ded-002-mcp-streamable-http`): implemented a stateless
   Streamable HTTP MCP server in `packages/mcp-server` with `/health` + `/mcp` endpoints, strict zod
   validation (`v1`), and 3 deterministic tools: `analyzeTransactions`, `buildMosaicSpec`,

@@ -23,6 +23,8 @@ export default function PlanPage() {
   const { settings, setSettings } = useAnalysisSettings();
   const { goal, setGoal, resetGoal } = usePlanGoal();
   const { choices } = useSubscriptionChoices();
+  const [coachOpen, setCoachOpen] = React.useState(false);
+  const [coachPrefill, setCoachPrefill] = React.useState<string | null>(null);
 
   const req = React.useMemo(() => ({ ...toAnalyzeRequest(settings), goal }), [settings, goal]);
   const { artifacts, loading, error, recompute } = useAnalysis(req);
@@ -92,6 +94,12 @@ export default function PlanPage() {
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
             <CoachPanel
               artifacts={artifacts}
+              open={coachOpen}
+              onOpenChange={(next) => {
+                setCoachOpen(next);
+                if (!next) setCoachPrefill(null);
+              }}
+              prefillQuestion={coachPrefill}
               onJumpToAction={(actionId) => {
                 const el = document.getElementById(`action_${actionId}`);
                 if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -346,7 +354,22 @@ export default function PlanPage() {
           <CardTitle>Top Actions</CardTitle>
         </CardHeader>
         <CardBody>
-          <ActionsPanel actions={actions} selected={selected} onSelectChange={setSelected} />
+          <ActionsPanel
+            actions={actions}
+            selected={selected}
+            onSelectChange={setSelected}
+            onAskWhy={(a) => {
+              const reasons = a.reasons?.slice(0, 6) ?? [];
+              const bullets = reasons.length ? `\nReasons:\n- ${reasons.join('\n- ')}` : '';
+              const prompt =
+                `Why is this action recommended, and how is its savings estimated?\n` +
+                `Action: ${a.title}\n` +
+                `Estimated savings: $${a.expectedMonthlySavings.toFixed(2)}/mo` +
+                bullets;
+              setCoachPrefill(prompt);
+              setCoachOpen(true);
+            }}
+          />
         </CardBody>
       </Card>
     </div>
