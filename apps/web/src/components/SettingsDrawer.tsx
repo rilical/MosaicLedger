@@ -49,6 +49,8 @@ function labelFor(key: FlagKey): string {
       return 'XRPL';
     case 'plaidEnabled':
       return 'Plaid';
+    case 'nessieEnabled':
+      return 'Nessie (Capital One)';
     case 'debugTraces':
       return 'Tool Traces';
     default:
@@ -68,6 +70,8 @@ function helpFor(key: FlagKey): string {
       return 'Enable XRPL round-up scaffolding (optional).';
     case 'plaidEnabled':
       return 'Enable Plaid link/sync scaffolding (optional, keys required).';
+    case 'nessieEnabled':
+      return 'Enable the Capital One Nessie connector (optional sponsor API, keys required).';
     case 'debugTraces':
       return 'Show a debug trace viewer for Coach tool calls (inputs redacted, screenshot-ready).';
     default:

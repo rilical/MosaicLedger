@@ -182,3 +182,82 @@ create policy "analysis_runs_insert_own"
 on public.analysis_runs
 for insert
 with check (auth.uid() = user_id);
+
+
+-- 5) Nessie customer binding (per user)
+-- Capital One DevExchange / Nessie mock bank identity should be stable per Supabase user.
+create table if not exists public.nessie_customers (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  nessie_customer_id text not null,
+  nessie_account_id text
+);
+
+alter table public.nessie_customers enable row level security;
+
+drop policy if exists "nessie_customers_select_own" on public.nessie_customers;
+create policy "nessie_customers_select_own"
+on public.nessie_customers
+for select
+using (auth.uid() = user_id);
+
+drop policy if exists "nessie_customers_upsert_own" on public.nessie_customers;
+create policy "nessie_customers_upsert_own"
+on public.nessie_customers
+for insert
+with check (auth.uid() = user_id);
+
+drop policy if exists "nessie_customers_update_own" on public.nessie_customers;
+create policy "nessie_customers_update_own"
+on public.nessie_customers
+for update
+using (auth.uid() = user_id);
+
+
+-- 6) Normalized transactions cache (per user)
+-- Hackathon MVP: JSON cache for deterministic engine outputs + re-runs without vendor calls.
+create table if not exists public.transactions_normalized (
+  user_id uuid not null references auth.users (id) on delete cascade,
+  source text not null, -- 'plaid' | 'nessie' | 'demo' | etc
+  txn_id text not null,
+
+  date date not null,
+  amount numeric not null,
+  merchant_raw text not null,
+  merchant text not null,
+  category text not null default 'Uncategorized',
+  account_id text,
+  pending boolean not null default false,
+
+  raw_json jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now(),
+  created_at timestamptz not null default now(),
+
+  primary key (user_id, source, txn_id)
+);
+
+create index if not exists transactions_normalized_user_date_idx
+on public.transactions_normalized (user_id, date desc);
+create index if not exists transactions_normalized_user_source_idx
+on public.transactions_normalized (user_id, source);
+
+alter table public.transactions_normalized enable row level security;
+
+drop policy if exists "tx_norm_select_own" on public.transactions_normalized;
+create policy "tx_norm_select_own"
+on public.transactions_normalized
+for select
+using (auth.uid() = user_id);
+
+drop policy if exists "tx_norm_insert_own" on public.transactions_normalized;
+create policy "tx_norm_insert_own"
+on public.transactions_normalized
+for insert
+with check (auth.uid() = user_id);
+
+drop policy if exists "tx_norm_update_own" on public.transactions_normalized;
+create policy "tx_norm_update_own"
+on public.transactions_normalized
+for update
+using (auth.uid() = user_id);

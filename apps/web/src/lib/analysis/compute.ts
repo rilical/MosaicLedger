@@ -17,6 +17,11 @@ import type { AnalysisArtifactsV1 } from './types';
 export type AnalyzePreset = 'this_month' | 'last_month' | 'custom';
 
 export type AnalyzeRequestV1 = {
+  source?: 'auto' | 'demo' | 'plaid' | 'nessie';
+  nessie?: {
+    customerId?: string;
+    accountId?: string;
+  };
   preset?: AnalyzePreset;
   customRange?: { start: string; end: string };
   filters?: {
@@ -90,6 +95,7 @@ export function computeBankArtifacts(
   return {
     version: 1,
     generatedAt: new Date().toISOString(),
+    source: 'plaid',
     transactions: txns,
     summary: {
       transactionCount: txns.length,
@@ -131,6 +137,7 @@ export function computeDemoArtifacts(req: AnalyzeRequestV1 = {}): AnalysisArtifa
   return {
     version: 1,
     generatedAt: new Date().toISOString(),
+    source: 'demo',
     transactions: txns,
     summary: {
       transactionCount: txns.length,

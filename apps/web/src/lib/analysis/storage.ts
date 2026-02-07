@@ -9,6 +9,7 @@ export async function getLatestAnalysisRun(
 ): Promise<AnalysisArtifactsV1 | null> {
   type AnalysisRunRow = {
     created_at: string;
+    source: string;
     summary_json: AnalysisArtifactsV1['summary'];
     mosaic_json: AnalysisArtifactsV1['mosaic'];
     recurring_json: AnalysisArtifactsV1['recurring'];
@@ -17,7 +18,7 @@ export async function getLatestAnalysisRun(
 
   const { data, error } = await supabase
     .from('analysis_runs')
-    .select('summary_json,mosaic_json,recurring_json,action_plan_json,created_at')
+    .select('summary_json,mosaic_json,recurring_json,action_plan_json,created_at,source')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .limit(1)
@@ -30,6 +31,13 @@ export async function getLatestAnalysisRun(
   return {
     version: 1,
     generatedAt: row.created_at,
+    source:
+      row.source === 'demo' ||
+      row.source === 'plaid' ||
+      row.source === 'plaid_fixture' ||
+      row.source === 'nessie'
+        ? (row.source as AnalysisArtifactsV1['source'])
+        : undefined,
     summary: row.summary_json,
     mosaic: row.mosaic_json,
     recurring: row.recurring_json,
@@ -44,7 +52,7 @@ export async function insertAnalysisRun(
 ): Promise<void> {
   await supabase.from('analysis_runs').insert({
     user_id: userId,
-    source: 'engine',
+    source: artifacts.source ?? 'engine',
     summary_json: artifacts.summary,
     mosaic_json: artifacts.mosaic,
     recurring_json: artifacts.recurring,

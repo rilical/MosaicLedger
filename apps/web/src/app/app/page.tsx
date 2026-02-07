@@ -1,12 +1,28 @@
 'use client';
 
+import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardBody, CardHeader, CardTitle, Button, Badge } from '../../components/ui';
 import { useFlags } from '../../lib/flags-client';
+import type { AnalysisSettings } from '../../components/Analysis/types';
 
 export default function ConnectPage() {
   const router = useRouter();
-  const { flags } = useFlags();
+  const { flags, setFlag } = useFlags();
+  const [nessieBusy, setNessieBusy] = React.useState(false);
+  const [nessieError, setNessieError] = React.useState<string | null>(null);
+
+  function patchAnalysisSettings(patch: Partial<AnalysisSettings>) {
+    try {
+      const key = 'mosaicledger.analysisSettings.v1';
+      const raw = window.localStorage.getItem(key);
+      const base = raw ? (JSON.parse(raw) as unknown) : {};
+      const obj = base && typeof base === 'object' ? (base as Record<string, unknown>) : {};
+      window.localStorage.setItem(key, JSON.stringify({ ...obj, ...patch }));
+    } catch {
+      // non-blocking
+    }
+  }
 
   return (
     <div className="pageStack" style={{ maxWidth: 980 }}>
@@ -37,7 +53,51 @@ export default function ConnectPage() {
                 Connect Bank (Plaid)
               </Button>
 
-              <Button onClick={() => router.push('/app/mosaic?source=demo')}>Use Demo Data</Button>
+              <Button
+                onClick={() => {
+                  patchAnalysisSettings({ source: 'demo' });
+                  router.push('/app/mosaic?source=demo');
+                }}
+              >
+                Use Demo Data
+              </Button>
+
+              <Button
+                disabled={!flags.nessieEnabled || nessieBusy}
+                onClick={async () => {
+                  setNessieBusy(true);
+                  setNessieError(null);
+                  try {
+                    const resp = await fetch('/api/nessie/bootstrap', { method: 'POST' });
+                    const json = (await resp.json()) as
+                      | { ok: true; customerId?: string; accountId?: string }
+                      | { ok: false; error?: string };
+                    if (!resp.ok || !json.ok) {
+                      throw new Error(
+                        ('error' in json ? json.error : null) ?? 'Nessie bootstrap failed',
+                      );
+                    }
+                    patchAnalysisSettings({
+                      source: 'nessie',
+                      nessieCustomerId: json.customerId,
+                      nessieAccountId: json.accountId,
+                    });
+                    router.push('/app/mosaic?source=nessie');
+                  } catch (e: unknown) {
+                    const msg = e instanceof Error ? e.message : 'Nessie bootstrap failed';
+                    setNessieError(msg);
+                    // Demo-safe fallback: force the always-works path.
+                    setFlag('demoMode', true);
+                    setFlag('judgeMode', true);
+                    patchAnalysisSettings({ source: 'demo' });
+                    router.push('/app/mosaic?source=demo');
+                  } finally {
+                    setNessieBusy(false);
+                  }
+                }}
+              >
+                {nessieBusy ? 'Bootstrapping…' : 'Use Capital One Nessie'}
+              </Button>
 
               {flags.demoMode ? (
                 <Badge tone="good">Demo Mode default ON</Badge>
@@ -47,10 +107,22 @@ export default function ConnectPage() {
               {flags.judgeMode ? <Badge tone="warn">Judge Mode ON</Badge> : null}
             </div>
 
+            {nessieError ? (
+              <div className="small" style={{ color: 'rgba(234,179,8,0.95)' }}>
+                Nessie: {nessieError} (fell back to demo data)
+              </div>
+            ) : null}
+
             {!flags.plaidEnabled ? (
               <div className="small">
                 Plaid is currently disabled. Toggle it in Settings or set
                 `NEXT_PUBLIC_PLAID_ENABLED=1`.
+              </div>
+            ) : null}
+            {!flags.nessieEnabled ? (
+              <div className="small">
+                Nessie is currently disabled. Toggle it in Settings or set
+                `NEXT_PUBLIC_NESSIE_ENABLED=1`.
               </div>
             ) : null}
           </div>

@@ -105,6 +105,18 @@ export default function PlanPage() {
                 if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
               }}
             />
+            {artifacts?.source ? (
+              <Badge tone="neutral">
+                Source:{' '}
+                {artifacts.source === 'nessie'
+                  ? 'Nessie (Capital One)'
+                  : artifacts.source === 'plaid_fixture'
+                    ? 'Plaid (fixture)'
+                    : artifacts.source === 'plaid'
+                      ? 'Plaid'
+                      : 'Demo'}
+              </Badge>
+            ) : null}
             <Badge tone={error ? 'warn' : loading ? 'warn' : 'good'}>
               {error ? 'Error' : loading ? 'Busy' : 'Ready'}
             </Badge>

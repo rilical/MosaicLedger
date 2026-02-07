@@ -13,6 +13,7 @@
     "baseUrl": ".",
     "paths": {
       "@mosaicledger/core": ["packages/core/src/index.ts"],
+      "@mosaicledger/connectors": ["packages/connectors/src/index.ts"],
       "@mosaicledger/mosaic": ["packages/mosaic/src/index.ts"],
       "@mosaicledger/banking": ["packages/banking/src/index.ts"],
       "@mosaicledger/xrpl": ["packages/xrpl/src/index.ts"]
