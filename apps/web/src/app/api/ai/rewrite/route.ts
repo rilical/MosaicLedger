@@ -49,21 +49,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: 'missing text' }, { status: 400 });
   }
 
-  // Gate: keep AI opt-in even if a key exists. This prevents accidental spend in demos.
-  const aiEnabled = parseBooleanEnv(process.env.NEXT_PUBLIC_AI_ENABLED, false);
   const apiKey = process.env.OPENAI_API_KEY;
   const model = process.env.OPENAI_MODEL || 'gpt-4o-mini';
   const baseUrl = (process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1').replace(/\/$/, '');
 
-  // Demo-safe fallback: if AI is disabled or no key, return original (but annotate the reason).
-  if (!aiEnabled) {
-    return NextResponse.json({
-      ok: true,
-      rewrittenText: text,
-      usedAI: false,
-      error: 'ai_disabled (set NEXT_PUBLIC_AI_ENABLED=1)',
-    });
-  }
   if (!apiKey) {
     return NextResponse.json({
       ok: true,
@@ -73,15 +62,30 @@ export async function POST(request: Request) {
     });
   }
 
+  // Gate: allow AI only when env enables it OR the caller explicitly opted in.
+  // This keeps the default safe while letting the UI opt-in via a header.
+  const aiEnabledEnv = parseBooleanEnv(process.env.NEXT_PUBLIC_AI_ENABLED, false);
+  const forceAi = request.headers.get('x-ml-force-ai') === '1';
+  if (!aiEnabledEnv && !forceAi) {
+    return NextResponse.json({
+      ok: true,
+      rewrittenText: text,
+      usedAI: false,
+      error: 'ai_disabled (enable NEXT_PUBLIC_AI_ENABLED or send x-ml-force-ai: 1)',
+    });
+  }
+
   const { masked, originals } = maskNumbers(text);
 
   const style = body.style === 'concise' ? 'concise' : 'friendly';
   const system = [
-    'You rewrite short product explanations.',
+    'You are MosaicLedger, a professional SaaS finance product.',
+    'Task: rewrite short explanations for clarity and structure.',
     'Rules:',
     '- Do not add new numbers.',
     '- Preserve tokens like __NUM0__ exactly as written.',
     '- Keep meaning the same; only rewrite for clarity.',
+    '- No hype, no emojis, no exclamation spam.',
     style === 'concise' ? '- Be concise.' : '- Be clear and friendly.',
   ].join('\n');
 

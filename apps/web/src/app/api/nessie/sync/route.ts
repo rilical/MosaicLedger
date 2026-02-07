@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { nessiePurchaseToNormalized } from '@mosaicledger/connectors';
-import { hasSupabaseEnv, parseBooleanEnv } from '../../../../lib/env';
+import { hasSupabaseEnv } from '../../../../lib/env';
 import { hasNessieEnv, nessieServerClient } from '../../../../lib/nessie/serverClient';
 import { supabaseServer } from '../../../../lib/supabase/server';
 
@@ -11,16 +11,6 @@ function safeString(body: unknown, key: string): string | null {
 }
 
 export async function POST(request: Request) {
-  const judgeMode = parseBooleanEnv(process.env.NEXT_PUBLIC_JUDGE_MODE, false);
-  const demoMode = parseBooleanEnv(process.env.NEXT_PUBLIC_DEMO_MODE, true);
-
-  if (judgeMode || demoMode) {
-    return NextResponse.json(
-      { ok: false, error: 'Nessie is disabled in judge/demo mode (falls back to demo data).' },
-      { status: 400 },
-    );
-  }
-
   if (!hasSupabaseEnv()) {
     return NextResponse.json(
       { ok: false, error: 'Supabase is not configured; cannot persist synced transactions.' },

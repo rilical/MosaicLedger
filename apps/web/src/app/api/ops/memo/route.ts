@@ -86,10 +86,20 @@ export async function POST(request: Request) {
 
   const memoDeterministic = formatMemoDeterministic({ briefs, range: body.range });
 
-  const aiEnabled = parseBooleanEnv(process.env.NEXT_PUBLIC_AI_ENABLED, false);
   const apiKey = process.env.OPENAI_API_KEY;
-  if (!aiEnabled || !apiKey) {
+  if (!apiKey) {
     return NextResponse.json({ ok: true, memoText: memoDeterministic, usedAI: false });
+  }
+
+  const aiEnabledEnv = parseBooleanEnv(process.env.NEXT_PUBLIC_AI_ENABLED, false);
+  const forceAi = request.headers.get('x-ml-force-ai') === '1';
+  if (!aiEnabledEnv && !forceAi) {
+    return NextResponse.json({
+      ok: true,
+      memoText: memoDeterministic,
+      usedAI: false,
+      error: 'ai_disabled (enable NEXT_PUBLIC_AI_ENABLED or send x-ml-force-ai: 1)',
+    });
   }
 
   const model = process.env.OPENAI_MODEL || 'gpt-4o-mini';
@@ -99,11 +109,13 @@ export async function POST(request: Request) {
   const style = body.style === 'concise' ? 'concise' : 'friendly';
 
   const system = [
-    'You rewrite ops analyst briefs for clarity.',
+    'You are MosaicLedger, a professional SaaS finance product.',
+    'Task: rewrite ops analyst briefs for clarity and executive readability.',
     'Rules:',
     '- Do not add new numbers.',
     '- Preserve tokens like __NUM0__ exactly as written.',
     '- Keep meaning the same; only rewrite for clarity.',
+    '- No hype, no emojis, no exclamation spam.',
     style === 'concise' ? '- Be concise.' : '- Be clear and executive-friendly.',
   ].join('\n');
 

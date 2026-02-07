@@ -33,7 +33,7 @@ export function ActionsPanel(props: {
     try {
       const resp = await fetch('/api/ai/rewrite', {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: { 'content-type': 'application/json', 'x-ml-force-ai': '1' },
         body: JSON.stringify({ text }),
       });
       const json = (await resp.json()) as unknown;

@@ -25,7 +25,10 @@ export function OpsMemoPanel(props: {
     try {
       const resp = await fetch('/api/ops/memo', {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: {
+          'content-type': 'application/json',
+          ...(aiEnabled ? { 'x-ml-force-ai': '1' } : {}),
+        },
         body: JSON.stringify({ briefs, range, style }),
       });
       const json = (await resp.json()) as OpsMemoResponse;

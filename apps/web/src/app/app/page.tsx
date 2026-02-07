@@ -8,7 +8,7 @@ import type { AnalysisSettings } from '../../components/Analysis/types';
 
 export default function ConnectPage() {
   const router = useRouter();
-  const { flags, setFlag } = useFlags();
+  const { flags } = useFlags();
   const [nessieStep, setNessieStep] = React.useState<'idle' | 'bootstrapping' | 'syncing'>('idle');
   const [nessieError, setNessieError] = React.useState<string | null>(null);
 
@@ -24,7 +24,7 @@ export default function ConnectPage() {
     }
   }
 
-  const canUseNessie = flags.nessieEnabled && !flags.demoMode && !flags.judgeMode;
+  const canUseNessie = flags.nessieEnabled;
 
   const connectNessie = React.useCallback(async () => {
     setNessieStep('bootstrapping');
@@ -32,34 +32,18 @@ export default function ConnectPage() {
     try {
       const resp = await fetch('/api/nessie/bootstrap', { method: 'POST' });
       const json = (await resp.json()) as
-        | { ok: true; customerId?: string; accountId?: string }
+        | { ok: true; customerId?: string; accountId?: string; mode?: string }
         | { ok: false; error?: string };
       if (!resp.ok || !json.ok) {
         throw new Error(('error' in json ? json.error : null) ?? 'Nessie bootstrap failed');
       }
 
-      // Pull accounts + purchases and persist into `transactions_normalized`
-      // so the engine can re-run without sponsor network calls.
-      setNessieStep('syncing');
-      const syncResp = await fetch('/api/nessie/sync', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          customerId: json.customerId,
-          accountId: json.accountId,
-        }),
-      });
-      const syncJson = (await syncResp.json()) as
-        | { ok: true; counts?: { purchases?: number } }
-        | { ok: false; error?: string };
-      if (!syncResp.ok || !syncJson.ok) {
-        throw new Error(('error' in syncJson ? syncJson.error : null) ?? 'Nessie sync failed');
-      }
-
-      // If the account has no purchases yet, simulate a week of activity so the Mosaic isn't empty.
-      if (syncJson.counts?.purchases === 0) {
+      // Best-effort sync: if Supabase/auth are configured, persist purchases to avoid repeated sponsor calls.
+      // If sync fails (common in judge/demo deployments), we still proceed with live Nessie fetch.
+      if (json.mode !== 'env_noauth') {
         try {
-          await fetch('/api/nessie/simulate-week', {
+          setNessieStep('syncing');
+          const syncResp = await fetch('/api/nessie/sync', {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({
@@ -67,24 +51,33 @@ export default function ConnectPage() {
               accountId: json.accountId,
             }),
           });
+          const syncJson = (await syncResp.json()) as
+            | { ok: true; counts?: { purchases?: number } }
+            | { ok: false; error?: string };
+          if (syncResp.ok && syncJson.ok && (syncJson.counts?.purchases ?? 0) === 0) {
+            try {
+              await fetch('/api/nessie/simulate-week', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({
+                  customerId: json.customerId,
+                  accountId: json.accountId,
+                }),
+              });
+              await fetch('/api/nessie/sync', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({
+                  customerId: json.customerId,
+                  accountId: json.accountId,
+                }),
+              });
+            } catch {
+              // ignore
+            }
+          }
         } catch {
-          // ignore; demo-safe fallback will still work
-        }
-
-        const syncResp2 = await fetch('/api/nessie/sync', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({
-            customerId: json.customerId,
-            accountId: json.accountId,
-          }),
-        });
-        const syncJson2 = (await syncResp2.json()) as { ok: true } | { ok: false; error?: string };
-        if (!syncResp2.ok || !syncJson2.ok) {
-          throw new Error(
-            ('error' in syncJson2 ? syncJson2.error : null) ??
-              'Nessie sync failed after simulation',
-          );
+          // ignore (still proceed to live fetch)
         }
       }
 
@@ -97,15 +90,12 @@ export default function ConnectPage() {
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Nessie bootstrap failed';
       setNessieError(msg);
-      // Demo-safe fallback: force the always-works path.
-      setFlag('demoMode', true);
-      setFlag('judgeMode', true);
       patchAnalysisSettings({ source: 'demo' });
       router.push('/app/mosaic?source=demo');
     } finally {
       setNessieStep('idle');
     }
-  }, [router, setFlag]);
+  }, [router]);
 
   return (
     <div className="pageStack" style={{ maxWidth: 980 }}>
@@ -210,11 +200,6 @@ export default function ConnectPage() {
                 {!flags.nessieEnabled ? (
                   <div className="small" style={{ marginTop: 10 }}>
                     Toggle in Settings or set `NEXT_PUBLIC_NESSIE_ENABLED=1`.
-                  </div>
-                ) : flags.demoMode || flags.judgeMode ? (
-                  <div className="small" style={{ marginTop: 10 }}>
-                    Turn off Demo/Judge Mode to run the live connector (it is blocked on purpose in
-                    those modes).
                   </div>
                 ) : null}
               </div>

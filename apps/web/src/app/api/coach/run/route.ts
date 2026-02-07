@@ -265,6 +265,7 @@ export async function POST(request: Request) {
     `You are MosaicCoach.`,
     `You must use tools for any numbers. Never invent numeric values.`,
     `Return a single JSON object with keys: answer_md (string), selected_action_ids (string[]), notes (string[]).`,
+    `Tone: professional SaaS, crisp, no hype, no emojis.`,
     mode === 'poster_audit'
       ? `This is poster_audit mode. After tools generate a poster image, include a note to run a poster audit.`
       : `This is ${mode} mode.`,
@@ -347,7 +348,7 @@ export async function POST(request: Request) {
         {
           role: 'system',
           content:
-            'Rewrite the provided JSON into a concise answer for a finance demo. Do not change any numbers or IDs. Use markdown bullets. Output text only.',
+            'You are MosaicLedger (professional SaaS). Rewrite the provided JSON into a concise answer for a finance demo. Do not change any numbers or IDs. Use markdown bullets. No hype, no emojis. Output text only.',
         },
         {
           role: 'user',

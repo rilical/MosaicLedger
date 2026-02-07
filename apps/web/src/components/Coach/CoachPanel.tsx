@@ -219,7 +219,7 @@ async function rewriteWithAi(text: string): Promise<{
   try {
     resp = await fetch('/api/ai/rewrite', {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: { 'content-type': 'application/json', 'x-ml-force-ai': '1' },
       body: JSON.stringify({ text, style: 'friendly' }),
       signal: controller.signal,
     });

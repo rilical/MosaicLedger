@@ -780,6 +780,15 @@ a {
   max-width: 520px;
 }
 
+.landing code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.22);
+}
+
 .landingActions {
   display: flex;
   flex-wrap: wrap;

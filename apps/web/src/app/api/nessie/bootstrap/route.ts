@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { hasSupabaseEnv, parseBooleanEnv } from '../../../../lib/env';
+import { hasSupabaseEnv } from '../../../../lib/env';
 import { hasNessieEnv, nessieServerClient } from '../../../../lib/nessie/serverClient';
 import { supabaseServer } from '../../../../lib/supabase/server';
 
@@ -70,21 +70,37 @@ async function upsertNessieCustomerRow(params: {
 }
 
 export async function POST() {
-  const judgeMode = parseBooleanEnv(process.env.NEXT_PUBLIC_JUDGE_MODE, false);
-  const demoMode = parseBooleanEnv(process.env.NEXT_PUBLIC_DEMO_MODE, true);
+  // Nessie is optional. We try to provide a useful binding if Supabase/auth are available,
+  // but we also support env-only IDs for judge/demo deployments.
 
-  if (judgeMode || demoMode) {
+  if (!hasNessieEnv()) {
     return NextResponse.json(
-      { ok: false, error: 'Nessie is disabled in judge/demo mode (falls back to demo data).' },
+      { ok: false, error: 'Missing NESSIE_API_KEY (server-only).' },
       { status: 400 },
     );
   }
 
+  const envCustomerId = process.env.NESSIE_CUSTOMER_ID?.trim() || null;
+  const envAccountId = process.env.NESSIE_ACCOUNT_ID?.trim() || null;
+
+  // Env-only binding: works without Supabase/auth. This is the most deploy-friendly path.
   if (!hasSupabaseEnv()) {
-    return NextResponse.json(
-      { ok: false, error: 'Supabase is not configured; cannot bind Nessie identity to a user.' },
-      { status: 400 },
-    );
+    if (!envCustomerId && !envAccountId) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error:
+            'Supabase not configured. Set NESSIE_ACCOUNT_ID (and optionally NESSIE_CUSTOMER_ID) to use Nessie in judge/demo deployments.',
+        },
+        { status: 400 },
+      );
+    }
+    return NextResponse.json({
+      ok: true,
+      customerId: envCustomerId ?? undefined,
+      accountId: envAccountId ?? undefined,
+      mode: 'env_noauth',
+    });
   }
 
   const sb = await supabaseServer();
@@ -92,7 +108,16 @@ export async function POST() {
     data: { user },
   } = await sb.auth.getUser();
 
+  // If user isn't authenticated, still allow env binding so the UI can proceed.
   if (!user) {
+    if (envCustomerId || envAccountId) {
+      return NextResponse.json({
+        ok: true,
+        customerId: envCustomerId ?? undefined,
+        accountId: envAccountId ?? undefined,
+        mode: 'env_noauth',
+      });
+    }
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
   }
 
@@ -120,16 +145,6 @@ export async function POST() {
   } catch {
     // ignore (schema might not be applied yet)
   }
-
-  if (!hasNessieEnv()) {
-    return NextResponse.json(
-      { ok: false, error: 'Missing NESSIE_API_KEY (server-only).' },
-      { status: 400 },
-    );
-  }
-
-  const envCustomerId = process.env.NESSIE_CUSTOMER_ID?.trim() || null;
-  const envAccountId = process.env.NESSIE_ACCOUNT_ID?.trim() || null;
 
   // Prefer explicit env-provided IDs (works for GET-only keys).
   if (envCustomerId || envAccountId) {
