@@ -9,8 +9,18 @@ export function MosaicView(props: {
   totalSpend?: number;
   selectedId?: string;
   onTileClick?: (tile: TreemapTile) => void;
+  height?: number;
+  showHud?: boolean;
 }) {
-  const { tiles, nestedTiles = [], totalSpend, selectedId, onTileClick } = props;
+  const {
+    tiles,
+    nestedTiles = [],
+    totalSpend,
+    selectedId,
+    onTileClick,
+    height,
+    showHud = true,
+  } = props;
   const [hover, setHover] = React.useState<TreemapTile | null>(null);
   const [isTransitioning, setIsTransitioning] = React.useState(false);
 
@@ -160,24 +170,34 @@ export function MosaicView(props: {
 
   return (
     <div className="mosaicFrame">
-      <div className="mosaicHud" aria-hidden>
-        <div className="mosaicHudCard">
-          <div className="mosaicSwatch" style={{ background: hover ? hover.color : undefined }} />
-          <div style={{ display: 'grid', gap: 2 }}>
-            <div className="mosaicHudTitle">{hover ? hover.label : 'Hover a tile'}</div>
-            <div className="mosaicHudValue">
-              {hover
-                ? `${moneyFmt.format(hover.value)}${
-                    hasPositiveViewTotal ? ` · ${pctFmt.format(hoverPct)}` : ''
-                  }`
-                : Number.isFinite(viewTotal)
-                  ? `Total: ${moneyFmt.format(viewTotal)}`
-                  : 'Click a tile to drill down'}
+      {showHud ? (
+        <div className="mosaicHud" aria-hidden>
+          <div className="mosaicHudCard">
+            <div
+              className="mosaicSwatch"
+              style={{ background: hover ? hover.color : undefined }}
+            />
+            <div style={{ display: 'grid', gap: 2 }}>
+              <div className="mosaicHudTitle">{hover ? hover.label : 'Hover a tile'}</div>
+              <div className="mosaicHudValue">
+                {hover
+                  ? `${moneyFmt.format(hover.value)}${
+                      hasPositiveViewTotal ? ` · ${pctFmt.format(hoverPct)}` : ''
+                    }`
+                  : Number.isFinite(viewTotal)
+                    ? `Total: ${moneyFmt.format(viewTotal)}`
+                    : 'Click a tile to drill down'}
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <svg viewBox="0 0 1000 650" className="mosaicCanvas" role="img">
+      ) : null}
+      <svg
+        viewBox="0 0 1000 650"
+        className="mosaicCanvas"
+        role="img"
+        style={height ? { height, width: '100%' } : undefined}
+      >
         <defs>
           <filter id="glass-shadow" x="-20%" y="-20%" width="140%" height="140%">
             <feDropShadow dx="0" dy="6" stdDeviation="6" floodColor="rgba(0,0,0,0.45)" />
