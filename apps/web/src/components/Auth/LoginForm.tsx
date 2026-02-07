@@ -11,6 +11,14 @@ export function LoginForm() {
   const [status, setStatus] = React.useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [error, setError] = React.useState<string | null>(null);
 
+  React.useEffect(() => {
+    const err = searchParams.get('error');
+    if (err) {
+      setError(err);
+      setStatus('error');
+    }
+  }, [searchParams]);
+
   function errorMessage(e: unknown): string {
     if (e && typeof e === 'object' && 'message' in e) {
       const m = (e as { message?: unknown }).message;
@@ -25,7 +33,9 @@ export function LoginForm() {
     try {
       const supabase = supabaseBrowser();
       const next = searchParams.get('next') ?? '/app';
-      const redirectTo = new URL('/auth/callback', window.location.origin);
+      const origin =
+        process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ?? window.location.origin;
+      const redirectTo = new URL('/auth/callback', origin);
       redirectTo.searchParams.set('next', next);
 
       const { error: signInError } = await supabase.auth.signInWithOtp({

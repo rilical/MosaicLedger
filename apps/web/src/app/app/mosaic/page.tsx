@@ -7,7 +7,7 @@ import { MosaicSkeleton } from '../../../components/MosaicSkeleton';
 import { RecurringPanel } from '../../../components/RecurringPanel';
 import { ActionsPanel } from '../../../components/ActionsPanel';
 import type { NormalizedTransaction } from '@mosaicledger/core';
-import { buildTreemapTiles, type TreemapTile } from '@mosaicledger/mosaic';
+import { buildTreemapTiles } from '@mosaicledger/mosaic';
 import {
   Badge,
   Button,
@@ -176,44 +176,6 @@ function MosaicPageInner() {
     return artifacts.mosaic.tiles;
   }, [artifacts, level, mode, selectedCategory, txns]);
 
-  // Nested merchant/payment tiles inside each category (only for deterministic category view).
-  // Extra top padding keeps category names visible; scale < 1 makes boxes slightly smaller.
-  const PAD_TOP = 36;
-  const PAD_SIDE = 12;
-  const PAD_BOTTOM = 10;
-  const NESTED_SCALE = 0.9;
-  const nestedTiles = React.useMemo((): TreemapTile[] => {
-    if (!artifacts || level !== 'category' || mode !== 'deterministic' || txns.length === 0)
-      return [];
-    const categoryTiles = artifacts.mosaic.tiles;
-    const out: TreemapTile[] = [];
-    for (const cat of categoryTiles) {
-      const byMerchant = sumByMerchant(txns, cat.label);
-      const entries = Object.entries(byMerchant).filter(([, v]) => v > 0);
-      if (entries.length === 0) continue;
-      const byMerchantRecord = Object.fromEntries(entries);
-      const childTiles = buildTreemapTiles(byMerchantRecord);
-      const innerW = Math.max(0, cat.w - PAD_SIDE * 2);
-      const innerH = Math.max(0, cat.h - PAD_TOP - PAD_BOTTOM);
-      const cw = innerW * NESTED_SCALE;
-      const ch = innerH * NESTED_SCALE;
-      const offsetX = cat.x + PAD_SIDE + (innerW - cw) / 2;
-      const offsetY = cat.y + PAD_TOP + (innerH - ch) / 2;
-      if (cw < 20 || ch < 20) continue;
-      for (const t of childTiles) {
-        out.push({
-          ...t,
-          id: `${cat.id}:${t.id}`,
-          x: offsetX + (t.x / 1000) * cw,
-          y: offsetY + (t.y / 650) * ch,
-          w: (t.w / 1000) * cw,
-          h: (t.h / 650) * ch,
-        });
-      }
-    }
-    return out;
-  }, [artifacts, level, mode, txns]);
-
   const drawerTxns = React.useMemo(() => {
     if (!selectedCategory || !selectedMerchant) return [];
     return txns
@@ -301,7 +263,7 @@ function MosaicPageInner() {
                   {level === 'category'
                     ? mode === 'timeline'
                       ? 'Spending grouped by month. Click to switch to category view.'
-                      : 'Merchants shown inside each category. Click a merchant box to see transactions.'
+                      : 'Click a category to drill into merchants.'
                     : 'Click a merchant tile to see transactions.'}
                 </div>
               </div>
@@ -346,7 +308,7 @@ function MosaicPageInner() {
             ) : (
               <MosaicView
                 tiles={tiles}
-                nestedTiles={level === 'category' && mode === 'deterministic' ? nestedTiles : []}
+                nestedTiles={[]}
                 totalSpend={spend}
                 selectedId={
                   level === 'category'
@@ -354,22 +316,11 @@ function MosaicPageInner() {
                     : (selectedMerchant ?? undefined)
                 }
                 onTileClick={(tile) => {
-                  // Nested tile (merchant inside category): id is "categoryId:merchantId"
-                  const nested = tile.id.includes(':');
-                  if (nested) {
-                    const [cat, merchant] = tile.id.split(':');
-                    setSelectedCategory(cat ?? null);
-                    setSelectedMerchant(merchant ?? tile.label);
-                    setLevel('merchant');
-                    return;
-                  }
                   if (level === 'category') {
-                    // In timeline mode, switch to deterministic view first
                     if (mode === 'timeline') {
                       setMode('deterministic');
                       return;
                     }
-                    // In deterministic mode, drill down to merchants for the selected category
                     setSelectedCategory(tile.label);
                     setSelectedMerchant(null);
                     setLevel('merchant');
