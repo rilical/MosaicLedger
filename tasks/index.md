@@ -82,3 +82,4 @@ Status legend: `TODO` | `DOING` | `BLOCKED` | `REVIEW` | `DONE`
 | QA-016 | DONE   | Core engine fuzz tests for weird transactions        |
 | QA-017 | DOING  | /health schema checks + clear fix instructions       |
 | QA-022 | DOING  | /health integration statuses + Plaid last sync       |
+| QA-019 | DOING  | CI dependency audit job (non-blocking)               |
