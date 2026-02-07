@@ -131,6 +131,7 @@
         max-width: 100%;
       }
       .c {
+        position: relative;
         width: 100%;
         aspect-ratio: 1/1;
         border-radius: 10px;
@@ -146,12 +147,58 @@
         background: linear-gradient(180deg, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.25));
         border-color: rgba(255, 255, 255, 0.1);
       }
+      .c.rev.mine {
+        background: linear-gradient(180deg, rgba(244, 63, 94, 0.25), rgba(0, 0, 0, 0.25));
+        border-color: rgba(244, 63, 94, 0.4);
+      }
       .c.flag {
         outline: 2px solid rgba(234, 179, 8, 0.45);
       }
       .c.boom {
         background: linear-gradient(180deg, rgba(244, 63, 94, 0.38), rgba(0, 0, 0, 0.25));
         border-color: rgba(244, 63, 94, 0.55);
+      }
+      .scotty {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        aspect-ratio: 1;
+        transform: translateY(-20px);
+        border-radius: 10px;
+        pointer-events: none;
+        background-color: transparent;
+        background-image: url(/scotty.png);
+        background-repeat: no-repeat;
+        /* Square box + 200% 200% = one quadrant, no stretch */
+        background-size: 200% 200%;
+      }
+      .scotty-nervous { background-position: 0 0; }
+      .scotty-shocked { background-position: 100% 0; }
+      .scotty-win {
+        background-position: 0 100%;
+        clip-path: inset(0 10px 5px 0);
+        transform: translateY(-10px);
+      }
+      .scotty-bomb { background-position: 100% 100%; }
+      .grid-wrap {
+        position: relative;
+      }
+      .center-scotty {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, calc(-50% - 25px)) scale(0.75);
+        width: 88px;
+        aspect-ratio: 1;
+        pointer-events: none;
+        background-color: transparent;
+        background-image: url(/scotty.png);
+        background-repeat: no-repeat;
+        background-size: 200% 200%;
+        background-position: 0 100%;
+        clip-path: inset(0 10px 5px 0);
       }
       .c:focus {
         outline: 2px solid rgba(56, 189, 248, 0.55);
@@ -170,7 +217,15 @@
     <div class="app">
       <div class="top">
         <div>
-          <h1>Minesweeper (180s)</h1>
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <h1>Minesweeper (180s)</h1>
+            <a
+              class="pill"
+              href="/app/evidence"
+              style="text-decoration: none; color: inherit; display: inline-flex"
+              >Back</a
+            >
+          </div>
           <div class="meta">10x10 · 15 mines · first click safe</div>
         </div>
         <a
@@ -193,14 +248,13 @@
             <button id="restart" type="button">Restart</button>
           </div>
         </div>
-        <div class="hint" style="margin-top: 10px">
-          Tap to reveal. Toggle Flag mode for safe mobile play. Optional seed:
-          <code>?seed=demo</code>
-        </div>
       </div>
 
       <div class="card">
-        <div class="grid" id="grid" aria-label="Minesweeper board"></div>
+        <div class="grid-wrap">
+          <div class="grid" id="grid" aria-label="Minesweeper board"></div>
+          <div class="center-scotty" id="centerScotty" aria-hidden="true"></div>
+        </div>
       </div>
     </div>
 
@@ -215,6 +269,7 @@
           elL = document.getElementById('left');
         var elD = document.getElementById('dashboardBtn'),
           elS = document.getElementById('status'),
+          centerScottyEl = document.getElementById('centerScotty'),
           btnF = document.getElementById('flag'),
           btnR = document.getElementById('restart');
         var flagMode = 0,
@@ -223,6 +278,70 @@
           timer = 0,
           remain = L,
           seed = location.search.match(/(?:\\?|&)seed=([^&]+)/);
+        var audioCtx = null;
+        function getCtx() {
+          if (!audioCtx) {
+            try {
+              audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            } catch (e) {}
+          }
+          return audioCtx;
+        }
+        function playExplosion() {
+          var ctx = getCtx();
+          if (!ctx) return;
+          try {
+            if (ctx.state === 'suspended') ctx.resume();
+            var t = ctx.currentTime;
+            var buf = ctx.createBuffer(1, ctx.sampleRate * 0.15, ctx.sampleRate);
+            var d = buf.getChannelData(0);
+            for (var i = 0; i < d.length; i++)
+              d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 2);
+            var src = ctx.createBufferSource();
+            src.buffer = buf;
+            var g = ctx.createGain();
+            g.gain.setValueAtTime(0.4, t);
+            g.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
+            src.connect(g);
+            g.connect(ctx.destination);
+            src.start(t);
+            var osc = ctx.createOscillator();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(80, t);
+            osc.frequency.exponentialRampToValueAtTime(20, t + 0.1);
+            var g2 = ctx.createGain();
+            g2.gain.setValueAtTime(0.25, t);
+            g2.gain.exponentialRampToValueAtTime(0.01, t + 0.12);
+            osc.connect(g2);
+            g2.connect(ctx.destination);
+            osc.start(t);
+            osc.stop(t + 0.12);
+          } catch (e) {}
+        }
+        function playVictory() {
+          var ctx = getCtx();
+          if (!ctx) return;
+          try {
+            if (ctx.state === 'suspended') ctx.resume();
+            var t = ctx.currentTime;
+            var freqs = [523.25, 659.25, 783.99, 1046.5];
+            for (var i = 0; i < freqs.length; i++) {
+              (function (f, i) {
+                var osc = ctx.createOscillator();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(f, t);
+                var g = ctx.createGain();
+                g.gain.setValueAtTime(0, t);
+                g.gain.linearRampToValueAtTime(0.12, t + 0.03);
+                g.gain.exponentialRampToValueAtTime(0.01, t + 0.25);
+                osc.connect(g);
+                g.connect(ctx.destination);
+                osc.start(t + i * 0.12);
+                osc.stop(t + i * 0.12 + 0.25);
+              })(freqs[i], i);
+            }
+          } catch (e) {}
+        }
         function h(s) {
           for (var i = 0, x = 2166136261 >>> 0; i < s.length; i++) {
             x ^= s.charCodeAt(i);
@@ -265,6 +384,7 @@
         }
         function mk() {
           grid.innerHTML = '';
+          lastScottyEl = null;
           over = 0;
           started = 0;
           remain = L;
@@ -306,6 +426,7 @@
           elM.textContent = M;
           safeLeft = N * N - M;
           elL.textContent = safeLeft;
+          if (centerScottyEl) centerScottyEl.style.display = '';
         }
         function placeSafe(first) {
           var ban = {};
@@ -332,6 +453,7 @@
         function start() {
           if (started) return;
           started = 1;
+          if (centerScottyEl) centerScottyEl.style.display = 'none';
           setStatus('RUNNING', 'rgba(56,189,248,.45)');
           timer = setInterval(function () {
             if (over) return;
@@ -369,7 +491,13 @@
             lose(i);
             return;
           }
+          if (lastScottyEl && lastScottyEl.parentNode) {
+            lastScottyEl.parentNode.removeChild(lastScottyEl);
+            lastScottyEl = null;
+          }
           rev(i);
+          var frame = s.a >= 3 ? 'shocked' : 'nervous';
+          lastScottyEl = addScotty(s.el, frame);
           if (safeLeft <= 0) win();
         }
         function rev(i) {
@@ -377,7 +505,15 @@
           while (q.length) {
             var x = q.pop(),
               s = S[x];
-            if (s.r || s.f) continue;
+            if (s.r) continue;
+            if (s.f) {
+              s.f = 0;
+              s.el.classList.remove('flag');
+              s.el.textContent = '';
+              var flags = 0;
+              for (var k = 0; k < N * N; k++) if (S[k].f) flags++;
+              elM.textContent = Math.max(0, M - flags);
+            }
             s.r = 1;
             safeLeft--;
             elL.textContent = safeLeft;
@@ -389,27 +525,37 @@
             var n = neigh(x);
             for (var j = 0; j < n.length; j++) {
               var t = S[n[j]];
-              if (!t.r && !t.f && !t.m) q.push(n[j]);
+              if (!t.r && !t.m) q.push(n[j]);
             }
           }
         }
         function lose(hit) {
           over = 1;
           clearInterval(timer);
+          playExplosion();
           setStatus(hit < 0 ? 'TIME OUT' : 'BOOM', 'rgba(244,63,94,.55)');
           for (var i = 0; i < N * N; i++) {
             var s = S[i];
             if (s.m) {
               s.el.textContent = '*';
-              s.el.classList.add('rev');
+              s.el.classList.add('rev', 'mine');
             }
           }
-          if (hit >= 0) S[hit].el.classList.add('boom');
+          if (hit >= 0) {
+            if (lastScottyEl && lastScottyEl.parentNode) {
+              lastScottyEl.parentNode.removeChild(lastScottyEl);
+              lastScottyEl = null;
+            }
+            S[hit].el.classList.add('boom');
+            addScotty(S[hit].el, 'bomb');
+          }
         }
         function win() {
           over = 1;
           clearInterval(timer);
+          playVictory();
           setStatus('CLEARED', 'rgba(34,197,94,.55)');
+          if (lastScottyEl) lastScottyEl.className = 'scotty scotty-win';
         }
         btnF.onclick = function () {
           flagMode = !flagMode;
@@ -421,7 +567,14 @@
           mk();
         };
         var S = [],
-          safeLeft = 0;
+          safeLeft = 0,
+          lastScottyEl = null;
+        function addScotty(el, frame) {
+          var d = document.createElement('div');
+          d.className = 'scotty scotty-' + frame;
+          el.appendChild(d);
+          return d;
+        }
         mk();
       })();
     </script>
