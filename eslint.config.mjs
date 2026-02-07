@@ -6,6 +6,9 @@ export default [
     ignores: [
       // Mobile app is optional for the hackathon MVP; keep lint focused on web + packages.
       'apps/mobile/**',
+      // 15KB game is plain JS/HTML/CSS; keep main lint focused and avoid browser-global noise.
+      'apps/game15k/**',
+      'apps/web/public/game/**',
       '**/.next/**',
       '**/dist/**',
       '**/coverage/**',
