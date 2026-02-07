@@ -6,6 +6,7 @@ import {
   isWithinRange,
   monthStart,
   normalizeRawTransactions,
+  type NormalizedTransaction,
   type RawTransactionInput,
   recommendActions,
   summarizeTransactions,
@@ -96,6 +97,49 @@ export function computeBankArtifacts(
     version: 1,
     generatedAt: new Date().toISOString(),
     source: 'plaid',
+    transactions: txns,
+    summary: {
+      transactionCount: txns.length,
+      totalSpend: summary.totalSpend,
+      byCategory: summary.byCategory,
+      byMerchant: summary.byMerchant,
+    },
+    mosaic: { tiles },
+    recurring: summary.recurring,
+    actionPlan: actions,
+  };
+}
+
+export function computeArtifactsFromNormalized(
+  txnsAll: NormalizedTransaction[],
+  req: AnalyzeRequestV1 = {},
+  opts?: { artifactsSource?: AnalysisArtifactsV1['source'] },
+): AnalysisArtifactsV1 {
+  const filters = {
+    ...DEFAULT_FILTERS,
+    ...req.filters,
+  };
+
+  const range = resolveRange(txnsAll, req);
+
+  const txns = applyTransactionFilters(txnsAll, filters).filter((t) =>
+    isWithinRange(t.date, range),
+  );
+  const summary = summarizeTransactions(txns);
+  const tiles = buildTreemapTiles(summary.byCategory);
+  const actions = recommendActions(
+    summary,
+    req.goal ?? {
+      goalType: 'save_by_date',
+      saveAmount: 200,
+      byDate: '2026-04-01',
+    },
+  );
+
+  return {
+    version: 1,
+    generatedAt: new Date().toISOString(),
+    source: opts?.artifactsSource,
     transactions: txns,
     summary: {
       transactionCount: txns.length,

@@ -9,7 +9,7 @@ import type { AnalysisSettings } from '../../components/Analysis/types';
 export default function ConnectPage() {
   const router = useRouter();
   const { flags, setFlag } = useFlags();
-  const [nessieBusy, setNessieBusy] = React.useState(false);
+  const [nessieStep, setNessieStep] = React.useState<'idle' | 'bootstrapping' | 'syncing'>('idle');
   const [nessieError, setNessieError] = React.useState<string | null>(null);
 
   function patchAnalysisSettings(patch: Partial<AnalysisSettings>) {
@@ -63,9 +63,9 @@ export default function ConnectPage() {
               </Button>
 
               <Button
-                disabled={!flags.nessieEnabled || nessieBusy}
+                disabled={!flags.nessieEnabled || nessieStep !== 'idle'}
                 onClick={async () => {
-                  setNessieBusy(true);
+                  setNessieStep('bootstrapping');
                   setNessieError(null);
                   try {
                     const resp = await fetch('/api/nessie/bootstrap', { method: 'POST' });
@@ -77,6 +77,27 @@ export default function ConnectPage() {
                         ('error' in json ? json.error : null) ?? 'Nessie bootstrap failed',
                       );
                     }
+
+                    // Pull accounts + purchases and persist into `transactions_normalized`
+                    // so the engine can re-run without sponsor network calls.
+                    setNessieStep('syncing');
+                    const syncResp = await fetch('/api/nessie/sync', {
+                      method: 'POST',
+                      headers: { 'content-type': 'application/json' },
+                      body: JSON.stringify({
+                        customerId: json.customerId,
+                        accountId: json.accountId,
+                      }),
+                    });
+                    const syncJson = (await syncResp.json()) as
+                      | { ok: true }
+                      | { ok: false; error?: string };
+                    if (!syncResp.ok || !syncJson.ok) {
+                      throw new Error(
+                        ('error' in syncJson ? syncJson.error : null) ?? 'Nessie sync failed',
+                      );
+                    }
+
                     patchAnalysisSettings({
                       source: 'nessie',
                       nessieCustomerId: json.customerId,
@@ -92,11 +113,15 @@ export default function ConnectPage() {
                     patchAnalysisSettings({ source: 'demo' });
                     router.push('/app/mosaic?source=demo');
                   } finally {
-                    setNessieBusy(false);
+                    setNessieStep('idle');
                   }
                 }}
               >
-                {nessieBusy ? 'Bootstrapping…' : 'Use Capital One Nessie'}
+                {nessieStep === 'bootstrapping'
+                  ? 'Connecting…'
+                  : nessieStep === 'syncing'
+                    ? 'Syncing…'
+                    : 'Connect Capital One Nessie'}
               </Button>
 
               {flags.demoMode ? (

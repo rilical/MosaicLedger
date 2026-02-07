@@ -5,7 +5,10 @@ export type NormalizedTransaction = {
   merchantRaw: string;
   merchant: string; // canonicalized
   category: string;
-  source: 'csv' | 'bank' | 'demo';
+  source: 'csv' | 'bank' | 'demo' | 'nessie';
+  // Optional enrichment: some connectors provide per-account provenance + pending flags.
+  accountId?: string;
+  pending?: boolean;
 };
 
 export type RecurringCharge = {
