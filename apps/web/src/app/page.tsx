@@ -41,9 +41,6 @@ export default function LandingPage() {
             <Link className="btn btnGhost" href="/app/mosaic?source=demo">
               Launch Demo Mosaic
             </Link>
-            <Link className="btn btnGhost" href="/game">
-              Play 15KB Minesweeper
-            </Link>
           </div>
         </div>
 
