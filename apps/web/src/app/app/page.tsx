@@ -8,7 +8,7 @@ import type { AnalysisSettings } from '../../components/Analysis/types';
 
 export default function ConnectPage() {
   const router = useRouter();
-  const { flags } = useFlags();
+  const { flags, setFlag } = useFlags();
   const [nessieStep, setNessieStep] = React.useState<'idle' | 'bootstrapping' | 'syncing'>('idle');
   const [nessieError, setNessieError] = React.useState<string | null>(null);
 
@@ -25,6 +25,15 @@ export default function ConnectPage() {
   }
 
   const canUseNessie = flags.nessieEnabled;
+
+  const applyJudgePreset = React.useCallback(() => {
+    setFlag('judgeMode', true);
+    setFlag('demoMode', true);
+    setFlag('aiEnabled', false);
+    setFlag('debugTraces', false);
+    patchAnalysisSettings({ source: 'demo' });
+    router.push('/app/mosaic?source=demo');
+  }, [router, setFlag]);
 
   const connectNessie = React.useCallback(async () => {
     setNessieStep('bootstrapping');
@@ -108,20 +117,39 @@ export default function ConnectPage() {
     <div className="pageStack" style={{ maxWidth: 980 }}>
       <div className="pageHeader">
         <div className="pageMeta">
-          <div className="pageTagline">Pick a data source to start the demo flow.</div>
-          <Badge tone="good">Demo-first</Badge>
+          <div className="pageTagline">Start the demo, then use Evidence to prove integrations.</div>
+          <Badge tone={flags.judgeMode ? 'warn' : 'good'}>
+            {flags.judgeMode ? 'Judge mode' : 'Demo-first'}
+          </Badge>
         </div>
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>Choose a Data Source</CardTitle>
+          <CardTitle>Judge-Ready Start</CardTitle>
         </CardHeader>
         <CardBody>
           <div style={{ display: 'grid', gap: 14 }}>
             <div className="small">
-              Demo data is the always-works path (and the deterministic engine is tested against it
-              in CI). Sponsor connectors are optional and intentionally fail fast to keep the demo
-              smooth.
+              Recommended for judging: run deterministic demo data first, then open the Evidence
+              screen to prove sponsor integrations without risking the flow.
+            </div>
+
+            <div className="buttonRow" style={{ alignItems: 'center' }}>
+              <Button variant="primary" onClick={applyJudgePreset}>
+                Start Judge Demo
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setFlag('judgeMode', true);
+                  setFlag('demoMode', true);
+                  router.push('/app/evidence');
+                }}
+              >
+                Open Evidence Screen
+              </Button>
+              {flags.demoMode ? <Badge tone="good">Demo Mode ON</Badge> : <Badge>Demo OFF</Badge>}
+              {flags.judgeMode ? <Badge tone="warn">Judge Mode ON</Badge> : null}
             </div>
 
             {nessieError ? (
@@ -130,119 +158,115 @@ export default function ConnectPage() {
               </div>
             ) : null}
 
-            <div className="choiceGrid">
-              <div className="choiceCard">
-                <div className="choiceHeader">
-                  <div>
-                    <div className="choiceTitle">Demo Data</div>
-                    <div className="small">Always works. Best path for judges.</div>
-                  </div>
-                  <Badge tone="good">Recommended</Badge>
-                </div>
-                <div className="buttonRow">
-                  <Button
-                    variant="primary"
-                    onClick={() => {
-                      patchAnalysisSettings({ source: 'demo' });
-                      router.push('/app/mosaic?source=demo');
-                    }}
-                  >
-                    Start Demo
-                  </Button>
-                  <Button onClick={() => router.push('/app/export?privacy=1')}>
-                    Export Poster
-                  </Button>
-                </div>
-              </div>
-
-              <div className="choiceCard">
-                <div className="choiceHeader">
-                  <div>
-                    <div className="choiceTitle">Plaid (Sandbox)</div>
-                    <div className="small">Optional live-ish bank linking via Plaid Link.</div>
-                  </div>
-                  <Badge tone={flags.plaidEnabled ? 'neutral' : 'warn'}>
-                    {flags.plaidEnabled ? 'Enabled' : 'Disabled'}
-                  </Badge>
-                </div>
-                <div className="buttonRow">
-                  <Button
-                    variant="primary"
-                    disabled={!flags.plaidEnabled}
-                    onClick={() => router.push('/app/bank')}
-                  >
-                    Connect Bank
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      patchAnalysisSettings({ source: 'demo' });
-                      router.push('/app/mosaic?source=demo');
-                    }}
-                  >
-                    Use Demo
-                  </Button>
-                </div>
-                {!flags.plaidEnabled ? (
-                  <div className="small" style={{ marginTop: 10 }}>
-                    Toggle in Settings or set `NEXT_PUBLIC_PLAID_ENABLED=1`.
-                  </div>
-                ) : null}
-              </div>
-
-              <div className="choiceCard">
-                <div className="choiceHeader">
-                  <div>
-                    <div className="choiceTitle">Capital One Nessie</div>
-                    <div className="small">
-                      Sponsor connector. Pulls purchases into the same engine.
+            <details>
+              <summary className="small" style={{ cursor: 'pointer', userSelect: 'none' }}>
+                Optional integrations and extras
+              </summary>
+              <div className="choiceGrid" style={{ marginTop: 12 }}>
+                <div className="choiceCard">
+                  <div className="choiceHeader">
+                    <div>
+                      <div className="choiceTitle">Export Poster</div>
+                      <div className="small">One-click artifact for submissions.</div>
                     </div>
+                    <Badge tone="neutral">Proof</Badge>
                   </div>
-                  <Badge tone={canUseNessie ? 'neutral' : 'warn'}>
-                    {canUseNessie ? 'Ready' : 'Needs setup'}
-                  </Badge>
-                </div>
-                <div className="buttonRow">
-                  <Button
-                    variant="primary"
-                    disabled={!canUseNessie || nessieStep !== 'idle'}
-                    onClick={() => void connectNessie()}
-                  >
-                    {nessieStep === 'bootstrapping'
-                      ? 'Connecting…'
-                      : nessieStep === 'syncing'
-                        ? 'Syncing…'
-                        : 'Connect Nessie'}
-                  </Button>
-                  <Button onClick={() => router.push('/app/settings')}>Settings</Button>
-                </div>
-                {!flags.nessieEnabled ? (
-                  <div className="small" style={{ marginTop: 10 }}>
-                    Toggle in Settings or set `NEXT_PUBLIC_NESSIE_ENABLED=1`.
+                  <div className="buttonRow">
+                    <Button variant="primary" onClick={() => router.push('/app/export?privacy=1')}>
+                      Export (privacy)
+                    </Button>
+                    <Button variant="ghost" onClick={() => router.push('/app/export')}>
+                      Export (full)
+                    </Button>
                   </div>
-                ) : null}
-              </div>
+                </div>
 
-              <div className="choiceCard">
-                <div className="choiceHeader">
-                  <div>
-                    <div className="choiceTitle">15KB Minesweeper</div>
-                    <div className="small">Tiny static side quest. First click is safe.</div>
+                <div className="choiceCard">
+                  <div className="choiceHeader">
+                    <div>
+                      <div className="choiceTitle">Plaid (Sandbox)</div>
+                      <div className="small">Optional live-ish bank linking via Plaid Link.</div>
+                    </div>
+                    <Badge tone={flags.plaidEnabled ? 'neutral' : 'warn'}>
+                      {flags.plaidEnabled ? 'Enabled' : 'Disabled'}
+                    </Badge>
                   </div>
-                  <Badge tone="neutral">Game</Badge>
+                  <div className="buttonRow">
+                    <Button
+                      variant="primary"
+                      disabled={!flags.plaidEnabled}
+                      onClick={() => router.push('/app/bank')}
+                    >
+                      Connect Bank
+                    </Button>
+                    <Button variant="ghost" onClick={() => router.push('/app/settings')}>
+                      Settings
+                    </Button>
+                  </div>
+                  {!flags.plaidEnabled ? (
+                    <div className="small" style={{ marginTop: 10 }}>
+                      Toggle in Settings or set `NEXT_PUBLIC_PLAID_ENABLED=1`.
+                    </div>
+                  ) : null}
                 </div>
-                <div className="buttonRow">
-                  <Button variant="primary" onClick={() => router.push('/game')}>
-                    Play Minesweeper
-                  </Button>
-                  <Button onClick={() => router.push('/mosaic-game')}>Mosaic Sprint</Button>
+
+                <div className="choiceCard">
+                  <div className="choiceHeader">
+                    <div>
+                      <div className="choiceTitle">Capital One Nessie</div>
+                      <div className="small">
+                        Sponsor connector. Pulls purchases into the same engine.
+                      </div>
+                    </div>
+                    <Badge tone={canUseNessie ? 'neutral' : 'warn'}>
+                      {canUseNessie ? 'Ready' : 'Needs setup'}
+                    </Badge>
+                  </div>
+                  <div className="buttonRow">
+                    <Button
+                      variant="primary"
+                      disabled={!canUseNessie || nessieStep !== 'idle'}
+                      onClick={() => void connectNessie()}
+                    >
+                      {nessieStep === 'bootstrapping'
+                        ? 'Connecting…'
+                        : nessieStep === 'syncing'
+                          ? 'Syncing…'
+                          : 'Connect Nessie'}
+                    </Button>
+                    <Button variant="ghost" onClick={() => router.push('/app/evidence')}>
+                      Probe in Evidence
+                    </Button>
+                  </div>
+                  {!flags.nessieEnabled ? (
+                    <div className="small" style={{ marginTop: 10 }}>
+                      Toggle in Settings or set `NEXT_PUBLIC_NESSIE_ENABLED=1`.
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="choiceCard">
+                  <div className="choiceHeader">
+                    <div>
+                      <div className="choiceTitle">Extras</div>
+                      <div className="small">Non-core pages (keep them out of the judge path).</div>
+                    </div>
+                    <Badge tone="neutral">Optional</Badge>
+                  </div>
+                  <div className="buttonRow">
+                    <Button variant="primary" onClick={() => router.push('/game')}>
+                      Minesweeper
+                    </Button>
+                    <Button variant="ghost" onClick={() => router.push('/mosaic-game')}>
+                      Mosaic Sprint
+                    </Button>
+                    <Button variant="ghost" onClick={() => router.push('/app/xrpl')}>
+                      XRPL
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <div className="buttonRow" style={{ alignItems: 'center' }}>
-              {flags.demoMode ? <Badge tone="good">Demo Mode ON</Badge> : <Badge>Demo OFF</Badge>}
-              {flags.judgeMode ? <Badge tone="warn">Judge Mode ON</Badge> : null}
-            </div>
+            </details>
           </div>
         </CardBody>
       </Card>

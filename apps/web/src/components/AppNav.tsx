@@ -6,16 +6,15 @@ import { Badge } from './ui';
 import { useFlags } from '../lib/flags-client';
 
 const navItemsBase = [
-  { href: '/app', label: 'Connect', badge: 'LIVE' },
-  { href: '/app/mosaic', label: 'Mosaic', badge: 'v0' },
-  { href: '/app/recurring', label: 'Recurring', badge: 'v0' },
-  { href: '/app/plan', label: 'Plan', badge: 'v0' },
-  { href: '/app/ops', label: 'Ops', badge: 'ops' },
-  { href: '/app/coach', label: 'Coach', badge: 'agent' },
-  { href: '/app/export', label: 'Export', badge: 'soon' },
-  { href: '/app/evidence', label: 'Evidence', badge: 'prize' },
-  { href: '/app/settings', label: 'Settings', badge: 'v0' },
-  { href: '/game', label: 'Play Minesweeper', badge: '15KB' },
+  { href: '/app', label: 'Start' },
+  { href: '/app/mosaic', label: 'Mosaic' },
+  { href: '/app/recurring', label: 'Recurring' },
+  { href: '/app/plan', label: 'Plan' },
+  { href: '/app/ops', label: 'Ops' },
+  { href: '/app/coach', label: 'Coach' },
+  { href: '/app/export', label: 'Export' },
+  { href: '/app/evidence', label: 'Evidence' },
+  { href: '/app/settings', label: 'Settings' },
 ];
 
 type AppNavProps = {
@@ -43,7 +42,6 @@ export function AppNav({ demoMode }: AppNavProps) {
     <div className="navList">
       {navItems.map((item) => {
         const active = isActivePath(pathname, item.href);
-        const badgeText = item.href === '/app' ? (demoMode ? 'DEMO' : 'LIVE') : item.badge;
 
         return (
           <Link
@@ -53,7 +51,9 @@ export function AppNav({ demoMode }: AppNavProps) {
             aria-current={active ? 'page' : undefined}
           >
             <span>{item.label}</span>
-            <Badge tone={item.href === '/app' && demoMode ? 'good' : 'neutral'}>{badgeText}</Badge>
+            {item.href === '/app' ? (
+              <Badge tone={demoMode ? 'good' : 'neutral'}>{demoMode ? 'DEMO' : 'LIVE'}</Badge>
+            ) : null}
           </Link>
         );
       })}

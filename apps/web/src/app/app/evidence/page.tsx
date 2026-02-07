@@ -192,12 +192,14 @@ export default function EvidencePage() {
               {mcpBadge}
             </div>
             {mcpStatus.state === 'done' ? (
-              <pre
-                className="small"
-                style={{ marginTop: 12, whiteSpace: 'pre-wrap', opacity: 0.9 }}
-              >
-                {JSON.stringify(mcpStatus.resp, null, 2)}
-              </pre>
+              <details style={{ marginTop: 12 }}>
+                <summary className="small" style={{ cursor: 'pointer', userSelect: 'none' }}>
+                  Details
+                </summary>
+                <pre className="small" style={{ marginTop: 10, whiteSpace: 'pre-wrap', opacity: 0.9 }}>
+                  {JSON.stringify(mcpStatus.resp, null, 2)}
+                </pre>
+              </details>
             ) : mcpStatus.state === 'error' ? (
               <div className="small" style={{ marginTop: 12, color: 'rgba(234,179,8,0.95)' }}>
                 {mcpStatus.error}
@@ -233,12 +235,14 @@ export default function EvidencePage() {
             </div>
 
             {nessieStatus.state === 'done' ? (
-              <pre
-                className="small"
-                style={{ marginTop: 12, whiteSpace: 'pre-wrap', opacity: 0.9 }}
-              >
-                {JSON.stringify(nessieStatus.resp, null, 2)}
-              </pre>
+              <details style={{ marginTop: 12 }}>
+                <summary className="small" style={{ cursor: 'pointer', userSelect: 'none' }}>
+                  Details
+                </summary>
+                <pre className="small" style={{ marginTop: 10, whiteSpace: 'pre-wrap', opacity: 0.9 }}>
+                  {JSON.stringify(nessieStatus.resp, null, 2)}
+                </pre>
+              </details>
             ) : nessieStatus.state === 'error' ? (
               <div className="small" style={{ marginTop: 12, color: 'rgba(234,179,8,0.95)' }}>
                 {nessieStatus.error}
@@ -273,12 +277,14 @@ export default function EvidencePage() {
             </div>
 
             {xrplStatus.state === 'done' ? (
-              <pre
-                className="small"
-                style={{ marginTop: 12, whiteSpace: 'pre-wrap', opacity: 0.9 }}
-              >
-                {JSON.stringify(xrplStatus.resp, null, 2)}
-              </pre>
+              <details style={{ marginTop: 12 }}>
+                <summary className="small" style={{ cursor: 'pointer', userSelect: 'none' }}>
+                  Details
+                </summary>
+                <pre className="small" style={{ marginTop: 10, whiteSpace: 'pre-wrap', opacity: 0.9 }}>
+                  {JSON.stringify(xrplStatus.resp, null, 2)}
+                </pre>
+              </details>
             ) : xrplStatus.state === 'error' ? (
               <div className="small" style={{ marginTop: 12, color: 'rgba(234,179,8,0.95)' }}>
                 {xrplStatus.error}
