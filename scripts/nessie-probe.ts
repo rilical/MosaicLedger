@@ -4,7 +4,13 @@ import { fileURLToPath } from 'node:url';
 import { nessiePurchaseToNormalized } from '@mosaicledger/connectors';
 
 type NessieCustomer = { _id?: unknown; id?: unknown; first_name?: unknown; last_name?: unknown };
-type NessieAccount = { _id?: unknown; id?: unknown; nickname?: unknown; type?: unknown };
+type NessieAccount = {
+  _id?: unknown;
+  id?: unknown;
+  nickname?: unknown;
+  type?: unknown;
+  customer_id?: unknown;
+};
 type NessiePurchase = {
   _id?: unknown;
   amount?: unknown;
@@ -82,9 +88,35 @@ function readId(v: unknown): string | null {
   return typeof cand === 'string' && cand.trim() ? cand.trim() : null;
 }
 
+function readCustomerId(v: unknown): string | null {
+  if (!v || typeof v !== 'object') return null;
+  const o = v as Record<string, unknown>;
+  const cand = o.customer_id;
+  return typeof cand === 'string' && cand.trim() ? cand.trim() : null;
+}
+
 function withKey(url: string, key: string): string {
   const qp = `key=${encodeURIComponent(key)}`;
   return url.includes('?') ? `${url}&${qp}` : `${url}?${qp}`;
+}
+
+function pickPreferredAccount(accounts: NessieAccount[]): {
+  accountId: string | null;
+  customerId: string | null;
+} {
+  // Prefer Checking for demo spend mosaics, then Credit Card, then anything.
+  const score = (t: string) =>
+    t.toLowerCase().includes('checking') ? 0 : t.toLowerCase().includes('credit') ? 1 : 2;
+  const ranked = [...accounts].sort(
+    (a, b) => score(String(a.type ?? '')) - score(String(b.type ?? '')),
+  );
+
+  for (const a of ranked) {
+    const accountId = readId(a);
+    const customerId = readCustomerId(a);
+    if (accountId) return { accountId, customerId };
+  }
+  return { accountId: null, customerId: null };
 }
 
 async function main(): Promise<void> {
@@ -95,28 +127,68 @@ async function main(): Promise<void> {
 
   const key = envOrThrow('NESSIE_API_KEY');
   const base = baseUrl();
+  const errors: string[] = [];
 
-  const customers = await fetchJson<NessieCustomer[]>(withKey(`${base}/customers`, key));
-  const customerId =
-    (process.env.NESSIE_CUSTOMER_ID?.trim() || null) ?? readId(customers[0]) ?? null;
+  const envCustomerId = process.env.NESSIE_CUSTOMER_ID?.trim() || null;
+  const envAccountId = process.env.NESSIE_ACCOUNT_ID?.trim() || null;
 
   console.log(`Nessie base: ${base}`);
-  console.log(`Customers: ${Array.isArray(customers) ? customers.length : 0}`);
-  if (!customerId) {
-    console.log('No customer id available (set NESSIE_CUSTOMER_ID to probe accounts).');
-    return;
+
+  let customerId: string | null = envCustomerId;
+  let accountId: string | null = envAccountId;
+
+  // Most direct (per docs): accounts assigned to the API key.
+  let assignedAccounts: NessieAccount[] = [];
+  if (!accountId || !customerId) {
+    try {
+      const a = await fetchJson<NessieAccount[]>(withKey(`${base}/accounts`, key));
+      assignedAccounts = Array.isArray(a) ? a : [];
+      if (!assignedAccounts.length) {
+        errors.push('GET /accounts returned 0 accounts (key may not be assigned yet)');
+      }
+      const picked = pickPreferredAccount(assignedAccounts);
+      if (!accountId) accountId = picked.accountId;
+      if (!customerId) customerId = picked.customerId;
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      errors.push(`GET /accounts failed: ${msg}`);
+    }
   }
 
-  const accounts = await fetchJson<NessieAccount[]>(
-    withKey(`${base}/customers/${encodeURIComponent(customerId)}/accounts`, key),
-  );
-  const accountId = (process.env.NESSIE_ACCOUNT_ID?.trim() || null) ?? readId(accounts[0]) ?? null;
+  // Fallback: list customers then accounts by customer.
+  if (!accountId || !customerId) {
+    try {
+      const customers = await fetchJson<NessieCustomer[]>(withKey(`${base}/customers`, key));
+      if (!Array.isArray(customers) || customers.length === 0) {
+        errors.push('GET /customers returned 0 customers (key may not be assigned yet)');
+      }
+      if (!customerId) customerId = readId(customers[0]);
+      if (customerId) {
+        const accounts = await fetchJson<NessieAccount[]>(
+          withKey(`${base}/customers/${encodeURIComponent(customerId)}/accounts`, key),
+        );
+        const list = Array.isArray(accounts) ? accounts : [];
+        if (!list.length) errors.push('GET /customers/{id}/accounts returned 0 accounts');
+        const picked = pickPreferredAccount(list);
+        if (!accountId) accountId = picked.accountId;
+      }
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      errors.push(`GET /customers flow failed: ${msg}`);
+    }
+  }
 
-  console.log(`Customer: ${customerId}`);
-  console.log(`Accounts: ${Array.isArray(accounts) ? accounts.length : 0}`);
+  console.log(`Customer: ${customerId ?? '(unknown)'}`);
+  console.log(`Account: ${accountId ?? '(unknown)'}`);
+  if (assignedAccounts.length) {
+    console.log(`Assigned accounts: ${assignedAccounts.length}`);
+  }
   if (!accountId) {
-    console.log('No account id available (set NESSIE_ACCOUNT_ID to probe purchases).');
-    return;
+    throw new Error(
+      `No account id available. Set NESSIE_ACCOUNT_ID or ensure your key has accounts assigned. Tried: ${errors.join(
+        ' | ',
+      )}`,
+    );
   }
 
   const purchases = await fetchJson<NessiePurchase[]>(

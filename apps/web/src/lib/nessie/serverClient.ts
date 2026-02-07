@@ -125,6 +125,11 @@ export function getNessieBaseUrl(): string {
 export function nessieServerClient(): {
   // Preferred naming for routes / story.
   listCustomers: () => Promise<NessieResult<NessieCustomer[]>>;
+  /** Accounts assigned to this API key (Capital One docs: GET /accounts). */
+  listAssignedAccounts: (params?: {
+    type?: string;
+    query?: string;
+  }) => Promise<NessieResult<NessieAccount[]>>;
   listAccounts: (customerId: string) => Promise<NessieResult<NessieAccount[]>>;
   listPurchases: (accountId: string) => Promise<NessieResult<NessiePurchase[]>>;
   listDeposits: (accountId: string) => Promise<NessieResult<NessieDeposit[]>>;
@@ -134,6 +139,10 @@ export function nessieServerClient(): {
 
   // Legacy aliases (keep to avoid churn across branches).
   getCustomers: () => Promise<NessieResult<NessieCustomer[]>>;
+  getAccounts: (params?: {
+    type?: string;
+    query?: string;
+  }) => Promise<NessieResult<NessieAccount[]>>;
   createCustomer: (
     payload: Record<string, unknown>,
   ) => Promise<NessieResult<Record<string, unknown>>>;
@@ -150,6 +159,13 @@ export function nessieServerClient(): {
   ) => Promise<NessieResult<Record<string, unknown>>>;
 } {
   const listCustomers = () => nessieFetch<NessieCustomer[]>('/customers');
+  const listAssignedAccounts = (params?: { type?: string; query?: string }) => {
+    const qp = new URLSearchParams();
+    if (params?.type) qp.set('type', params.type);
+    if (params?.query) qp.set('query', params.query);
+    const suffix = qp.toString();
+    return nessieFetch<NessieAccount[]>(`/accounts${suffix ? `?${suffix}` : ''}`);
+  };
   const listAccounts = (customerId: string) =>
     nessieFetch<NessieAccount[]>(`/customers/${encodeURIComponent(customerId)}/accounts`);
   const listPurchases = (accountId: string) =>
@@ -164,12 +180,14 @@ export function nessieServerClient(): {
 
   return {
     listCustomers,
+    listAssignedAccounts,
     listAccounts,
     listPurchases,
     listDeposits,
     createMerchant,
 
     getCustomers: listCustomers,
+    getAccounts: listAssignedAccounts,
     createCustomer: (payload) =>
       nessieFetch('/customers', { method: 'POST', body: JSON.stringify(payload) }),
     getAccountsByCustomer: listAccounts,

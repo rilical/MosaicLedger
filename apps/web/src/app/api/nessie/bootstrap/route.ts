@@ -3,6 +3,56 @@ import { hasSupabaseEnv } from '../../../../lib/env';
 import { hasNessieEnv, nessieServerClient } from '../../../../lib/nessie/serverClient';
 import { supabaseServer } from '../../../../lib/supabase/server';
 
+let noauthCreated: { customerId: string; accountId: string } | null = null;
+
+function isNonEmptyString(v: unknown): v is string {
+  return typeof v === 'string' && Boolean(v.trim());
+}
+
+function toYyyyMmDd(d: Date): string {
+  return d.toISOString().slice(0, 10);
+}
+
+function utcDaysAgo(days: number): string {
+  const d = new Date();
+  d.setUTCHours(0, 0, 0, 0);
+  d.setUTCDate(d.getUTCDate() - days);
+  return toYyyyMmDd(d);
+}
+
+function pickPreferredAccount(accounts: unknown[]): {
+  accountId: string | null;
+  customerId: string | null;
+} {
+  // Prefer Checking (more likely to have transactions), then Credit Card, then anything.
+  const ranked = [...accounts].sort((a, b) => {
+    const at =
+      a && typeof a === 'object' && 'type' in (a as Record<string, unknown>)
+        ? String((a as Record<string, unknown>).type ?? '')
+        : '';
+    const bt =
+      b && typeof b === 'object' && 'type' in (b as Record<string, unknown>)
+        ? String((b as Record<string, unknown>).type ?? '')
+        : '';
+    const score = (t: string) =>
+      t.toLowerCase().includes('checking') ? 0 : t.toLowerCase().includes('credit') ? 1 : 2;
+    return score(at) - score(bt);
+  });
+
+  for (const a of ranked) {
+    if (!a || typeof a !== 'object') continue;
+    const o = a as Record<string, unknown>;
+    const accountId = isNonEmptyString(o._id)
+      ? o._id.trim()
+      : isNonEmptyString(o.id)
+        ? o.id.trim()
+        : null;
+    const customerId = isNonEmptyString(o.customer_id) ? o.customer_id.trim() : null;
+    if (accountId && customerId) return { accountId, customerId };
+  }
+  return { accountId: null, customerId: null };
+}
+
 function readCreatedId(obj: unknown): string | null {
   if (!obj || typeof obj !== 'object') return null;
   const o = obj as Record<string, unknown>;
@@ -85,12 +135,131 @@ export async function POST() {
 
   // Env-only binding: works without Supabase/auth. This is the most deploy-friendly path.
   if (!hasSupabaseEnv()) {
+    // If we've already created a noauth binding for this process, reuse it.
+    if (!envCustomerId && !envAccountId && noauthCreated) {
+      return NextResponse.json({
+        ok: true,
+        customerId: noauthCreated.customerId,
+        accountId: noauthCreated.accountId,
+        mode: 'env_noauth',
+      });
+    }
+
+    // If IDs aren't explicitly configured, try to discover via GET /accounts (assigned to this API key).
+    if (!envCustomerId || !envAccountId) {
+      try {
+        const nessie = nessieServerClient();
+        const accounts = await nessie.listAssignedAccounts();
+        if (accounts.ok) {
+          const picked = pickPreferredAccount((accounts.data as unknown[]) ?? []);
+          if (picked.accountId && picked.customerId) {
+            return NextResponse.json({
+              ok: true,
+              customerId: picked.customerId,
+              accountId: picked.accountId,
+              mode: 'env_noauth',
+            });
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    // If the key is write-enabled and there are no pre-assigned accounts yet, create one for the demo.
     if (!envCustomerId && !envAccountId) {
+      const nessie = nessieServerClient();
+
+      const custResp = await nessie.createCustomer({
+        first_name: 'Mosaic',
+        last_name: 'Ledger',
+        address: {
+          street_number: '1',
+          street_name: 'Hackathon Way',
+          city: 'Pittsburgh',
+          state: 'PA',
+          zip: '15213',
+        },
+      });
+
+      if (custResp.ok) {
+        const customerId = readCreatedId(custResp.data);
+        if (customerId) {
+          const acctResp = await nessie.createAccount(customerId, {
+            type: 'Checking',
+            nickname: 'MosaicLedger',
+            rewards: 0,
+            balance: 2500,
+          });
+          if (acctResp.ok) {
+            const accountId = readCreatedId(acctResp.data);
+            if (accountId) {
+              // Seed a few purchases so the mosaic has something to render in hosted demos.
+              // Best-effort: failures here shouldn't block the flow.
+              try {
+                const merchantNames = ['Mosaic Coffee', 'Mosaic Grocery', 'Mosaic Rides'];
+                const merchantIds: string[] = [];
+                for (const name of merchantNames) {
+                  const m = await nessie.createMerchant({
+                    name,
+                    category: name.includes('Coffee')
+                      ? 'Coffee'
+                      : name.includes('Grocery')
+                        ? 'Groceries'
+                        : 'Transport',
+                    address: {
+                      street_number: '1',
+                      street_name: 'Hackathon Way',
+                      city: 'Pittsburgh',
+                      state: 'PA',
+                      zip: '15213',
+                    },
+                    geocode: { lat: 40.4433, lng: -79.9436 },
+                  });
+                  if (m.ok) {
+                    const id = readCreatedId(m.data);
+                    if (id) merchantIds.push(id);
+                  }
+                }
+
+                if (merchantIds.length) {
+                  for (let d = 6; d >= 0; d--) {
+                    const day = utcDaysAgo(d);
+                    const mid = merchantIds[d % merchantIds.length]!;
+                    await nessie.createPurchase(accountId, {
+                      merchant_id: mid,
+                      medium: 'balance',
+                      purchase_date: day,
+                      amount: Number((4.25 + (d % 3) * 7.5).toFixed(2)),
+                      description: d % 3 === 0 ? 'Coffee' : d % 3 === 1 ? 'Groceries' : 'Ride',
+                      type: d % 3 === 0 ? 'coffee' : d % 3 === 1 ? 'groceries' : 'transport',
+                      status: 'completed',
+                    });
+                  }
+                }
+              } catch {
+                // ignore
+              }
+
+              noauthCreated = { customerId, accountId };
+              return NextResponse.json({
+                ok: true,
+                customerId,
+                accountId,
+                mode: 'env_noauth',
+              });
+            }
+          }
+        }
+      }
+    }
+
+    if (!envCustomerId || !envAccountId) {
       return NextResponse.json(
         {
           ok: false,
           error:
-            'Supabase not configured. Set NESSIE_ACCOUNT_ID (and optionally NESSIE_CUSTOMER_ID) to use Nessie in judge/demo deployments.',
+            'Supabase not configured. Set NESSIE_CUSTOMER_ID and NESSIE_ACCOUNT_ID (or ensure your key has accounts assigned) to use Nessie in hosted judge/demo deployments.',
         },
         { status: 400 },
       );
@@ -110,11 +279,38 @@ export async function POST() {
 
   // If user isn't authenticated, still allow env binding so the UI can proceed.
   if (!user) {
-    if (envCustomerId || envAccountId) {
+    if (envCustomerId && envAccountId) {
       return NextResponse.json({
         ok: true,
         customerId: envCustomerId ?? undefined,
         accountId: envAccountId ?? undefined,
+        mode: 'env_noauth',
+      });
+    }
+    // Best-effort discovery using the API key alone.
+    try {
+      const nessie = nessieServerClient();
+      const accounts = await nessie.listAssignedAccounts();
+      if (accounts.ok) {
+        const picked = pickPreferredAccount((accounts.data as unknown[]) ?? []);
+        if (picked.accountId && picked.customerId) {
+          return NextResponse.json({
+            ok: true,
+            customerId: picked.customerId,
+            accountId: picked.accountId,
+            mode: 'env_noauth',
+          });
+        }
+      }
+    } catch {
+      // ignore
+    }
+    // As a last resort (write-enabled key), create a demo binding even without auth.
+    if (!envCustomerId && !envAccountId && noauthCreated) {
+      return NextResponse.json({
+        ok: true,
+        customerId: noauthCreated.customerId,
+        accountId: noauthCreated.accountId,
         mode: 'env_noauth',
       });
     }
