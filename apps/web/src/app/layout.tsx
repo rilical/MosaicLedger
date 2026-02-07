@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import '../styles/globals.css';
+import { CursorGlow } from '../components/CursorGlow';
 
 export const metadata: Metadata = {
   title: 'MosaicLedger',
@@ -9,7 +10,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <CursorGlow />
+        {children}
+      </body>
     </html>
   );
 }

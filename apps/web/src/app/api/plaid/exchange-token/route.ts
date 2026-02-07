@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server';
 import { supabaseServer } from '../../../../lib/supabase/server';
 import { hasPlaidEnv, plaidServerClient } from '../../../../lib/plaid/serverClient';
 import { parseBooleanEnv } from '../../../../lib/env';
+import {
+  encryptPlaidAccessToken,
+  hasPlaidTokenEncryptionKey,
+} from '../../../../lib/plaid/tokenCrypto';
 
 export async function POST(request: Request) {
   const judgeMode = parseBooleanEnv(process.env.NEXT_PUBLIC_JUDGE_MODE, false);
@@ -26,7 +30,8 @@ export async function POST(request: Request) {
   }
 
   // Demo-safe fallback: create a fixture-backed item even if Plaid isn't configured.
-  if (judgeMode || demoMode || !hasPlaidEnv()) {
+  // We also require an encryption key for any real Plaid token storage.
+  if (judgeMode || demoMode || !hasPlaidEnv() || !hasPlaidTokenEncryptionKey()) {
     const fixtureItemId = 'fixture_item';
     const fixtureAccessToken = 'fixture_access_token';
 
@@ -64,12 +69,13 @@ export async function POST(request: Request) {
   });
 
   const { access_token, item_id } = exchangeResp.data;
+  const encryptedAccessToken = encryptPlaidAccessToken(access_token);
 
   // Store in plaid_items table (RLS scoped to user).
   const { error: dbError } = await supabase.from('plaid_items').insert({
     user_id: user.id,
     item_id,
-    access_token,
+    access_token: encryptedAccessToken,
     status: 'active',
   });
 

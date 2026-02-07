@@ -8,6 +8,7 @@ import { getLatestAnalysisRun, insertAnalysisRun } from '../../../../lib/analysi
 import { hasSupabaseEnv, parseBooleanEnv } from '../../../../lib/env';
 import { envFlags } from '../../../../lib/flags';
 import { hasPlaidEnv, plaidServerClient } from '../../../../lib/plaid/serverClient';
+import { decryptPlaidAccessToken } from '../../../../lib/plaid/tokenCrypto';
 import { supabaseServer } from '../../../../lib/supabase/server';
 import { applyFixtureSyncState, getPlaidSyncFixture } from '@mosaicledger/banking';
 import { runPlaidSyncAndPersist } from '../../../../lib/plaid/transactionsSync';
@@ -83,17 +84,20 @@ export async function POST(request: Request) {
     } else {
       // Prefer cursor-based sync backed by DB cache; fall back to legacy get if schema isn't applied.
       try {
+        const item = firstItem as unknown as {
+          id: string;
+          item_id: string | null;
+          access_token: string;
+          transactions_cursor: string | null;
+        };
+
+        const accessToken = decryptPlaidAccessToken(item.access_token);
         const plaid = plaidServerClient();
         await runPlaidSyncAndPersist({
           supabase,
           plaid,
           userId: user.id,
-          plaidItemRow: firstItem as unknown as {
-            id: string;
-            item_id: string | null;
-            access_token: string;
-            transactions_cursor: string | null;
-          },
+          plaidItemRow: { ...item, access_token: accessToken },
         });
 
         const { data: rows, error: txErr } = await supabase
@@ -119,26 +123,32 @@ export async function POST(request: Request) {
 
         artifacts = computeBankArtifacts(raw, body);
       } catch {
-        const accessToken = firstItem.access_token as string;
-        const end = new Date().toISOString().slice(0, 10);
-        const start = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+        // Hard fallback: if sync/schema/decrypt fails, try legacy get; if that fails, fall back to demo.
+        try {
+          const stored = firstItem.access_token as string;
+          const accessToken = decryptPlaidAccessToken(stored);
+          const end = new Date().toISOString().slice(0, 10);
+          const start = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
-        const plaid = plaidServerClient();
-        const txnResp = await plaid.transactionsGet({
-          access_token: accessToken,
-          start_date: start,
-          end_date: end,
-          options: { count: 500 },
-        });
+          const plaid = plaidServerClient();
+          const txnResp = await plaid.transactionsGet({
+            access_token: accessToken,
+            start_date: start,
+            end_date: end,
+            options: { count: 500 },
+          });
 
-        const raw = txnResp.data.transactions.map((t) => ({
-          date: t.date,
-          name: t.merchant_name ?? t.name,
-          amount: t.amount,
-          category: t.personal_finance_category?.primary ?? t.category?.[0] ?? undefined,
-        }));
+          const raw = txnResp.data.transactions.map((t) => ({
+            date: t.date,
+            name: t.merchant_name ?? t.name,
+            amount: t.amount,
+            category: t.personal_finance_category?.primary ?? t.category?.[0] ?? undefined,
+          }));
 
-        artifacts = computeBankArtifacts(raw, body);
+          artifacts = computeBankArtifacts(raw, body);
+        } catch {
+          artifacts = computeDemoArtifacts(body);
+        }
       }
     }
 
