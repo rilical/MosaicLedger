@@ -28,6 +28,10 @@ This file is updated in every PR.
   month / Custom) and deterministic transaction exclusions (refunds + transfer-like) that apply to
   Mosaic, Recurring, and Plan. Settings persist in `localStorage`, and `/api/engine/analyze` is
   triggered on changes. Demo check now pre-builds shared packages before running.
+- PLAN-007/008/009 (branch: `codex/plan-007-009-explain-budget-scenario`): expands the Plan page
+  with deterministic explainability ("Why this?"), a Visa-style budget table with accept-as-goal
+  cap flow, and a before/after scenario card with action toggles. Optional AI rewrite is exposed via
+  `/api/ai/rewrite` and never changes numbers (token-guarded; falls back when no key).
 
 ## Known Risks / TODO
 

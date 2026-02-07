@@ -46,4 +46,5 @@ export type ActionRecommendation = {
   effortScore: number; // 0..1 (lower = easier)
   confidence: number; // 0..1
   explanation: string;
+  reasons?: string[]; // deterministic bullet points (AI rewrite may be applied separately)
 };
