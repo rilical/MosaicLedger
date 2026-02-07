@@ -170,7 +170,11 @@ export function nessieServerClient(): {
   listDeposits: (accountId: string) => Promise<NessieResult<NessieDeposit[]>>;
   listBillsByAccount: (accountId: string) => Promise<NessieResult<NessieBill[]>>;
   listBranches: () => Promise<NessieResult<NessieBranch[]>>;
-  listAtms: (params: { lat: number; lng: number; rad: number }) => Promise<NessieResult<NessieAtm[]>>;
+  listAtms: (params: {
+    lat: number;
+    lng: number;
+    rad: number;
+  }) => Promise<NessieResult<NessieAtm[]>>;
   createMerchant: (
     payload: Record<string, unknown>,
   ) => Promise<NessieResult<Record<string, unknown>>>;

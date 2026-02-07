@@ -115,8 +115,8 @@ export function OpsDecisionPanel(props: {
           numbers.
           {capitalOneSignals ? (
             <div style={{ marginTop: 8 }}>
-              Capital One signals: <b>{capitalOneSignals.billsUpcoming30dCount}</b> bills due in
-              the next 30 days.
+              Capital One signals: <b>{capitalOneSignals.billsUpcoming30dCount}</b> bills due in the
+              next 30 days.
             </div>
           ) : null}
         </div>

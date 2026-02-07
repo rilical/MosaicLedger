@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import { nessiePurchaseToNormalized } from '@mosaicledger/connectors';
-import { getNessieBaseUrl, hasNessieEnv, nessieServerClient } from '../../../../lib/nessie/serverClient';
+import {
+  getNessieBaseUrl,
+  hasNessieEnv,
+  nessieServerClient,
+} from '../../../../lib/nessie/serverClient';
 
 function isNonEmptyString(v: unknown): v is string {
   return typeof v === 'string' && Boolean(v.trim());
@@ -61,7 +65,12 @@ export async function GET() {
       configured: true,
       baseUrl,
       keyPresent: true,
-      accounts: { ok: false, status: accountsResp.status, code: accountsResp.code, message: accountsResp.message },
+      accounts: {
+        ok: false,
+        status: accountsResp.status,
+        code: accountsResp.code,
+        message: accountsResp.message,
+      },
     });
   }
 

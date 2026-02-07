@@ -21,4 +21,3 @@ export async function GET() {
     destinationConfigured: Boolean(process.env.XRPL_DESTINATION?.trim()),
   });
 }
-

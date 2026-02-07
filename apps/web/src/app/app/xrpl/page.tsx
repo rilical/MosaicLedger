@@ -209,8 +209,7 @@ export default function XrplPage() {
                   health.configured ? (
                     <>
                       <b>configured</b> (RPC: {health.rpcHost ?? 'unknown'}
-                      {health.destinationConfigured ? ', destination set' : ', destination = self'}
-                      )
+                      {health.destinationConfigured ? ', destination set' : ', destination = self'})
                     </>
                   ) : (
                     <>

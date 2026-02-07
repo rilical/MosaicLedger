@@ -117,7 +117,9 @@ export default function ConnectPage() {
     <div className="pageStack" style={{ maxWidth: 980 }}>
       <div className="pageHeader">
         <div className="pageMeta">
-          <div className="pageTagline">Start the demo, then use Evidence to prove integrations.</div>
+          <div className="pageTagline">
+            Start the demo, then use Evidence to prove integrations.
+          </div>
           <Badge tone={flags.judgeMode ? 'warn' : 'good'}>
             {flags.judgeMode ? 'Judge mode' : 'Demo-first'}
           </Badge>

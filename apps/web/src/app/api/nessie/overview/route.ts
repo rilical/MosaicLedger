@@ -142,8 +142,7 @@ function demoPayload() {
     branches,
     atms,
     totals: {
-      topMerchant: Object.entries(byMerchant)
-        .sort((a, b) => b[1] - a[1])[0]?.[0] ?? null,
+      topMerchant: Object.entries(byMerchant).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null,
     },
   };
 }
@@ -187,7 +186,8 @@ export async function GET(request: Request) {
     atmsP,
   ]);
 
-  const purchasesRaw = purchasesResp && 'ok' in purchasesResp && purchasesResp.ok ? purchasesResp.data : [];
+  const purchasesRaw =
+    purchasesResp && 'ok' in purchasesResp && purchasesResp.ok ? purchasesResp.data : [];
   const purchases = (Array.isArray(purchasesRaw) ? purchasesRaw : [])
     .map((p) =>
       nessiePurchaseToNormalized(
@@ -235,4 +235,3 @@ export async function GET(request: Request) {
     },
   });
 }
-

@@ -199,7 +199,10 @@ export default function EvidencePage() {
                 <summary className="small" style={{ cursor: 'pointer', userSelect: 'none' }}>
                   Details
                 </summary>
-                <pre className="small" style={{ marginTop: 10, whiteSpace: 'pre-wrap', opacity: 0.9 }}>
+                <pre
+                  className="small"
+                  style={{ marginTop: 10, whiteSpace: 'pre-wrap', opacity: 0.9 }}
+                >
                   {JSON.stringify(mcpStatus.resp, null, 2)}
                 </pre>
               </details>
@@ -242,7 +245,10 @@ export default function EvidencePage() {
                 <summary className="small" style={{ cursor: 'pointer', userSelect: 'none' }}>
                   Details
                 </summary>
-                <pre className="small" style={{ marginTop: 10, whiteSpace: 'pre-wrap', opacity: 0.9 }}>
+                <pre
+                  className="small"
+                  style={{ marginTop: 10, whiteSpace: 'pre-wrap', opacity: 0.9 }}
+                >
                   {JSON.stringify(nessieStatus.resp, null, 2)}
                 </pre>
               </details>
@@ -284,7 +290,10 @@ export default function EvidencePage() {
                 <summary className="small" style={{ cursor: 'pointer', userSelect: 'none' }}>
                   Details
                 </summary>
-                <pre className="small" style={{ marginTop: 10, whiteSpace: 'pre-wrap', opacity: 0.9 }}>
+                <pre
+                  className="small"
+                  style={{ marginTop: 10, whiteSpace: 'pre-wrap', opacity: 0.9 }}
+                >
                   {JSON.stringify(xrplStatus.resp, null, 2)}
                 </pre>
               </details>

@@ -64,7 +64,9 @@ function mapsLinkFromAddress(addr: string): string {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
 }
 
-function fmtAddr(a: NonNullable<NonNullable<OverviewResp & { ok: true }>['branches']>[number]['address']): string {
+function fmtAddr(
+  a: NonNullable<NonNullable<OverviewResp & { ok: true }>['branches']>[number]['address'],
+): string {
   if (!a) return '';
   const parts = [
     [a.street_number, a.street_name].filter(Boolean).join(' ').trim(),
@@ -99,7 +101,8 @@ export default function CapitalOnePage() {
       const resp = await fetch(`/api/nessie/overview?${qp.toString()}`, { method: 'GET' });
       const json = (await resp.json()) as OverviewResp;
       if (!resp.ok || !json || typeof json !== 'object') throw new Error('overview_failed');
-      if (!('ok' in json) || !json.ok) throw new Error(('error' in json ? json.error : null) ?? 'overview_failed');
+      if (!('ok' in json) || !json.ok)
+        throw new Error(('error' in json ? json.error : null) ?? 'overview_failed');
       setData(json);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'overview_failed');
@@ -129,8 +132,8 @@ export default function CapitalOnePage() {
           </CardHeader>
           <CardBody>
             <div className="small">
-              Turn on Settings → Nessie (Capital One) to show the sponsor connector UI. The app
-              will still run in demo mode without it.
+              Turn on Settings → Nessie (Capital One) to show the sponsor connector UI. The app will
+              still run in demo mode without it.
             </div>
             <div className="buttonRow" style={{ marginTop: 12 }}>
               <Link className="btn btnPrimary" href="/app/settings">
@@ -149,7 +152,7 @@ export default function CapitalOnePage() {
   const ok = data && data.ok;
   const configured = ok ? data.configured : false;
   const mode = ok ? data.mode : null;
-  const errs = ok ? data.errors ?? {} : {};
+  const errs = ok ? (data.errors ?? {}) : {};
 
   return (
     <div className="pageStack" style={{ maxWidth: 1100 }}>
@@ -206,7 +209,11 @@ export default function CapitalOnePage() {
 
           {ok && Object.values(errs).some(Boolean) ? (
             <div className="small" style={{ marginTop: 10, opacity: 0.9 }}>
-              Partial errors: {Object.entries(errs).filter(([, v]) => v).map(([k, v]) => `${k}: ${String(v)}`).join(' · ')}
+              Partial errors:{' '}
+              {Object.entries(errs)
+                .filter(([, v]) => v)
+                .map(([k, v]) => `${k}: ${String(v)}`)
+                .join(' · ')}
             </div>
           ) : null}
         </CardBody>
@@ -282,8 +289,11 @@ export default function CapitalOnePage() {
                       </div>
                     </div>
                     <div className="small">
-                      Next: {(b.upcoming_payment_date || b.payment_date || '').slice(0, 10) || 'unknown'}
-                      {typeof b.recurring_date === 'number' ? ` · recurring day ${b.recurring_date}` : ''}
+                      Next:{' '}
+                      {(b.upcoming_payment_date || b.payment_date || '').slice(0, 10) || 'unknown'}
+                      {typeof b.recurring_date === 'number'
+                        ? ` · recurring day ${b.recurring_date}`
+                        : ''}
                     </div>
                   </div>
                 ))}
@@ -328,7 +338,12 @@ export default function CapitalOnePage() {
                         {hasGeo ? ` · ${alat.toFixed(4)}, ${alng.toFixed(4)}` : ''}
                       </div>
                       {hasGeo ? (
-                        <a className="small" href={mapsLinkFromLatLng(alat, alng)} target="_blank" rel="noreferrer">
+                        <a
+                          className="small"
+                          href={mapsLinkFromLatLng(alat, alng)}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
                           Open in Google Maps
                         </a>
                       ) : null}
@@ -367,7 +382,12 @@ export default function CapitalOnePage() {
                       {addr ? <div className="small">{addr}</div> : null}
                       {b.phone_number ? <div className="small">Phone: {b.phone_number}</div> : null}
                       {addr ? (
-                        <a className="small" href={mapsLinkFromAddress(addr)} target="_blank" rel="noreferrer">
+                        <a
+                          className="small"
+                          href={mapsLinkFromAddress(addr)}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
                           Open in Google Maps
                         </a>
                       ) : null}
@@ -384,4 +404,3 @@ export default function CapitalOnePage() {
     </div>
   );
 }
-
