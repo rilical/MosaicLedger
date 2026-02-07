@@ -7,7 +7,6 @@ import { exportToSvg } from '@mosaicledger/mosaic';
 import { simulateScenario, type ActionRecommendation } from '@mosaicledger/core';
 import { computeDemoArtifacts, type AnalyzeRequestV1 } from '../../../../lib/analysis/compute';
 import type { ToolTraceStepV1, ToolTraceV1 } from '../../../../components/Trace/TraceDrawer';
-import { initWasm, Resvg } from '@resvg/resvg-wasm';
 import { createRequire } from 'node:module';
 import { readFile } from 'node:fs/promises';
 
@@ -29,12 +28,24 @@ type CoachResponse = {
 };
 
 let wasmInitPromise: Promise<void> | null = null;
+let resvgModulePromise: Promise<typeof import('@resvg/resvg-wasm')> | null = null;
+
+async function loadResvgModule(): Promise<typeof import('@resvg/resvg-wasm')> {
+  // Keep this dynamic so Next's server bundle doesn't try to statically pull
+  // in `index_bg.wasm` during `next build`.
+  if (!resvgModulePromise) resvgModulePromise = import('@resvg/resvg-wasm');
+  return resvgModulePromise;
+}
 
 async function ensureResvgWasm(): Promise<void> {
   if (wasmInitPromise) return wasmInitPromise;
   wasmInitPromise = (async () => {
+    const { initWasm } = await loadResvgModule();
     const require = createRequire(import.meta.url);
-    const wasmPath = require.resolve('@resvg/resvg-wasm/index_bg.wasm');
+    // Avoid a string literal inside `require.resolve(...)` so webpack doesn't
+    // treat the wasm file as a build-time module dependency.
+    const wasmSpecifier = ['@resvg/resvg-wasm', 'index_bg.wasm'].join('/');
+    const wasmPath = require.resolve(wasmSpecifier);
     const wasm = await readFile(wasmPath);
     await initWasm(wasm);
   })();
@@ -194,6 +205,7 @@ export async function POST(request: Request) {
       });
 
       await ensureResvgWasm();
+      const { Resvg } = await loadResvgModule();
       const resvg = new Resvg(svg, { fitTo: { mode: 'width', value: 1000 } });
       const pngBytes = resvg.render().asPng();
       const pngBase64 = Buffer.from(pngBytes).toString('base64');

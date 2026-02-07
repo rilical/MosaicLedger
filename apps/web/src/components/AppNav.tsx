@@ -3,17 +3,12 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Badge } from './ui';
-import { useFlags } from '../lib/flags-client';
 
-const navItemsBase = [
-  { href: '/app', label: 'Start' },
-  { href: '/app/capital-one', label: 'Capital One' },
+const navItems = [
+  { href: '/app', label: 'Dashboard' },
   { href: '/app/mosaic', label: 'Mosaic' },
-  { href: '/app/recurring', label: 'Recurring' },
-  { href: '/app/plan', label: 'Plan' },
+  { href: '/app/plan', label: 'Actions' },
   { href: '/app/ops', label: 'Ops' },
-  { href: '/app/coach', label: 'Coach' },
-  { href: '/app/export', label: 'Export' },
   { href: '/app/evidence', label: 'Evidence' },
   { href: '/app/settings', label: 'Settings' },
 ];
@@ -29,14 +24,6 @@ function isActivePath(pathname: string, href: string): boolean {
 
 export function AppNav({ demoMode }: AppNavProps) {
   const pathname = usePathname();
-  const { flags } = useFlags();
-
-  const navItems = [
-    navItemsBase[0]!,
-    ...(flags.nessieEnabled ? [navItemsBase[1]!] : []),
-    ...navItemsBase.slice(2),
-    ...(flags.xrplEnabled ? [{ href: '/app/xrpl', label: 'XRPL' }] : []),
-  ];
 
   return (
     <div className="navList">

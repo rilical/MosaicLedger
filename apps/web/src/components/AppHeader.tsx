@@ -10,12 +10,12 @@ import { useFlags } from '../lib/flags-client';
 const sectionMeta: Array<{ match: string; title: string; subtitle: string }> = [
   {
     match: '/app/capital-one',
-    title: 'Capital One',
-    subtitle: 'ATMs, branches, bills, and payments (Nessie).',
+    title: 'Locations & Bills',
+    subtitle: 'ATMs, branches, bills, and payments (connector).',
   },
   { match: '/app/mosaic', title: 'Mosaic', subtitle: 'Primary UI is the Mosaic mural.' },
   { match: '/app/recurring', title: 'Recurring', subtitle: 'Recurring detection and forecasts.' },
-  { match: '/app/plan', title: 'Plan', subtitle: 'Ranked actions with quantified savings.' },
+  { match: '/app/plan', title: 'Actions', subtitle: 'Ranked actions with quantified savings.' },
   { match: '/app/ops', title: 'Ops', subtitle: 'Analyst briefs + memo (AI optional).' },
   { match: '/app/export', title: 'Export', subtitle: 'Download a poster summary.' },
   {
@@ -26,7 +26,8 @@ const sectionMeta: Array<{ match: string; title: string; subtitle: string }> = [
   { match: '/app/evidence', title: 'Evidence', subtitle: 'Prize checklist and integration proof.' },
   { match: '/app/settings', title: 'Settings', subtitle: 'Runtime flags and overrides.' },
   { match: '/app/bank', title: 'Connect Bank', subtitle: 'Plaid scaffolding for live sync.' },
-  { match: '/app', title: 'Connect', subtitle: 'Choose a data source to begin.' },
+  { match: '/app/xrpl', title: 'Round-ups', subtitle: 'Simulate or send a sweep on Testnet.' },
+  { match: '/app', title: 'Dashboard', subtitle: 'Cashflow, risk, and next actions in one view.' },
 ];
 
 function getSection(pathname: string) {
@@ -34,8 +35,8 @@ function getSection(pathname: string) {
     sectionMeta.find((item) => pathname.startsWith(item.match)) ??
     sectionMeta[sectionMeta.length - 1] ?? {
       match: '/app',
-      title: 'Connect',
-      subtitle: 'Choose a data source to begin.',
+      title: 'Dashboard',
+      subtitle: 'Cashflow, risk, and next actions in one view.',
     }
   );
 }

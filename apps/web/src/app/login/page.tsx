@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import React, { Suspense } from 'react';
 import { Button, Card, CardBody, CardHeader, CardTitle } from '../../components/ui';
 import { LoginForm } from '../../components/Auth/LoginForm';
 import { hasSupabaseEnv } from '../../lib/env';
@@ -20,7 +21,9 @@ export default function LoginPage() {
           </CardHeader>
           <CardBody>
             {supabaseConfigured ? (
-              <LoginForm />
+              <Suspense fallback={<div className="small">Loading…</div>}>
+                <LoginForm />
+              </Suspense>
             ) : (
               <div style={{ display: 'grid', gap: 12 }}>
                 <div className="small">

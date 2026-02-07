@@ -2,9 +2,20 @@
   "name": "mosaicledger",
   "private": true,
   "main": "index.js",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "packageManager": "pnpm@9.15.4",
   "engines": {
     "node": ">=20"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "@mosaicledger/banking": "file:packages/banking",
+    "@mosaicledger/core": "file:packages/core",
+    "@mosaicledger/mosaic": "file:packages/mosaic",
+    "zod": "^4.3.6"
   },
   "scripts": {
     "postinstall": "pnpm -r --filter \"@mosaicledger/*\" --filter \"!@mosaicledger/web\" --filter \"!@mosaicledger/mobile\" build",

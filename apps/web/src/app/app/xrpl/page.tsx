@@ -98,10 +98,10 @@ export default function XrplPage() {
       });
       const json = (await resp.json()) as unknown;
       if (!resp.ok || !json || typeof json !== 'object')
-        throw new Error(`XRPL failed (${resp.status})`);
+        throw new Error(`Transfer failed (${resp.status})`);
       const ok = Boolean((json as { ok?: unknown }).ok);
       const rec = (json as { receipt?: unknown }).receipt;
-      if (!ok || !rec || typeof rec !== 'object') throw new Error('XRPL failed');
+      if (!ok || !rec || typeof rec !== 'object') throw new Error('Transfer failed');
       const ex = (json as { explorerUrl?: unknown }).explorerUrl;
       const explorerUrl = typeof ex === 'string' ? ex : undefined;
       setReceipt({ status: 'done', receipt: rec as RoundupResult, explorerUrl });
@@ -109,7 +109,7 @@ export default function XrplPage() {
       const msg =
         e && typeof e === 'object' && 'message' in e
           ? String((e as { message?: unknown }).message)
-          : 'XRPL failed';
+          : 'Transfer failed';
       setReceipt({ status: 'error', error: msg });
     }
   }, [amountXrp, mode, roundups.roundupUsd, roundups.spendUsd, roundups.txCount]);
@@ -118,17 +118,19 @@ export default function XrplPage() {
     return (
       <div className="pageStack" style={{ maxWidth: 980 }}>
         <div className="pageHeader">
-          <h1 className="pageTitle">XRPL</h1>
+          <h1 className="pageTitle">Round-ups</h1>
           <div className="pageMeta">
-            <div className="pageTagline">Optional Ripple track demo</div>
+            <div className="pageTagline">Optional round-up sweep demo (simulate-first)</div>
           </div>
         </div>
         <Card>
           <CardHeader>
-            <CardTitle>XRPL is disabled</CardTitle>
+            <CardTitle>Round-ups are disabled</CardTitle>
           </CardHeader>
           <CardBody>
-            <div className="small">Enable Settings → XRPL to view the demo flow.</div>
+            <div className="small">
+              Enable Runtime Flags → Round-up Transfers to view the demo flow.
+            </div>
           </CardBody>
         </Card>
       </div>
@@ -138,10 +140,10 @@ export default function XrplPage() {
   return (
     <div className="pageStack" style={{ maxWidth: 980 }}>
       <div className="pageHeader">
-        <h1 className="pageTitle">XRPL Round-ups</h1>
+        <h1 className="pageTitle">Round-ups</h1>
         <div className="pageMeta">
           <div className="pageTagline">
-            Compute micro-savings. Simulate a receipt, or send a real Payment to XRPL Testnet.
+            Compute micro-savings. Simulate a receipt, or send a real Testnet Payment.
           </div>
         </div>
       </div>
@@ -194,7 +196,7 @@ export default function XrplPage() {
                     ? 'Sending…'
                     : 'Simulating…'
                   : mode === 'send'
-                    ? 'Send to XRPL Testnet'
+                    ? 'Send to Testnet'
                     : 'Simulate Receipt'}
               </button>
               <button
@@ -213,7 +215,7 @@ export default function XrplPage() {
 
             {health ? (
               <div className="small" style={{ opacity: 0.92 }}>
-                XRPL status:{' '}
+                Status:{' '}
                 {health.ok ? (
                   health.configured ? (
                     <>
@@ -222,7 +224,7 @@ export default function XrplPage() {
                     </>
                   ) : (
                     <>
-                      <b>simulate-only</b> (configure server-side XRPL credentials to enable Testnet
+                      <b>simulate-only</b> (configure server-side credentials to enable Testnet
                       sends)
                     </>
                   )
@@ -258,7 +260,7 @@ export default function XrplPage() {
                       <div>
                         Explorer:{' '}
                         <a href={receipt.explorerUrl} target="_blank" rel="noreferrer">
-                          Open on XRPL Testnet
+                          Open on Testnet Explorer
                         </a>
                       </div>
                     ) : null}

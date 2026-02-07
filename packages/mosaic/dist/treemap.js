@@ -5,7 +5,10 @@ function isLeaf(d) {
 }
 export function buildTreemapTiles(byCategory) {
     const children = Object.entries(byCategory)
-        .map(([label, value]) => ({ label, value }))
+        .map(([label, value]) => ({
+        label: label != null && typeof label === 'string' ? label : '',
+        value,
+    }))
         .filter((c) => c.value > 0)
         .sort((a, b) => b.value - a.value);
     const root = hierarchy({ children })
@@ -17,11 +20,12 @@ export function buildTreemapTiles(byCategory) {
     const tiles = [];
     for (const node of rootRect.leaves()) {
         const d = node.data;
+        const label = d.label != null && typeof d.label === 'string' ? d.label : '';
         tiles.push({
-            id: d.label,
-            label: d.label,
+            id: label || 'unknown',
+            label,
             value: d.value,
-            color: colorForLabel(d.label),
+            color: colorForLabel(label),
             x: node.x0,
             y: node.y0,
             w: Math.max(0, node.x1 - node.x0),
@@ -33,7 +37,12 @@ export function buildTreemapTiles(byCategory) {
 export function buildTreemap(inputs, _level = 'consumer') {
     const children = inputs
         .filter((t) => Number.isFinite(t.value) && t.value > 0)
-        .map((t) => ({ id: t.id, label: t.label, value: t.value, color: t.color }))
+        .map((t) => ({
+        id: t.id ?? '',
+        label: t.label != null && typeof t.label === 'string' ? t.label : '',
+        value: t.value,
+        color: t.color,
+    }))
         .sort((a, b) => {
         const v = b.value - a.value;
         if (v)
@@ -48,11 +57,12 @@ export function buildTreemap(inputs, _level = 'consumer') {
     const tiles = [];
     for (const node of rootRect.leaves()) {
         const d = node.data;
+        const label = d.label != null && typeof d.label === 'string' ? d.label : '';
         tiles.push({
-            id: d.id ?? d.label,
-            label: d.label,
+            id: (d.id ?? label) || 'unknown',
+            label,
             value: d.value,
-            color: d.color ?? colorForLabel(d.label),
+            color: d.color ?? colorForLabel(label),
             x: node.x0,
             y: node.y0,
             w: Math.max(0, node.x1 - node.x0),

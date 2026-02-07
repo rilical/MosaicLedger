@@ -14,7 +14,8 @@ export default defineConfig({
   },
   webServer: {
     // Demo-safe: this repo's default is demo mode ON; no keys required.
-    command: 'pnpm dev -p 3000',
+    // Force demo/judge safe mode even if a developer has a local .env with Supabase keys.
+    command: 'env NEXT_PUBLIC_DEMO_MODE=1 NEXT_PUBLIC_JUDGE_MODE=1 pnpm dev -p 3000',
     url: 'http://127.0.0.1:3000',
     reuseExistingServer: !isCI,
     timeout: 120_000,

@@ -10,7 +10,7 @@ test('xrpl page can simulate a deterministic receipt (evidence)', async ({ page 
 
   await page.goto('/app/xrpl');
 
-  await expect(page.getByRole('heading', { name: /XRPL/i })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Round-ups/i })).toBeVisible();
   await page.getByRole('button', { name: 'Simulate Receipt' }).click();
 
   await expect(page.getByText('Receipt')).toBeVisible();
