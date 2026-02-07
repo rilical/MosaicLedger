@@ -324,15 +324,30 @@ function evaluateSafety(questionRaw: string): SafetyResult {
 export function CoachPanel({
   artifacts,
   onJumpToAction,
+  open: openProp,
+  onOpenChange: onOpenChangeProp,
+  prefillQuestion,
 }: {
   artifacts: AnalysisArtifactsV1 | null;
   onJumpToAction: (actionId: string) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  prefillQuestion?: string | null;
 }) {
   const { flags } = useFlags();
-  const [open, setOpen] = React.useState(false);
+  const [internalOpen, setInternalOpen] = React.useState(false);
+  const open = openProp ?? internalOpen;
+  const setOpen = onOpenChangeProp ?? setInternalOpen;
   const [question, setQuestion] = React.useState('');
   const [turns, setTurns] = React.useState<CoachTurn[]>([]);
   const [loading, setLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    const q = (prefillQuestion ?? '').trim();
+    if (!q) return;
+    setQuestion(q);
+    if (!open) setOpen(true);
+  }, [prefillQuestion, open, setOpen]);
 
   React.useEffect(() => {
     setTurns(safeParseTurns(window.localStorage.getItem(STORAGE_KEY)));

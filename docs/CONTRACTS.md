@@ -12,6 +12,12 @@ Exported from:
 
 - `packages/core/src/types.ts`
 
+## MCP Tool Schemas
+
+Exported/validated in:
+
+- `packages/mcp-server/src/schemas.ts` (zod, versioned as `v1`)
+
 ## Conventions
 
 - Amounts are spend-positive for MVP (refunds ignored).
