@@ -28,3 +28,14 @@
 5. Backup prompt if network/AI is down:
    - Toggle **AI Explanations** OFF and ask again. The coach still responds in Offline mode with
      deterministic numbers.
+
+## Ripple Track Segment (20s) (XRPLP-010) (Optional)
+
+This segment is optional and must never sink the demo.
+
+1. Settings: toggle `XRPL` ON (leave Demo/Judge ON).
+2. Open `/app/xrpl`.
+3. Point at the deterministic round-up total (micro-savings).
+4. Click **Simulate Receipt**.
+5. Show the receipt: mode + amount + tx hash.
+6. Say: “No seeds client-side. If XRPL testnet is unstable, we still show deterministic simulated receipts.”
