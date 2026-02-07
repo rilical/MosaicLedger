@@ -4,6 +4,7 @@ export type Flags = {
   aiEnabled: boolean;
   xrplEnabled: boolean;
   plaidEnabled: boolean;
+  nessieEnabled: boolean;
   debugTraces: boolean;
 };
 
@@ -13,6 +14,7 @@ export const FLAG_KEYS = [
   'aiEnabled',
   'xrplEnabled',
   'plaidEnabled',
+  'nessieEnabled',
   'debugTraces',
 ] as const;
 export type FlagKey = (typeof FLAG_KEYS)[number];
@@ -32,5 +34,7 @@ export const envFlags: Flags = {
   aiEnabled: parseBoolean(process.env.NEXT_PUBLIC_AI_ENABLED, false),
   xrplEnabled: parseBoolean(process.env.NEXT_PUBLIC_XRPL_ENABLED, false),
   plaidEnabled: parseBoolean(process.env.NEXT_PUBLIC_PLAID_ENABLED, false),
+  // Optional sponsor connector. Keep disabled by default to avoid confusing judges.
+  nessieEnabled: parseBoolean(process.env.NEXT_PUBLIC_NESSIE_ENABLED, false),
   debugTraces: parseBoolean(process.env.NEXT_PUBLIC_DEBUG_TRACES, false),
 };

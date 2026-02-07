@@ -101,9 +101,23 @@ export default function MosaicPage() {
           <div className="pageTagline">
             {artifacts ? `${txCount} transactions · $${spend.toFixed(2)} spend` : 'Computing…'}
           </div>
-          <Badge tone={error ? 'warn' : loading ? 'warn' : 'good'}>
-            {error ? 'Error' : loading ? 'Busy' : 'Ready'}
-          </Badge>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            {artifacts?.source ? (
+              <Badge tone="neutral">
+                Source:{' '}
+                {artifacts.source === 'nessie'
+                  ? 'Nessie (Capital One)'
+                  : artifacts.source === 'plaid_fixture'
+                    ? 'Plaid (fixture)'
+                    : artifacts.source === 'plaid'
+                      ? 'Plaid'
+                      : 'Demo'}
+              </Badge>
+            ) : null}
+            <Badge tone={error ? 'warn' : loading ? 'warn' : 'good'}>
+              {error ? 'Error' : loading ? 'Busy' : 'Ready'}
+            </Badge>
+          </div>
         </div>
       </div>
 

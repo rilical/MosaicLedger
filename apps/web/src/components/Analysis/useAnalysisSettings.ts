@@ -1,12 +1,13 @@
 'use client';
 
 import * as React from 'react';
-import type { AnalysisSettings } from './types';
+import type { AnalysisSettings, DataSourceKey } from './types';
 import type { AnalyzeRequestV1 } from '../../lib/analysis/compute';
 
 const STORAGE_KEY = 'mosaicledger.analysisSettings.v1';
 
 const DEFAULT_SETTINGS: AnalysisSettings = {
+  source: 'auto',
   preset: 'this_month',
   filters: {
     excludeTransfers: true,
@@ -14,12 +15,22 @@ const DEFAULT_SETTINGS: AnalysisSettings = {
   },
 };
 
+function isDataSourceKey(v: unknown): v is DataSourceKey {
+  return v === 'auto' || v === 'demo' || v === 'plaid' || v === 'nessie';
+}
+
 function safeParse(raw: string | null): AnalysisSettings {
   if (!raw) return DEFAULT_SETTINGS;
   try {
     const v = JSON.parse(raw) as unknown;
     if (v == null || typeof v !== 'object') return DEFAULT_SETTINGS;
     const obj = v as Record<string, unknown>;
+
+    const source = isDataSourceKey(obj.source) ? obj.source : DEFAULT_SETTINGS.source;
+    const nessieCustomerId =
+      typeof obj.nessieCustomerId === 'string' ? obj.nessieCustomerId : undefined;
+    const nessieAccountId =
+      typeof obj.nessieAccountId === 'string' ? obj.nessieAccountId : undefined;
 
     const preset =
       obj.preset === 'this_month' || obj.preset === 'last_month' || obj.preset === 'custom'
@@ -40,6 +51,9 @@ function safeParse(raw: string | null): AnalysisSettings {
         : DEFAULT_SETTINGS.filters.excludeRefunds;
 
     return {
+      source,
+      nessieCustomerId,
+      nessieAccountId,
       preset,
       customStart,
       customEnd,
@@ -52,6 +66,14 @@ function safeParse(raw: string | null): AnalysisSettings {
 
 export function toAnalyzeRequest(settings: AnalysisSettings): AnalyzeRequestV1 {
   return {
+    source: settings.source ?? 'auto',
+    nessie:
+      settings.nessieCustomerId || settings.nessieAccountId
+        ? {
+            customerId: settings.nessieCustomerId,
+            accountId: settings.nessieAccountId,
+          }
+        : undefined,
     preset: settings.preset,
     customRange:
       settings.preset === 'custom' && settings.customStart && settings.customEnd

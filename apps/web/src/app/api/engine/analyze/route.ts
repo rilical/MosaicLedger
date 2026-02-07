@@ -12,6 +12,7 @@ import { decryptPlaidAccessToken } from '../../../../lib/plaid/tokenCrypto';
 import { supabaseServer } from '../../../../lib/supabase/server';
 import { applyFixtureSyncState, getPlaidSyncFixture } from '@mosaicledger/banking';
 import { runPlaidSyncAndPersist } from '../../../../lib/plaid/transactionsSync';
+import { hasNessieEnv, nessieServerClient } from '../../../../lib/nessie/serverClient';
 
 export async function GET() {
   if (envFlags.demoMode || envFlags.judgeMode || !hasSupabaseEnv()) {
@@ -57,6 +58,54 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
   }
 
+  // Explicit demo request: always compute demo artifacts, even if a bank is linked.
+  if (body.source === 'demo') {
+    const artifacts = computeDemoArtifacts(body);
+    try {
+      await insertAnalysisRun(supabase, user.id, artifacts);
+    } catch {
+      // ignore
+    }
+    return NextResponse.json({ ok: true, artifacts, stored: true });
+  }
+
+  // Explicit Nessie request: pull sponsor mock transactions server-side and feed the same deterministic engine.
+  if (body.source === 'nessie') {
+    try {
+      if (!hasNessieEnv()) throw new Error('Missing NESSIE_API_KEY (server-only).');
+      const accountId = body.nessie?.accountId?.trim() || process.env.NESSIE_ACCOUNT_ID?.trim();
+      if (!accountId) {
+        throw new Error(
+          'Missing Nessie account id. Set NESSIE_ACCOUNT_ID or run /api/nessie/bootstrap and store the returned id.',
+        );
+      }
+      const nessie = nessieServerClient();
+      const purchases = await nessie.getPurchases(accountId);
+      if (!purchases.ok) throw new Error(purchases.message);
+
+      const raw = (purchases.data ?? []).map((p) => ({
+        date: p.purchase_date ?? new Date().toISOString().slice(0, 10),
+        name: p.description ?? 'Purchase',
+        amount: p.amount,
+        category: p.type ?? undefined,
+      }));
+
+      const artifacts = computeBankArtifacts(raw, body);
+      artifacts.source = 'nessie';
+
+      try {
+        await insertAnalysisRun(supabase, user.id, artifacts);
+      } catch {
+        // ignore
+      }
+      return NextResponse.json({ ok: true, artifacts, stored: true });
+    } catch {
+      // Sponsor API should never block the demo.
+      const artifacts = computeDemoArtifacts(body);
+      return NextResponse.json({ ok: true, artifacts, stored: false });
+    }
+  }
+
   // If user has a linked bank account, use real transactions.
   let artifacts;
   const { data: plaidItems } = await supabase
@@ -81,6 +130,7 @@ export async function POST(request: Request) {
       }));
 
       artifacts = computeBankArtifacts(raw, body);
+      artifacts.source = provider === 'plaid_fixture' ? 'plaid_fixture' : 'plaid';
     } else {
       // Prefer cursor-based sync backed by DB cache; fall back to legacy get if schema isn't applied.
       try {
@@ -122,6 +172,7 @@ export async function POST(request: Request) {
         }));
 
         artifacts = computeBankArtifacts(raw, body);
+        artifacts.source = 'plaid';
       } catch {
         // Hard fallback: if sync/schema/decrypt fails, try legacy get; if that fails, fall back to demo.
         try {
@@ -146,6 +197,7 @@ export async function POST(request: Request) {
           }));
 
           artifacts = computeBankArtifacts(raw, body);
+          artifacts.source = 'plaid';
         } catch {
           artifacts = computeDemoArtifacts(body);
         }
