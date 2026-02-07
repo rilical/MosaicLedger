@@ -38,8 +38,17 @@ function okOrNull<T>(r: NessieResult<T>): T | null {
   return r.ok ? r.data : null;
 }
 
-function ensureArray<T>(v: unknown): T[] {
-  return Array.isArray(v) ? (v as T[]) : [];
+function ensureArray<T>(value: unknown, key?: string): T[] {
+  if (Array.isArray(value)) return value as T[];
+  if (value && typeof value === 'object' && key && key in value) {
+    const v = (value as Record<string, unknown>)[key];
+    if (Array.isArray(v)) return v as T[];
+  }
+  if (value && typeof value === 'object' && 'data' in value) {
+    const v = (value as { data?: unknown }).data;
+    if (Array.isArray(v)) return v as T[];
+  }
+  return [];
 }
 
 function upcomingBills(bills: NessieBill[]): { upcomingCount: number; upcomingIds: string[] } {
@@ -171,7 +180,7 @@ export async function GET(request: Request) {
     const nessie = nessieServerClient();
 
     const accountsResp = await nessie.listAssignedAccounts();
-    const accounts = ensureArray<{ _id?: string }>(okOrNull(accountsResp));
+    const accounts = ensureArray<{ _id?: string }>(okOrNull(accountsResp), 'accounts');
     const accountId =
       binding.accountId ??
       accounts.find((a) => typeof a._id === 'string' && a._id.trim())?._id ??
@@ -242,6 +251,13 @@ export async function GET(request: Request) {
     });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : 'Nessie overview failed';
-    return NextResponse.json({ ...demoPayload(), errors: { overview: message } }, { status: 200 });
+    try {
+      return NextResponse.json(
+        { ...demoPayload(), errors: { overview: message } },
+        { status: 200 },
+      );
+    } catch {
+      return NextResponse.json({ ok: false, error: message }, { status: 500 });
+    }
   }
 }
