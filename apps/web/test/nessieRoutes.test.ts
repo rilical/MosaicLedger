@@ -7,6 +7,7 @@ let nessieCustomersRow: unknown = null;
 let existingTxnIds = new Set<string>();
 
 let nessieClient: {
+  listAssignedAccounts?: (params?: { type?: string; query?: string }) => Promise<unknown>;
   listAccounts: (customerId: string) => Promise<unknown>;
   listPurchases: (accountId: string) => Promise<unknown>;
   createCustomer?: (payload: Record<string, unknown>) => Promise<unknown>;
@@ -24,6 +25,7 @@ vi.mock('../src/lib/supabase/server', () => ({
 
 vi.mock('../src/lib/nessie/serverClient', () => ({
   hasNessieEnv: () => true,
+  getNessieBaseUrl: () => 'http://api.nessieisreal.com',
   nessieServerClient: () => nessieClient,
 }));
 
@@ -105,6 +107,10 @@ beforeEach(() => {
   lastTxNormUpserts = null;
 
   nessieClient = {
+    listAssignedAccounts: vi.fn(async () => ({
+      ok: true,
+      data: [{ _id: 'acct_1', type: 'Checking', customer_id: 'cust_1' }],
+    })),
     listAccounts: vi.fn(async () => ({ ok: true, data: [{ _id: 'acct_1' }, { _id: 'acct_2' }] })),
     listPurchases: vi.fn(async (accountId: string) => ({
       ok: true,
@@ -202,5 +208,26 @@ describe('/api/nessie/sync', () => {
     expect(json2.counts.purchases).toBe(20);
     expect(json2.counts.inserted).toBe(0);
     expect(json2.counts.deduped).toBe(20);
+  });
+});
+
+describe('/api/nessie/probe', () => {
+  it('returns accounts count and purchase sample (masked)', async () => {
+    const route = await import('../src/app/api/nessie/probe/route');
+    const resp = await route.GET();
+    const json = (await resp.json()) as Record<string, unknown>;
+
+    expect(resp.status).toBe(200);
+    expect(json.ok).toBe(true);
+    expect(json.configured).toBe(true);
+    expect(json.keyPresent).toBe(true);
+    expect(json.baseUrl).toBe('http://api.nessieisreal.com');
+    expect(json.selectedAccountId).toBe('acct_1');
+
+    const purchases = json.purchases as { ok?: unknown; count?: unknown; sample?: unknown };
+    expect(Boolean(purchases.ok)).toBe(true);
+    expect(Number(purchases.count)).toBe(10);
+    expect(Array.isArray(purchases.sample)).toBe(true);
+    expect((purchases.sample as unknown[]).length).toBeGreaterThan(0);
   });
 });

@@ -8,11 +8,30 @@ type McpHealthResponse =
   | { ok: true; configured: boolean; healthUrl?: string; status?: number; body?: unknown }
   | { ok: false; error?: string };
 
+type NessieProbeResponse =
+  | {
+      ok: true;
+      configured: boolean;
+      baseUrl: string;
+      keyPresent: boolean;
+      accounts?: unknown;
+      selectedAccountId?: string | null;
+      purchases?: unknown;
+    }
+  | { ok: false; error?: string };
+
 export default function EvidencePage() {
   const [mcpStatus, setMcpStatus] = React.useState<
     | { state: 'idle' }
     | { state: 'loading' }
     | { state: 'done'; resp: McpHealthResponse }
+    | { state: 'error'; error: string }
+  >({ state: 'idle' });
+
+  const [nessieStatus, setNessieStatus] = React.useState<
+    | { state: 'idle' }
+    | { state: 'loading' }
+    | { state: 'done'; resp: NessieProbeResponse }
     | { state: 'error'; error: string }
   >({ state: 'idle' });
 
@@ -28,11 +47,38 @@ export default function EvidencePage() {
     }
   }
 
+  async function checkNessie() {
+    setNessieStatus({ state: 'loading' });
+    try {
+      const resp = await fetch('/api/nessie/probe', { method: 'GET' });
+      const json = (await resp.json()) as NessieProbeResponse;
+      if (!resp.ok || !json) throw new Error('Nessie probe failed');
+      setNessieStatus({ state: 'done', resp: json });
+    } catch (e: unknown) {
+      setNessieStatus({
+        state: 'error',
+        error: e instanceof Error ? e.message : 'Nessie probe failed',
+      });
+    }
+  }
+
   const mcpBadge = (() => {
     if (mcpStatus.state === 'loading') return <Badge tone="warn">Checking…</Badge>;
     if (mcpStatus.state === 'error') return <Badge tone="warn">Error</Badge>;
     if (mcpStatus.state === 'done') {
       const r = mcpStatus.resp;
+      if (!r.ok) return <Badge tone="warn">Fail</Badge>;
+      if (!r.configured) return <Badge tone="warn">Not configured</Badge>;
+      return <Badge tone="good">OK</Badge>;
+    }
+    return <Badge tone="neutral">Idle</Badge>;
+  })();
+
+  const nessieBadge = (() => {
+    if (nessieStatus.state === 'loading') return <Badge tone="warn">Checking…</Badge>;
+    if (nessieStatus.state === 'error') return <Badge tone="warn">Error</Badge>;
+    if (nessieStatus.state === 'done') {
+      const r = nessieStatus.resp;
       if (!r.ok) return <Badge tone="warn">Fail</Badge>;
       if (!r.configured) return <Badge tone="warn">Not configured</Badge>;
       return <Badge tone="good">OK</Badge>;
@@ -128,7 +174,15 @@ export default function EvidencePage() {
               Nessie can power <code>source=nessie</code> analysis. If it fails, MosaicLedger falls
               back to demo data so judges never get stuck.
             </div>
-            <div className="buttonRow" style={{ marginTop: 12 }}>
+            <div className="buttonRow" style={{ marginTop: 12, alignItems: 'center' }}>
+              <Button
+                variant="primary"
+                onClick={() => void checkNessie()}
+                disabled={nessieStatus.state === 'loading'}
+              >
+                Probe Nessie API
+              </Button>
+              {nessieBadge}
               <Link className="btn btnPrimary" href="/app/mosaic?source=nessie">
                 Open Mosaic (Nessie)
               </Link>
@@ -136,6 +190,19 @@ export default function EvidencePage() {
                 Connect Nessie
               </Link>
             </div>
+
+            {nessieStatus.state === 'done' ? (
+              <pre
+                className="small"
+                style={{ marginTop: 12, whiteSpace: 'pre-wrap', opacity: 0.9 }}
+              >
+                {JSON.stringify(nessieStatus.resp, null, 2)}
+              </pre>
+            ) : nessieStatus.state === 'error' ? (
+              <div className="small" style={{ marginTop: 12, color: 'rgba(234,179,8,0.95)' }}>
+                {nessieStatus.error}
+              </div>
+            ) : null}
           </CardBody>
         </Card>
       </div>

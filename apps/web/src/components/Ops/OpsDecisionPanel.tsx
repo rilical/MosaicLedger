@@ -20,6 +20,7 @@ export function OpsDecisionPanel(props: {
   const [text, setText] = React.useState<string>('');
   const [usedAI, setUsedAI] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [useAI, setUseAI] = React.useState<boolean>(aiEnabled);
 
   async function run(style: 'exec' | 'concise') {
     setStatus('loading');
@@ -30,7 +31,7 @@ export function OpsDecisionPanel(props: {
         method: 'POST',
         headers: {
           'content-type': 'application/json',
-          ...(aiEnabled ? { 'x-ml-force-ai': '1' } : {}),
+          ...(useAI ? { 'x-ml-force-ai': '1' } : {}),
         },
         body: JSON.stringify({
           dashboard,
@@ -73,7 +74,7 @@ export function OpsDecisionPanel(props: {
             >
               {status === 'loading'
                 ? 'Generating…'
-                : aiEnabled
+                : useAI
                   ? 'Generate Decision Brief (AI)'
                   : 'Generate Decision Brief'}
             </Button>
@@ -84,15 +85,24 @@ export function OpsDecisionPanel(props: {
             >
               Concise
             </Button>
+            <Button
+              variant={useAI ? 'primary' : 'ghost'}
+              onClick={() => setUseAI((v) => !v)}
+              disabled={status === 'loading'}
+            >
+              AI: {useAI ? 'ON' : 'OFF'}
+            </Button>
           </div>
           <div className="buttonRow">
-            <Badge tone={aiEnabled ? 'neutral' : 'good'}>
-              {aiEnabled ? 'AI opt-in' : 'AI off'}
-            </Badge>
+            <Badge tone={useAI ? 'neutral' : 'good'}>{useAI ? 'AI on' : 'AI off'}</Badge>
             {text ? (
-              <Badge tone={usedAI ? 'warn' : 'neutral'}>
-                {usedAI ? 'AI narrative' : 'Deterministic'}
-              </Badge>
+              useAI && !usedAI ? (
+                <Badge tone="warn">AI unavailable</Badge>
+              ) : (
+                <Badge tone={usedAI ? 'warn' : 'neutral'}>
+                  {usedAI ? 'AI narrative' : 'Deterministic'}
+                </Badge>
+              )
             ) : null}
           </div>
         </div>
