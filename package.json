@@ -19,7 +19,7 @@
     "zod": "^4.3.6"
   },
   "scripts": {
-    "postinstall": "node scripts/postinstall.mjs",
+    "postinstall": "sh scripts/postinstall.sh",
     "dev": "pnpm -C apps/web dev",
     "build": "pnpm -r --filter \"@mosaicledger/*\" --filter \"!@mosaicledger/web\" --filter \"!@mosaicledger/mobile\" build",
     "build:all": "pnpm -r build",
