@@ -52,4 +52,16 @@ test('game loads and score changes (mobile viewport)', async ({ page }) => {
 
   await tapCell(6, 7);
   await tapCell(8, 10);
+
+  // Optional evidence capture: generate a screenshot file under docs/assets for submissions.
+  if (process.env.CAPTURE_EVIDENCE === '1') {
+    await page.setViewportSize({ width: 430, height: 860 });
+    await page.waitForTimeout(250);
+    await page.screenshot({
+      path: '../../docs/assets/applovin-gameplay.jpg',
+      type: 'jpeg',
+      quality: 80,
+      fullPage: false,
+    });
+  }
 });
