@@ -10,10 +10,8 @@ function run(cmd, args) {
   return res.status ?? 1;
 }
 
-// Hosted build environments (e.g. Dedalus) may install dependencies using Bun
-// (or npm) without having `pnpm` available, and often only install production
-// dependencies. We commit `dist/` for deployments, so failing installs here is
-// counter-productive.
+// Hosted build environments may install dependencies using Bun without `pnpm`.
+// Dist artifacts are committed for deployments; do not fail the install.
 if (!hasCommand('pnpm')) {
   console.log('[postinstall] pnpm not found; skipping workspace build');
   process.exit(0);
@@ -30,8 +28,6 @@ const status = run('pnpm', [
   'build',
 ]);
 
-// Default to non-fatal for deploy safety. Set MOSAICLEDGER_STRICT_POSTINSTALL=1
-// locally/CI if you want to enforce building on install.
 if (status !== 0) {
   const strict = process.env.MOSAICLEDGER_STRICT_POSTINSTALL === '1';
   if (strict) process.exit(status);
