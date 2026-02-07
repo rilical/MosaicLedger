@@ -27,8 +27,9 @@ describe('mapNessiePurchasesToNormalized', () => {
     expect(out[0]!.merchant).toBeTypeOf('string');
     expect(out[0]!.merchant).toContain('ACME');
     expect(out[0]!.category).toBe('Food');
-    expect(out[0]!.source).toBe('bank');
-    expect(out[0]!.id).toMatch(/^t_[0-9a-f]+$/);
+    expect(out[0]!.source).toBe('nessie');
+    expect(out[0]!.pending).toBe(false);
+    expect(out[0]!.id).toBe('p_1');
 
     // Stable across runs
     const out2 = mapNessiePurchasesToNormalized([

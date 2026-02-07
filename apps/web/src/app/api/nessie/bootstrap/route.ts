@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
-import { parseBooleanEnv } from '../../../../lib/env';
+import { hasSupabaseEnv, parseBooleanEnv } from '../../../../lib/env';
 import { hasNessieEnv, nessieServerClient } from '../../../../lib/nessie/serverClient';
-import { hasSupabaseEnv } from '../../../../lib/env';
 import { supabaseServer } from '../../../../lib/supabase/server';
 
 function readCreatedId(obj: unknown): string | null {
@@ -15,6 +14,61 @@ function readCreatedId(obj: unknown): string | null {
   return typeof cand === 'string' && cand.trim() ? cand : null;
 }
 
+async function upsertNessieCustomerRow(params: {
+  userId: string;
+  customerId: string;
+  accountId: string | null;
+}): Promise<void> {
+  if (!hasSupabaseEnv()) return;
+  const sb = await supabaseServer();
+  const now = new Date().toISOString();
+
+  // Prefer the dedicated connector table (C1-NESSIE-001).
+  try {
+    const { error } = await sb.from('nessie_customers').upsert(
+      [
+        {
+          user_id: params.userId,
+          nessie_customer_id: params.customerId,
+          nessie_account_id: params.accountId,
+          updated_at: now,
+        },
+      ],
+      { onConflict: 'user_id' },
+    );
+    if (!error) return;
+  } catch {
+    // ignore (schema may not be applied yet)
+  }
+
+  // Back-compat fallback: store in generic overrides table if present.
+  try {
+    await sb.from('user_overrides').upsert(
+      [
+        {
+          user_id: params.userId,
+          kind: 'nessie',
+          key: 'customer_id',
+          value: { id: params.customerId },
+        },
+        ...(params.accountId
+          ? [
+              {
+                user_id: params.userId,
+                kind: 'nessie',
+                key: 'account_id',
+                value: { id: params.accountId },
+              },
+            ]
+          : []),
+      ],
+      { onConflict: 'user_id,kind,key' },
+    );
+  } catch {
+    // ignore
+  }
+}
+
 export async function POST() {
   const judgeMode = parseBooleanEnv(process.env.NEXT_PUBLIC_JUDGE_MODE, false);
   const demoMode = parseBooleanEnv(process.env.NEXT_PUBLIC_DEMO_MODE, true);
@@ -24,6 +78,47 @@ export async function POST() {
       { ok: false, error: 'Nessie is disabled in judge/demo mode (falls back to demo data).' },
       { status: 400 },
     );
+  }
+
+  if (!hasSupabaseEnv()) {
+    return NextResponse.json(
+      { ok: false, error: 'Supabase is not configured; cannot bind Nessie identity to a user.' },
+      { status: 400 },
+    );
+  }
+
+  const sb = await supabaseServer();
+  const {
+    data: { user },
+  } = await sb.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+  }
+
+  // Reuse the stable binding if we already have one for this user.
+  try {
+    const { data: row, error } = await sb
+      .from('nessie_customers')
+      .select('nessie_customer_id,nessie_account_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (!error && row) {
+      const r = row as unknown as { nessie_customer_id?: unknown; nessie_account_id?: unknown };
+      const customerId = typeof r.nessie_customer_id === 'string' ? r.nessie_customer_id : null;
+      const accountId = typeof r.nessie_account_id === 'string' ? r.nessie_account_id : null;
+      if (customerId) {
+        return NextResponse.json({
+          ok: true,
+          customerId,
+          accountId: accountId ?? undefined,
+          mode: 'db',
+        });
+      }
+    }
+  } catch {
+    // ignore (schema might not be applied yet)
   }
 
   if (!hasNessieEnv()) {
@@ -38,6 +133,13 @@ export async function POST() {
 
   // Prefer explicit env-provided IDs (works for GET-only keys).
   if (envCustomerId || envAccountId) {
+    if (envCustomerId) {
+      await upsertNessieCustomerRow({
+        userId: user.id,
+        customerId: envCustomerId,
+        accountId: envAccountId,
+      });
+    }
     return NextResponse.json({
       ok: true,
       customerId: envCustomerId ?? undefined,
@@ -49,8 +151,9 @@ export async function POST() {
   const nessie = nessieServerClient();
 
   // Attempt to create a customer + checking account. If the key is read-only, return a clear error.
+  const seed = (user.email ?? 'mosaic.ledger@example.com').split('@')[0] ?? 'Mosaic';
   const custResp = await nessie.createCustomer({
-    first_name: 'Mosaic',
+    first_name: seed.slice(0, 16) || 'Mosaic',
     last_name: 'Ledger',
     address: {
       street_number: '1',
@@ -102,27 +205,7 @@ export async function POST() {
     );
   }
 
-  // Best-effort persistence (per-user) in Supabase overrides for convenience.
-  // Non-blocking: the client stores these IDs in localStorage for demo evidence anyway.
-  if (hasSupabaseEnv()) {
-    try {
-      const sb = await supabaseServer();
-      const {
-        data: { user },
-      } = await sb.auth.getUser();
-      if (user) {
-        await sb.from('user_overrides').upsert(
-          [
-            { user_id: user.id, kind: 'nessie', key: 'customer_id', value: { id: customerId } },
-            { user_id: user.id, kind: 'nessie', key: 'account_id', value: { id: accountId } },
-          ],
-          { onConflict: 'user_id,kind,key' },
-        );
-      }
-    } catch {
-      // ignore
-    }
-  }
+  await upsertNessieCustomerRow({ userId: user.id, customerId, accountId });
 
   return NextResponse.json({ ok: true, customerId, accountId, mode: 'created' });
 }

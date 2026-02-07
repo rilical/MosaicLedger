@@ -7,6 +7,8 @@ export type NessieMapOptions = {
    * This repo's engine treats Nessie as a bank-like source by default.
    */
   source?: NormalizedTransaction['source'];
+  /** Account id to stamp onto each mapped transaction (recommended). */
+  accountId?: string;
   /** Default category if Nessie doesn't provide one. */
   defaultCategory?: string;
 };
@@ -16,24 +18,26 @@ export function nessiePurchaseToNormalized(
   opts: NessieMapOptions = {},
 ): NormalizedTransaction | null {
   const date = (p.purchase_date ?? '').trim();
-  const merchantRaw = (p.description ?? '').trim();
+  const merchantRaw = (p.description ?? p.merchant_id ?? '').trim();
   const amount = Number(p.amount);
 
   if (!date || !merchantRaw || !Number.isFinite(amount)) return null;
 
   const category = (p.type ?? '').trim() || opts.defaultCategory || 'Uncategorized';
-  const source: NormalizedTransaction['source'] = opts.source ?? 'bank';
+  const source: NormalizedTransaction['source'] = opts.source ?? 'nessie';
 
   const merchant = normalizeMerchantName(merchantRaw);
 
   return {
-    id: stableId(['nessie', p._id ?? '', date, merchantRaw, String(amount)]),
+    id: (p._id ?? '').trim() || stableId(['nessie', date, merchantRaw, String(amount)]),
     date,
     amount,
     merchantRaw,
     merchant,
     category,
     source,
+    accountId: opts.accountId,
+    pending: false,
   };
 }
 
