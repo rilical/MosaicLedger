@@ -232,9 +232,11 @@ export default function MosaicPage() {
             </div>
             {drawerTxns.length ? (
               <div style={{ display: 'grid', gap: 8 }}>
-                {drawerTxns.map((t) => (
+                {drawerTxns.map((t, idx) => (
                   <div
-                    key={t.id}
+                    // NormalizedTransaction.id can collide for identical same-day purchases (e.g. 2 coffees).
+                    // Include the index to keep the list stable and avoid React key collisions.
+                    key={`${t.id}_${idx}`}
                     style={{
                       display: 'flex',
                       justifyContent: 'space-between',
