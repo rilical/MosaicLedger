@@ -6,6 +6,7 @@
     "node": ">=20"
   },
   "scripts": {
+    "postinstall": "pnpm -r --filter \"@mosaicledger/*\" --filter \"!@mosaicledger/web\" --filter \"!@mosaicledger/mobile\" build",
     "dev": "pnpm -C apps/web dev",
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
