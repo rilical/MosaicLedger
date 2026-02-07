@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { parseBooleanEnv } from '../../../../lib/env';
 
 type RewriteRequest = {
   text?: string;
@@ -48,13 +49,28 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: 'missing text' }, { status: 400 });
   }
 
+  // Gate: keep AI opt-in even if a key exists. This prevents accidental spend in demos.
+  const aiEnabled = parseBooleanEnv(process.env.NEXT_PUBLIC_AI_ENABLED, false);
   const apiKey = process.env.OPENAI_API_KEY;
   const model = process.env.OPENAI_MODEL || 'gpt-4o-mini';
   const baseUrl = (process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1').replace(/\/$/, '');
 
-  // Demo-safe fallback: if no key, return original.
+  // Demo-safe fallback: if AI is disabled or no key, return original (but annotate the reason).
+  if (!aiEnabled) {
+    return NextResponse.json({
+      ok: true,
+      rewrittenText: text,
+      usedAI: false,
+      error: 'ai_disabled (set NEXT_PUBLIC_AI_ENABLED=1)',
+    });
+  }
   if (!apiKey) {
-    return NextResponse.json({ ok: true, rewrittenText: text, usedAI: false });
+    return NextResponse.json({
+      ok: true,
+      rewrittenText: text,
+      usedAI: false,
+      error: 'missing_openai_api_key',
+    });
   }
 
   const { masked, originals } = maskNumbers(text);
@@ -94,11 +110,20 @@ export async function POST(request: Request) {
     const content = extractChatContent(json);
 
     if (!resp.ok || !content) {
+      const apiMsg =
+        json &&
+        typeof json === 'object' &&
+        'error' in (json as Record<string, unknown>) &&
+        (json as { error?: unknown }).error &&
+        typeof (json as { error?: unknown }).error === 'object' &&
+        'message' in ((json as { error?: unknown }).error as Record<string, unknown>)
+          ? String(((json as { error?: unknown }).error as { message?: unknown }).message)
+          : null;
       return NextResponse.json({
         ok: true,
         rewrittenText: text,
         usedAI: false,
-        error: `rewrite failed (${resp.status})`,
+        error: `rewrite failed (${resp.status})${apiMsg ? `: ${apiMsg}` : ''}`,
       });
     }
 

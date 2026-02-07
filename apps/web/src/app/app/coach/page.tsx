@@ -31,6 +31,7 @@ export default function CoachPage() {
   const [modelsUsed, setModelsUsed] = React.useState<string[]>([]);
   const [toolsCalled, setToolsCalled] = React.useState<string[]>([]);
   const [mcpServers, setMcpServers] = React.useState<string[]>([]);
+  const [usedDedalus, setUsedDedalus] = React.useState<boolean>(false);
   const [trace, setTrace] = React.useState<ToolTraceV1 | null>(null);
   const [traceOpen, setTraceOpen] = React.useState(false);
 
@@ -41,6 +42,7 @@ export default function CoachPage() {
     setModelsUsed([]);
     setToolsCalled([]);
     setMcpServers([]);
+    setUsedDedalus(false);
     setTrace(null);
 
     try {
@@ -59,6 +61,7 @@ export default function CoachPage() {
       setModelsUsed(json.modelsUsed ?? []);
       setToolsCalled(json.toolsCalled ?? []);
       setMcpServers(json.mcpServers ?? []);
+      setUsedDedalus(Boolean(json.usedDedalus));
       setTrace(json.trace ?? null);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Coach failed');
@@ -77,6 +80,9 @@ export default function CoachPage() {
           </div>
           <Badge tone={busy ? 'warn' : error ? 'warn' : 'good'}>
             {busy ? 'Busy' : error ? 'Error' : 'Ready'}
+          </Badge>
+          <Badge tone={usedDedalus ? 'neutral' : 'warn'}>
+            {usedDedalus ? 'Dedalus ON' : 'Dedalus OFF'}
           </Badge>
         </div>
       </div>
