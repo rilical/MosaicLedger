@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import {
   computeBankArtifacts,
+  computeArtifactsFromNormalized,
   computeDemoArtifacts,
   type AnalyzeRequestV1,
 } from '../../../../lib/analysis/compute';
@@ -13,6 +14,7 @@ import { supabaseServer } from '../../../../lib/supabase/server';
 import { applyFixtureSyncState, getPlaidSyncFixture } from '@mosaicledger/banking';
 import { runPlaidSyncAndPersist } from '../../../../lib/plaid/transactionsSync';
 import { hasNessieEnv, nessieServerClient } from '../../../../lib/nessie/serverClient';
+import { nessiePurchaseToNormalized } from '@mosaicledger/connectors';
 
 export async function GET() {
   if (envFlags.demoMode || envFlags.judgeMode || !hasSupabaseEnv()) {
@@ -83,15 +85,16 @@ export async function POST(request: Request) {
       const purchases = await nessie.getPurchases(accountId);
       if (!purchases.ok) throw new Error(purchases.message);
 
-      const raw = (purchases.data ?? []).map((p) => ({
-        date: p.purchase_date ?? new Date().toISOString().slice(0, 10),
-        name: p.description ?? 'Purchase',
-        amount: p.amount,
-        category: p.type ?? undefined,
-      }));
+      const txnsAll = (purchases.data ?? [])
+        .map((p) =>
+          nessiePurchaseToNormalized(p, {
+            source: 'nessie',
+            accountId,
+          }),
+        )
+        .filter((t) => t != null);
 
-      const artifacts = computeBankArtifacts(raw, body);
-      artifacts.source = 'nessie';
+      const artifacts = computeArtifactsFromNormalized(txnsAll, body, { artifactsSource: 'nessie' });
 
       try {
         await insertAnalysisRun(supabase, user.id, artifacts);
