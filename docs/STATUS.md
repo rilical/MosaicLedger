@@ -15,6 +15,9 @@ This file is updated in every PR.
 
 ## Latest Changes
 
+- QA-016 (branch: `codex/qa-016-fuzz-tests`): adds fuzz/edge-case tests for transaction
+  normalization + filters + summaries to ensure totals stay finite and consistent under weird
+  inputs.
 - Restore analysis-driven pages (Mosaic/Recurring/Plan) after landing-page merge regression:
   re-enabled shared AnalysisControls (range + filters), brought back Plan explainability + scenario
   compare, fixed `/login` duplicate "Login" headings (Playwright strict locator), and normalized
