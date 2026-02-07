@@ -9,10 +9,13 @@ import type {
 import { MosaicView } from '../../../components/MosaicView';
 import { Badge, Card, CardBody, CardHeader, CardTitle } from '../../../components/ui';
 import { OpsMemoPanel } from '../../../components/Ops/OpsMemoPanel';
+import { OpsDashboardCards } from '../../../components/Ops/OpsDashboardCards';
+import { OpsDecisionPanel } from '../../../components/Ops/OpsDecisionPanel';
 import { computeDemoArtifacts } from '../../../lib/analysis/compute';
 import { envFlags } from '../../../lib/flags';
 import { hasSupabaseEnv, parseBooleanEnv } from '../../../lib/env';
 import { supabaseServer } from '../../../lib/supabase/server';
+import { computeOpsDashboard } from '../../../lib/ops/dashboard';
 
 function latestDate(dates: string[]): string | null {
   let max: string | null = null;
@@ -155,18 +158,24 @@ export default async function OpsPage(props: {
   const analysis = analyzeOps(txns, range);
   const mosaicTiles: TreemapTile[] = buildTreemap(analysis.tiles, 'ops');
   const aiEnabled = parseBooleanEnv(process.env.NEXT_PUBLIC_AI_ENABLED, false);
+  const dashboard = computeOpsDashboard({ txns, findings: analysis.findings, range });
 
   return (
     <div className="pageStack" style={{ maxWidth: 1100 }}>
       <div className="pageHeader">
         <h1 className="pageTitle">Ops</h1>
         <div className="pageMeta">
-          <div className="pageTagline">Deterministic back-office findings grouped by analyst.</div>
+          <div className="pageTagline">
+            Back-office risk, compliance, and reconciliation signals with decision support (AI
+            optional).
+          </div>
           <Badge tone={source === 'db' ? 'neutral' : 'good'}>
             {source === 'db' ? 'DB' : 'DEMO'}
           </Badge>
         </div>
       </div>
+
+      <OpsDashboardCards dashboard={dashboard} />
 
       <Card>
         <CardHeader>
@@ -204,6 +213,13 @@ export default async function OpsPage(props: {
           )}
         </CardBody>
       </Card>
+
+      <OpsDecisionPanel
+        dashboard={dashboard}
+        findings={analysis.findings}
+        range={range}
+        aiEnabled={aiEnabled}
+      />
 
       <div
         style={{
