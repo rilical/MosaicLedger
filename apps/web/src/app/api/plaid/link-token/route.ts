@@ -20,14 +20,19 @@ export async function POST() {
 
   if (!user) return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
 
-  const plaid = plaidServerClient();
-  const resp = await plaid.linkTokenCreate({
-    user: { client_user_id: user.id },
-    client_name: 'MosaicLedger',
-    language: 'en',
-    products: [Products.Transactions],
-    country_codes: [CountryCode.Us],
-  });
+  try {
+    const plaid = plaidServerClient();
+    const resp = await plaid.linkTokenCreate({
+      user: { client_user_id: user.id },
+      client_name: 'MosaicLedger',
+      language: 'en',
+      products: [Products.Transactions],
+      country_codes: [CountryCode.Us],
+    });
 
-  return NextResponse.json({ ok: true, mode: 'plaid' as const, linkToken: resp.data.link_token });
+    return NextResponse.json({ ok: true, mode: 'plaid' as const, linkToken: resp.data.link_token });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Failed to create link token';
+    return NextResponse.json({ ok: false, error: errorMessage }, { status: 500 });
+  }
 }
