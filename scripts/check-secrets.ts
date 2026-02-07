@@ -5,6 +5,9 @@ import { fileURLToPath } from 'node:url';
 const SECRET_ENV_NAMES = [
   // DB admin bypass key
   'SUPABASE_SERVICE_ROLE_KEY',
+  // Plaid server secret + at-rest token encryption key
+  'PLAID_SECRET',
+  'PLAID_TOKEN_ENCRYPTION_KEY',
   // XRPL seed must never reach the client bundle
   'XRPL_TESTNET_SEED',
 ] as const;

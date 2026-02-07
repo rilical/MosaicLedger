@@ -1,28 +1,10 @@
 import Link from 'next/link';
-import type { CSSProperties } from 'react';
 import { Badge } from '../components/ui';
-import { CursorGlow } from '../components/CursorGlow';
-
-const previewTiles = [
-  { color: '#8b5cf6', colSpan: 4, rowSpan: 4 },
-  { color: '#eab308', colSpan: 2, rowSpan: 3 },
-  { color: '#14b8a6', colSpan: 2, rowSpan: 3 },
-  { color: '#3b82f6', colSpan: 2, rowSpan: 2 },
-  { color: '#22c55e', colSpan: 3, rowSpan: 2 },
-  { color: '#f97316', colSpan: 2, rowSpan: 2 },
-  { color: '#f43f5e', colSpan: 3, rowSpan: 2 },
-  { color: '#6366f1', colSpan: 2, rowSpan: 2 },
-  { color: '#10b981', colSpan: 4, rowSpan: 2 },
-  { color: '#84cc16', colSpan: 2, rowSpan: 2 },
-  { color: '#f59e0b', colSpan: 2, rowSpan: 2 },
-  { color: '#0ea5e9', colSpan: 2, rowSpan: 2 },
-];
+import { MosaicPreviewToggle } from '../components/MosaicPreviewToggle';
 
 export default function LandingPage() {
   return (
     <main className="landing">
-      <CursorGlow />
-
       <div className="landingNav">
         <div className="landingNavBrand">MosaicLedger</div>
         <div className="buttonRow">
@@ -51,31 +33,10 @@ export default function LandingPage() {
               View the plan
             </Link>
           </div>
-          <div className="small" style={{ marginTop: 10 }}>
-            Demo-first by default. No external providers required to run the experience.
-          </div>
         </div>
 
         <div className="heroCard">
-          <div className="pageMeta" style={{ marginBottom: 12 }}>
-            <div className="pageTagline">Glass mosaic preview</div>
-            <Badge tone="good">Deterministic</Badge>
-          </div>
-          <div className="mosaicPreview">
-            {previewTiles.map((tile, index) => (
-              <div
-                key={`${tile.color}-${index}`}
-                className="glassTile"
-                style={
-                  {
-                    '--tile': tile.color,
-                    gridColumn: `span ${tile.colSpan}`,
-                    gridRow: `span ${tile.rowSpan}`,
-                  } as CSSProperties
-                }
-              />
-            ))}
-          </div>
+          <MosaicPreviewToggle />
         </div>
       </section>
 

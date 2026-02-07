@@ -27,6 +27,8 @@ This repo is production-shaped, not production-complete. Treat anything beyond D
 
 - Rotate `PLAID_SECRET` in the Plaid dashboard.
 - Re-deploy serverless functions (Vercel) after env var updates.
+- Set `PLAID_TOKEN_ENCRYPTION_KEY` (32 bytes, base64) to encrypt Plaid `access_token` at rest.
+  - If you rotate this key, existing stored tokens become undecryptable; users must re-link accounts.
 
 ### OpenAI (optional)
 
