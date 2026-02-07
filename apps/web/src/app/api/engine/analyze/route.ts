@@ -124,20 +124,25 @@ export async function POST(request: Request) {
     // Allow judge-safe sponsor demos without forcing auth.
     // - `source=nessie`: always try Nessie (server-only key)
     // - `source=auto`: try Nessie before falling back to demo
+    if (body.source === 'plaid') {
+      // Plaid / user-specific data requires auth.
+      return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+    }
+
     if ((body.source === 'nessie' || body.source === 'auto') && hasNessieEnv() && !judgeMode) {
       try {
         const artifacts = await computeNessieArtifactsUnauthed();
         return NextResponse.json({ ok: true, artifacts, stored: false });
       } catch {
-        if (body.source === 'nessie') {
-          const artifacts = computeDemoArtifacts(body);
-          return NextResponse.json({ ok: true, artifacts, stored: false });
-        }
+        // If Nessie flakes, never block the demo.
+        const artifacts = computeDemoArtifacts(body);
+        return NextResponse.json({ ok: true, artifacts, stored: false });
       }
     }
 
-    // Plaid / user-specific data requires auth.
-    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+    // Unauthed + no Nessie env: always fall back to demo so public pages work.
+    const artifacts = computeDemoArtifacts(body);
+    return NextResponse.json({ ok: true, artifacts, stored: false });
   }
 
   // `auto`: if no Plaid item is linked, try Nessie before falling back to demo.
