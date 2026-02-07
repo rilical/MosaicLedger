@@ -77,7 +77,9 @@ export default function BankConnectPage() {
       <div className="pageHeader">
         <h1 className="pageTitle">Connect Bank</h1>
         <div className="pageMeta">
-          <div className="pageTagline">Link your bank account via Plaid to import real transactions.</div>
+          <div className="pageTagline">
+            Link your bank account via Plaid to import real transactions.
+          </div>
           <Badge tone="good">Sandbox</Badge>
         </div>
       </div>
@@ -105,17 +107,11 @@ export default function BankConnectPage() {
               </>
             )}
 
-            {step === 'fetching_token' && (
-              <div className="small">Preparing Plaid Link&hellip;</div>
-            )}
+            {step === 'fetching_token' && <div className="small">Preparing Plaid Link&hellip;</div>}
 
-            {step === 'link_ready' && (
-              <div className="small">Opening Plaid Link&hellip;</div>
-            )}
+            {step === 'link_ready' && <div className="small">Opening Plaid Link&hellip;</div>}
 
-            {step === 'exchanging' && (
-              <div className="small">Linking your account&hellip;</div>
-            )}
+            {step === 'exchanging' && <div className="small">Linking your account&hellip;</div>}
 
             {step === 'done' && (
               <div className="small" style={{ color: 'rgba(34,197,94,0.95)' }}>
@@ -148,7 +144,9 @@ export default function BankConnectPage() {
         </CardHeader>
         <CardBody>
           <ol style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 8 }}>
-            <li>Click &ldquo;Connect Bank Account&rdquo; to open Plaid&rsquo;s secure Link modal</li>
+            <li>
+              Click &ldquo;Connect Bank Account&rdquo; to open Plaid&rsquo;s secure Link modal
+            </li>
             <li>Select your bank and sign in (sandbox: user_good / pass_good)</li>
             <li>We exchange the token and store a secure connection</li>
             <li>Your transactions feed into the Mosaic analysis engine</li>
