@@ -16,7 +16,6 @@ type CoachRunResponse =
       mcpServers: string[];
       trace: ToolTraceV1;
       vision?: unknown;
-      usedDedalus: boolean;
     }
   | { ok: false; error?: string };
 
@@ -30,8 +29,6 @@ export default function CoachPage() {
   const [answer, setAnswer] = React.useState<string | null>(null);
   const [modelsUsed, setModelsUsed] = React.useState<string[]>([]);
   const [toolsCalled, setToolsCalled] = React.useState<string[]>([]);
-  const [mcpServers, setMcpServers] = React.useState<string[]>([]);
-  const [usedDedalus, setUsedDedalus] = React.useState<boolean>(false);
   const [trace, setTrace] = React.useState<ToolTraceV1 | null>(null);
   const [traceOpen, setTraceOpen] = React.useState(false);
 
@@ -41,8 +38,6 @@ export default function CoachPage() {
     setAnswer(null);
     setModelsUsed([]);
     setToolsCalled([]);
-    setMcpServers([]);
-    setUsedDedalus(false);
     setTrace(null);
 
     try {
@@ -60,8 +55,6 @@ export default function CoachPage() {
       setAnswer(json.answer);
       setModelsUsed(json.modelsUsed ?? []);
       setToolsCalled(json.toolsCalled ?? []);
-      setMcpServers(json.mcpServers ?? []);
-      setUsedDedalus(Boolean(json.usedDedalus));
       setTrace(json.trace ?? null);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Coach failed');
@@ -76,14 +69,12 @@ export default function CoachPage() {
         <h1 className="pageTitle">Coach</h1>
         <div className="pageMeta">
           <div className="pageTagline">
-            Tool-calling agent: deterministic engine decides, AI narrates (optional).
+            Deterministic coach: demo-safe budgeting insights (no external AI dependency).
           </div>
           <Badge tone={busy ? 'warn' : error ? 'warn' : 'good'}>
             {busy ? 'Busy' : error ? 'Error' : 'Ready'}
           </Badge>
-          <Badge tone={usedDedalus ? 'neutral' : 'warn'}>
-            {usedDedalus ? 'Dedalus ON' : 'Dedalus OFF'}
-          </Badge>
+          <Badge tone="warn">Offline</Badge>
         </div>
       </div>
 
@@ -109,7 +100,7 @@ export default function CoachPage() {
                 >
                   <option value="advice">Advice</option>
                   <option value="whatif">What-if</option>
-                  <option value="poster_audit">Poster audit (vision)</option>
+                  <option value="poster_audit">Poster audit (disabled)</option>
                 </select>
               </label>
 
@@ -140,7 +131,7 @@ export default function CoachPage() {
               </div>
             ) : null}
 
-            {modelsUsed.length || toolsCalled.length || mcpServers.length ? (
+            {modelsUsed.length || toolsCalled.length ? (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
                 {modelsUsed.length ? (
                   <Badge tone="neutral">Models: {modelsUsed.join(' -> ')}</Badge>
@@ -148,11 +139,6 @@ export default function CoachPage() {
                 {toolsCalled.length ? (
                   <Badge tone="neutral">Tools: {toolsCalled.join(', ')}</Badge>
                 ) : null}
-                {mcpServers.length ? (
-                  <Badge tone="neutral">MCP: {mcpServers.join(', ')}</Badge>
-                ) : (
-                  <Badge tone="warn">MCP: not configured</Badge>
-                )}
               </div>
             ) : null}
 
