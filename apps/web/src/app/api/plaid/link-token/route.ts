@@ -20,14 +20,21 @@ export async function POST() {
 
   if (!user) return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
 
-  const plaid = plaidServerClient();
-  const resp = await plaid.linkTokenCreate({
-    user: { client_user_id: user.id },
-    client_name: 'MosaicLedger',
-    language: 'en',
-    products: [Products.Transactions],
-    country_codes: [CountryCode.Us],
-  });
+  try {
+    const plaid = plaidServerClient();
+    const resp = await plaid.linkTokenCreate({
+      user: { client_user_id: user.id },
+      client_name: 'MosaicLedger',
+      language: 'en',
+      products: [Products.Transactions],
+      country_codes: [CountryCode.Us],
+    });
 
-  return NextResponse.json({ ok: true, linkToken: resp.data.link_token });
+    return NextResponse.json({ ok: true, linkToken: resp.data.link_token });
+  } catch (e: unknown) {
+    const msg =
+      e && typeof e === 'object' && 'message' in e ? String((e as { message?: unknown }).message) : 'Plaid API error';
+    console.error('[link-token] Plaid error:', msg);
+    return NextResponse.json({ ok: false, error: msg }, { status: 502 });
+  }
 }

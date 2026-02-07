@@ -19,7 +19,13 @@ export default function BankConnectPage() {
     setErrorMsg(null);
     try {
       const resp = await fetch('/api/plaid/link-token', { method: 'POST' });
-      const json = (await resp.json()) as { ok: boolean; linkToken?: string; error?: string };
+      const text = await resp.text();
+      let json: { ok?: boolean; linkToken?: string; error?: string };
+      try {
+        json = JSON.parse(text) as typeof json;
+      } catch {
+        throw new Error(`Server returned non-JSON response (${resp.status})`);
+      }
       if (!resp.ok || !json.ok || !json.linkToken) {
         throw new Error(json.error ?? 'Failed to create link token');
       }
@@ -42,7 +48,13 @@ export default function BankConnectPage() {
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({ publicToken }),
         });
-        const json = (await resp.json()) as { ok: boolean; error?: string };
+        const text = await resp.text();
+        let json: { ok?: boolean; error?: string };
+        try {
+          json = JSON.parse(text) as typeof json;
+        } catch {
+          throw new Error(`Server returned non-JSON response (${resp.status})`);
+        }
         if (!resp.ok || !json.ok) {
           throw new Error(json.error ?? 'Token exchange failed');
         }

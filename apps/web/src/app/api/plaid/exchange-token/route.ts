@@ -25,24 +25,31 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: 'invalid body' }, { status: 400 });
   }
 
-  const plaid = plaidServerClient();
-  const exchangeResp = await plaid.itemPublicTokenExchange({
-    public_token: publicToken,
-  });
+  try {
+    const plaid = plaidServerClient();
+    const exchangeResp = await plaid.itemPublicTokenExchange({
+      public_token: publicToken,
+    });
 
-  const { access_token, item_id } = exchangeResp.data;
+    const { access_token, item_id } = exchangeResp.data;
 
-  // Store in plaid_items table (RLS scoped to user).
-  const { error: dbError } = await supabase.from('plaid_items').insert({
-    user_id: user.id,
-    item_id,
-    access_token,
-    status: 'active',
-  });
+    // Store in plaid_items table (RLS scoped to user).
+    const { error: dbError } = await supabase.from('plaid_items').insert({
+      user_id: user.id,
+      item_id,
+      access_token,
+      status: 'active',
+    });
 
-  if (dbError) {
-    return NextResponse.json({ ok: false, error: dbError.message }, { status: 500 });
+    if (dbError) {
+      return NextResponse.json({ ok: false, error: dbError.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ ok: true, itemId: item_id });
+  } catch (e: unknown) {
+    const msg =
+      e && typeof e === 'object' && 'message' in e ? String((e as { message?: unknown }).message) : 'Plaid API error';
+    console.error('[exchange-token] Plaid error:', msg);
+    return NextResponse.json({ ok: false, error: msg }, { status: 502 });
   }
-
-  return NextResponse.json({ ok: true, itemId: item_id });
 }
