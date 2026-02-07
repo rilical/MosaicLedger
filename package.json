@@ -6,6 +6,7 @@
     "node": ">=20"
   },
   "scripts": {
+    "postinstall": "pnpm -r --filter \"@mosaicledger/*\" --filter \"!@mosaicledger/web\" --filter \"!@mosaicledger/mobile\" build",
     "dev": "pnpm -C apps/web dev",
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
@@ -17,6 +18,7 @@
     "format:check": "prettier . --check",
     "check-demo": "pnpm -r --filter @mosaicledger/core --filter @mosaicledger/banking --filter @mosaicledger/mosaic build && tsx scripts/check-demo.ts",
     "check-secrets": "tsx scripts/check-secrets.ts",
+    "check:supabase-schema": "tsx scripts/check-supabase-schema.ts",
     "seed": "tsx scripts/seed-demo.ts"
   },
   "devDependencies": {

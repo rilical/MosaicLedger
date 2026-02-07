@@ -1,10 +1,11 @@
 import { getDemoTransactions } from '@mosaicledger/banking';
 import { Badge, Card, CardBody, CardHeader, CardTitle } from '../../components/ui';
-import { hasSupabaseEnv, parseBooleanEnv } from '../../lib/env';
+import { parseBooleanEnv } from '../../lib/env';
 import { hasPlaidEnv } from '../../lib/plaid/serverClient';
-import { supabaseAdmin } from '../../lib/supabase/admin';
+import { checkSchema, type SchemaStatus } from '../../lib/db/schemaCheck';
+import { getPlaidLastSync } from '../../lib/plaid/status';
 
-type CheckStatus = 'ok' | 'warn' | 'fail';
+type CheckStatus = SchemaStatus;
 
 type Check = {
   name: string;
@@ -38,42 +39,17 @@ function labelFor(status: CheckStatus): string {
 }
 
 async function checkSupabaseDb(): Promise<Check> {
-  if (!hasSupabaseEnv()) {
-    return {
-      name: 'Supabase',
-      status: 'warn',
-      detail:
-        'Missing NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (demo is fine).',
-    };
-  }
+  const schema = await checkSchema();
+  const worst =
+    schema.find((c) => c.status === 'fail')?.status ??
+    schema.find((c) => c.status === 'warn')?.status ??
+    'ok';
+  const detail =
+    worst === 'ok'
+      ? 'Schema OK.'
+      : 'Schema missing or incomplete. Apply supabase/schema.sql and refresh /health.';
 
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    return {
-      name: 'Supabase service role',
-      status: 'warn',
-      detail: 'Missing SUPABASE_SERVICE_ROLE_KEY (required for privileged server writes).',
-    };
-  }
-
-  try {
-    const sb = supabaseAdmin();
-    // Connectivity + schema sanity: try a lightweight query. If schema isn't applied yet, we warn.
-    const { error } = await sb.from('analysis_runs').select('id').limit(1);
-    if (error) {
-      return {
-        name: 'Supabase DB',
-        status: 'warn',
-        detail: `Reachable, but schema/policies may be missing (query error: ${error.code ?? 'unknown'}).`,
-      };
-    }
-    return { name: 'Supabase DB', status: 'ok', detail: 'Reachable.' };
-  } catch (e: unknown) {
-    const msg =
-      e && typeof e === 'object' && 'message' in e
-        ? String((e as { message?: unknown }).message)
-        : 'unknown';
-    return { name: 'Supabase DB', status: 'fail', detail: `Not reachable (${msg}).` };
-  }
+  return { name: 'Supabase schema', status: worst, detail };
 }
 
 export default async function HealthPage() {
@@ -89,6 +65,10 @@ export default async function HealthPage() {
     }
   })();
 
+  const schemaChecks = await checkSchema();
+  const plaidSync = await getPlaidLastSync();
+
+  // "Presence checks only" rule: we never display secret values, only present/missing.
   const checks: Check[] = [
     {
       name: 'Demo dataset',
@@ -102,6 +82,18 @@ export default async function HealthPage() {
       detail: hasPlaidEnv()
         ? 'PLAID_CLIENT_ID/PLAID_SECRET/PLAID_ENV present.'
         : 'Missing Plaid env (demo is fine).',
+    },
+    {
+      name: 'Plaid last sync',
+      status: plaidSync.status,
+      detail: plaidSync.detail,
+    },
+    {
+      name: 'Dedalus (optional)',
+      status: process.env.DEDALUS_API_KEY ? 'ok' : 'warn',
+      detail: process.env.DEDALUS_API_KEY
+        ? 'DEDALUS_API_KEY present.'
+        : 'Missing DEDALUS_API_KEY (optional).',
     },
     {
       name: 'AI rewrite key',
@@ -159,7 +151,43 @@ export default async function HealthPage() {
           </CardHeader>
           <CardBody>
             <div style={{ display: 'grid', gap: 10 }}>
+              <div className="small">
+                DB schema status is computed using server-only Supabase admin queries. If you see a
+                FAIL, apply `supabase/schema.sql` in the Supabase SQL editor and refresh.
+              </div>
               {checks.map((c) => (
+                <div
+                  key={c.name}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    gap: 12,
+                    border: '1px solid var(--border)',
+                    borderRadius: 14,
+                    padding: 12,
+                    background: 'rgba(255,255,255,0.04)',
+                  }}
+                >
+                  <div>
+                    <div style={{ fontWeight: 700 }}>{c.name}</div>
+                    <div className="small">{c.detail}</div>
+                  </div>
+                  <div>
+                    <Badge tone={toneFor(c.status)}>{labelFor(c.status)}</Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardBody>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Schema Details</CardTitle>
+          </CardHeader>
+          <CardBody>
+            <div style={{ display: 'grid', gap: 10 }}>
+              {schemaChecks.map((c) => (
                 <div
                   key={c.name}
                   style={{

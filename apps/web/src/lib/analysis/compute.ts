@@ -78,11 +78,14 @@ export function computeBankArtifacts(
   );
   const summary = summarizeTransactions(txns);
   const tiles = buildTreemapTiles(summary.byCategory);
-  const actions = recommendActions(summary, {
-    goalType: 'save_by_date',
-    saveAmount: 200,
-    byDate: '2026-04-01',
-  });
+  const actions = recommendActions(
+    summary,
+    req.goal ?? {
+      goalType: 'save_by_date',
+      saveAmount: 200,
+      byDate: '2026-04-01',
+    },
+  );
 
   return {
     version: 1,

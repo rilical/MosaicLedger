@@ -10,7 +10,7 @@ export async function POST() {
 
   // Never block demos on Plaid availability.
   if (judgeMode || demoMode || !hasPlaidEnv()) {
-    return NextResponse.json({ ok: true, linkToken: 'demo-link-token' });
+    return NextResponse.json({ ok: true, mode: 'fixture' as const });
   }
 
   const supabase = await supabaseServer();
@@ -30,11 +30,5 @@ export async function POST() {
       country_codes: [CountryCode.Us],
     });
 
-    return NextResponse.json({ ok: true, linkToken: resp.data.link_token });
-  } catch (e: unknown) {
-    const msg =
-      e && typeof e === 'object' && 'message' in e ? String((e as { message?: unknown }).message) : 'Plaid API error';
-    console.error('[link-token] Plaid error:', msg);
-    return NextResponse.json({ ok: false, error: msg }, { status: 502 });
-  }
+  return NextResponse.json({ ok: true, mode: 'plaid' as const, linkToken: resp.data.link_token });
 }

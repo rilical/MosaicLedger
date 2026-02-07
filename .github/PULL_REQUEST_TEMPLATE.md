@@ -1,16 +1,28 @@
-## What changed
+## Task ID
+
+<!-- Example: QA-016 -->
+
+## What Changed
 
 ## Why
 
-## Demo path (required)
+## How To Test
+
+<!-- Include commands and exact clicks -->
+
+## Demo Path (Required)
 
 - [ ] `pnpm dev`
-- [ ] Click "Load sample"
-- [ ] Mosaic renders (tiles visible)
-- [ ] Recurring panel shows detected items (from sample)
-- [ ] Action plan panel shows 5 ranked actions (from sample)
-- [ ] No console logs of raw CSV rows or sensitive values
+- [ ] Click "Use Demo Data"
+- [ ] Mosaic renders (tiles visible, non-empty)
+- [ ] Recurring panel shows detected items (demo dataset)
+- [ ] Plan page shows ranked actions (demo dataset)
+- [ ] No console logs of raw rows or sensitive values
 
-## Screenshots (if UI)
+## Screenshots (If UI)
 
-## Notes / risks
+## Rollback Plan
+
+<!-- Example: revert this PR -->
+
+## Notes / Risks

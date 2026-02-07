@@ -15,6 +15,25 @@ This file is updated in every PR.
 
 ## Latest Changes
 
+- UX-002 (branch: `codex/ux-002-loading-skeleton`): added Mosaic loading skeleton + a simple
+  progress line; when analysis is slow, offers a one-click switch to demo data.
+- QA-018 (branch: `codex/qa-018-pr-gates`): tightened PR template requirements and added label
+  automation (`needs-review` on open; `safe-to-merge` on CI success).
+- QA-021 (branch: `codex/qa-021-release-reset`): added expo release checklist and an optional
+  "Expo reset" button (guarded by env flags) to clear local demo state and best-effort clear cached
+  analysis server-side.
+- QA-019 (branch: `codex/qa-019-dep-audit`): added a non-blocking dependency audit job to CI and
+  documented lockfile/upgrade policy.
+- QA-017/QA-022 (branch: `codex/qa-017-022-health-schema-integrations`): expanded `/health` with
+  schema checks (table/column presence) and integration statuses (Supabase/Plaid/XRPL/Dedalus/AI),
+  including a best-effort Plaid "last sync" timestamp.
+- QA-016 (branch: `codex/qa-016-fuzz-tests`): adds fuzz/edge-case tests for transaction
+  normalization + filters + summaries to ensure totals stay finite and consistent under weird
+  inputs.
+- Restore analysis-driven pages (Mosaic/Recurring/Plan) after landing-page merge regression:
+  re-enabled shared AnalysisControls (range + filters), brought back Plan explainability + scenario
+  compare, fixed `/login` duplicate "Login" headings (Playwright strict locator), and normalized
+  formatting to keep CI green.
 - AUTH scaffold (branch: `codex/auth-scaffold`): Supabase magic-link login is wired when env vars are
   present, `/app/*` routes are protected via middleware when demo/judge modes are off, and a starter
   RLS schema is added under `supabase/schema.sql`. Demo Mode remains the default and must continue
@@ -40,6 +59,8 @@ This file is updated in every PR.
   secrets are displayed.
 - QA-001 (branch: `codex/qa-001-playwright-harness`): adds Playwright e2e harness + CI job and a
   smoke test that loads `/health` and `/login`.
+- QA-012 (branch: `codex/qa-012-gitleaks`): adds gitleaks secret scanning to CI and documents key
+  rotation steps.
 
 ## Known Risks / TODO
 
