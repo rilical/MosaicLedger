@@ -240,6 +240,17 @@ a {
   color: rgba(255, 255, 255, 0.92);
 }
 
+/* Darker background for selects so label text doesn’t blend with background */
+.input.select {
+  background:
+    linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.6) 50%) right 16px center / 8px
+      8px no-repeat,
+    linear-gradient(135deg, rgba(255, 255, 255, 0.6) 50%, transparent 50%) right 10px center / 8px
+      8px no-repeat,
+    rgba(0, 0, 0, 0.4);
+  color: rgba(255, 255, 255, 0.95);
+}
+
 .input:focus {
   border-color: rgba(56, 189, 248, 0.55);
   box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.14);

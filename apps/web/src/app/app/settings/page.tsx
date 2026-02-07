@@ -50,6 +50,10 @@ export default function SettingsPage() {
               >
                 Forget this device
               </Button>
+
+              <a className="btn btnGhost" href="/game" aria-label="Play Mosaic Sprint (15KB game)">
+                Play Mosaic Sprint (15KB)
+              </a>
             </div>
 
             {done ? (

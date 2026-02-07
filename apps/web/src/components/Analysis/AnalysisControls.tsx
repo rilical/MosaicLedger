@@ -21,7 +21,7 @@ export function AnalysisControls(props: {
       <label className="small" style={{ display: 'grid', gap: 4 }}>
         Range
         <select
-          className="input"
+          className="input select"
           style={{ paddingTop: 8, paddingBottom: 8 }}
           value={settings.preset}
           onChange={(e) =>

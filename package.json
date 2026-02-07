@@ -20,12 +20,15 @@
     "check-demo": "pnpm -r --filter @mosaicledger/core --filter @mosaicledger/banking --filter @mosaicledger/mosaic build && tsx scripts/check-demo.ts",
     "check-secrets": "tsx scripts/check-secrets.ts",
     "check:supabase-schema": "tsx scripts/check-supabase-schema.ts",
-    "seed": "tsx scripts/seed-demo.ts"
+    "seed": "tsx scripts/seed-demo.ts",
+    "game:build": "tsx scripts/game15k-build.ts",
+    "game:size": "tsx scripts/game15k-size.ts"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
     "eslint": "^9.19.0",
     "prettier": "^3.3.3",
+    "terser": "^5.43.1",
     "tsx": "^4.19.2",
     "typescript-eslint": "^8.22.0",
     "typescript": "^5.7.3"

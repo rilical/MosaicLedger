@@ -2,8 +2,12 @@ import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const SECRET_ENV_NAME = 'SUPABASE_SERVICE_ROLE_KEY';
-const SECRET_VALUE = process.env[SECRET_ENV_NAME];
+const SECRET_ENV_NAMES = [
+  // DB admin bypass key
+  'SUPABASE_SERVICE_ROLE_KEY',
+  // XRPL seed must never reach the client bundle
+  'XRPL_TESTNET_SEED',
+] as const;
 
 async function listFiles(dir: string): Promise<string[]> {
   const out: string[] = [];
@@ -48,16 +52,17 @@ async function main() {
 
   for (const f of files) {
     const contents = await readFile(f, 'utf8');
-    if (!contents.includes(SECRET_ENV_NAME)) continue;
+    const hits = SECRET_ENV_NAMES.filter((name) => contents.includes(name));
+    if (!hits.length) continue;
 
     if (isClientModule(contents)) {
-      violations.push(`${f} (client module)`);
+      violations.push(`${f} (client module references: ${hits.join(', ')})`);
       continue;
     }
 
     const rel = path.relative(repoRoot, f).replaceAll(path.sep, '/');
     if (rel.includes('/components/')) {
-      violations.push(`${f} (components/)`);
+      violations.push(`${f} (components/ references: ${hits.join(', ')})`);
       continue;
     }
   }
@@ -67,15 +72,16 @@ async function main() {
   try {
     const s = await stat(nextStatic);
     if (s.isDirectory()) {
-      // Only scan for the secret *value*. The env var name can legitimately appear in bundled
-      // dependency comments (e.g. Supabase SDK docs) and is not a leak by itself.
-      if (SECRET_VALUE && SECRET_VALUE.length >= 12) {
-        const builtFiles = await listFiles(nextStatic);
+      // Only scan for secret *values*. Env var names can appear in dependency comments; that's not a leak.
+      const builtFiles = await listFiles(nextStatic);
+      for (const envName of SECRET_ENV_NAMES) {
+        const value = process.env[envName];
+        if (!value || value.length < 12) continue;
         for (const f of builtFiles) {
           if (!/\.(js|map)$/.test(f)) continue;
           const contents = await readFile(f, 'utf8');
-          if (contents.includes(SECRET_VALUE)) {
-            violations.push(`${f} (bundled output contains secret value)`);
+          if (contents.includes(value)) {
+            violations.push(`${f} (bundled output contains secret value for ${envName})`);
           }
         }
       }
@@ -85,7 +91,7 @@ async function main() {
   }
 
   if (violations.length) {
-    console.error(`SECRET CHECK FAILED: ${SECRET_ENV_NAME} must never appear in client code.`);
+    console.error(`SECRET CHECK FAILED: sensitive env must never appear in client code.`);
     for (const v of violations) console.error(`- ${v}`);
     process.exit(1);
   }
