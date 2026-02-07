@@ -10,6 +10,11 @@ const sectionMeta: Array<{ match: string; title: string; subtitle: string }> = [
   { match: '/app/recurring', title: 'Recurring', subtitle: 'Recurring detection and forecasts.' },
   { match: '/app/plan', title: 'Plan', subtitle: 'Ranked actions with quantified savings.' },
   { match: '/app/export', title: 'Export', subtitle: 'Download a poster summary.' },
+  {
+    match: '/app/coach',
+    title: 'Coach',
+    subtitle: 'Tool calling + multi-model handoff (optional).',
+  },
   { match: '/app/settings', title: 'Settings', subtitle: 'Runtime flags and overrides.' },
   { match: '/app/bank', title: 'Connect Bank', subtitle: 'Plaid scaffolding for live sync.' },
   { match: '/app', title: 'Connect', subtitle: 'Choose a data source to begin.' },
