@@ -67,8 +67,7 @@ export function MosaicView(props: {
   } {
     const vertical = tile.h > tile.w;
     const label = tile.label || '';
-    if (label.length === 0)
-      return { fontSize: NESTED_FONT_MIN, label: '', vertical: false };
+    if (label.length === 0) return { fontSize: NESTED_FONT_MIN, label: '', vertical: false };
 
     const area = tile.w * tile.h;
     const NESTED_FONT_MAX = Math.min(26, Math.max(12, 6 + Math.sqrt(area) / 14));
@@ -90,11 +89,17 @@ export function MosaicView(props: {
 
     let displayLabel = label;
     if (vertical) {
-      const maxChars = Math.max(1, Math.floor((tile.h * useFraction * SAFETY) / (fontSize * NESTED_CHAR_RATIO)) - 1);
+      const maxChars = Math.max(
+        1,
+        Math.floor((tile.h * useFraction * SAFETY) / (fontSize * NESTED_CHAR_RATIO)) - 1,
+      );
       if (label.length > maxChars)
         displayLabel = label.slice(0, Math.max(0, maxChars - 1)).trimEnd() + '…';
     } else {
-      const maxChars = Math.max(1, Math.floor((tile.w * useFraction * SAFETY) / (fontSize * NESTED_CHAR_RATIO)) - 1);
+      const maxChars = Math.max(
+        1,
+        Math.floor((tile.w * useFraction * SAFETY) / (fontSize * NESTED_CHAR_RATIO)) - 1,
+      );
       if (label.length > maxChars)
         displayLabel = label.slice(0, Math.max(0, maxChars - 1)).trimEnd() + '…';
     }
