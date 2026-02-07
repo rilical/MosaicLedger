@@ -211,11 +211,31 @@ async function rewriteWithAi(text: string): Promise<{
   usedAI: boolean;
   error?: string;
 }> {
-  const resp = await fetch('/api/ai/rewrite', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ text, style: 'friendly' }),
-  });
+  const controller = new AbortController();
+  const timeoutMs = 2500; // hackathon-safe: never hang the Coach UI
+  const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+
+  let resp: Response;
+  try {
+    resp = await fetch('/api/ai/rewrite', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ text, style: 'friendly' }),
+      signal: controller.signal,
+    });
+  } catch (e: unknown) {
+    const msg =
+      e &&
+      typeof e === 'object' &&
+      'name' in e &&
+      String((e as { name?: unknown }).name) === 'AbortError'
+        ? 'timeout'
+        : 'network_error';
+    window.clearTimeout(timer);
+    return { rewritten: text, usedAI: false, error: msg };
+  } finally {
+    window.clearTimeout(timer);
+  }
   const json = (await resp.json()) as unknown;
   if (!resp.ok || !json || typeof json !== 'object') {
     return { rewritten: text, usedAI: false, error: `rewrite failed (${resp.status})` };
