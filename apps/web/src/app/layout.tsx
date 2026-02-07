@@ -5,6 +5,7 @@ import { CursorGlow } from '../components/CursorGlow';
 export const metadata: Metadata = {
   title: 'MosaicLedger',
   description: 'Enter with fragments. Leave with something whole.',
+  icons: { icon: '/favicon.svg' },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
