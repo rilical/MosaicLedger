@@ -73,7 +73,8 @@ export default function LandingPage() {
           <div className="featureCard">
             <div style={{ fontWeight: 700, marginBottom: 6 }}>Plan + export</div>
             <div className="small">
-              Ranked actions with quantified monthly savings, plus a single poster artifact (SVG/PNG).
+              Ranked actions with quantified monthly savings, plus a single poster artifact
+              (SVG/PNG).
             </div>
           </div>
         </div>
@@ -116,13 +117,15 @@ export default function LandingPage() {
           <div className="featureCard">
             <div style={{ fontWeight: 700, marginBottom: 6 }}>Capital One Nessie</div>
             <div className="small">
-              Sponsor connector for purchases. When configured, <code>source=nessie</code> drives analysis.
+              Sponsor connector for purchases. When configured, <code>source=nessie</code> drives
+              analysis.
             </div>
           </div>
           <div className="featureCard">
             <div style={{ fontWeight: 700, marginBottom: 6 }}>MCP tool server</div>
             <div className="small">
-              Hosted MCP endpoints (<code>/health</code>, <code>/mcp</code>) for tool calling transport.
+              Hosted MCP endpoints (<code>/health</code>, <code>/mcp</code>) for tool calling
+              transport.
             </div>
           </div>
           <div className="featureCard">
@@ -150,15 +153,23 @@ export default function LandingPage() {
         <div className="stepGrid">
           <div className="stepCard">
             <div style={{ fontWeight: 600, marginBottom: 6 }}>15KB Minesweeper</div>
-            <div className="small">Size is enforced in CI and E2E, and the page includes a dashboard button.</div>
+            <div className="small">
+              Size is enforced in CI and E2E, and the page includes a dashboard button.
+            </div>
           </div>
           <div className="stepCard">
             <div style={{ fontWeight: 600, marginBottom: 6 }}>Golden snapshots</div>
-            <div className="small">Demo artifacts (summary/recurring/plan/mosaic) are pinned with a stable date for regression safety.</div>
+            <div className="small">
+              Demo artifacts (summary/recurring/plan/mosaic) are pinned with a stable date for
+              regression safety.
+            </div>
           </div>
           <div className="stepCard">
             <div style={{ fontWeight: 600, marginBottom: 6 }}>Fail-open demos</div>
-            <div className="small">Sponsor APIs and AI never block the flow. When something flakes, we fall back to deterministic demo data.</div>
+            <div className="small">
+              Sponsor APIs and AI never block the flow. When something flakes, we fall back to
+              deterministic demo data.
+            </div>
           </div>
         </div>
       </section>

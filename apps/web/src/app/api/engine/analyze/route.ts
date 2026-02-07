@@ -66,6 +66,8 @@ export async function POST(request: Request) {
           )
           .filter((t) => t != null);
 
+        if (!txnsAll.length) throw new Error('No valid Nessie transactions');
+
         const artifacts = computeArtifactsFromNormalized(txnsAll, body, {
           artifactsSource: 'nessie',
         });
@@ -189,6 +191,8 @@ export async function POST(request: Request) {
           }),
         )
         .filter((t) => t != null);
+
+      if (!txnsAll.length) throw new Error('No valid Nessie transactions');
 
       const artifacts = computeArtifactsFromNormalized(txnsAll, body, {
         artifactsSource: 'nessie',

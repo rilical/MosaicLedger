@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 
 function toHealthUrl(mcpUrl: string): string {
   const trimmed = mcpUrl.trim().replace(/\/+$/, '');
+  if (trimmed.endsWith('/health')) return trimmed;
   // Common shape: https://host.tld/mcp
   if (trimmed.endsWith('/mcp')) return trimmed.replace(/\/mcp$/, '/health');
   return `${trimmed}/health`;
@@ -41,7 +42,10 @@ export async function GET() {
     });
   } catch (e: unknown) {
     const msg =
-      e && typeof e === 'object' && 'name' in e && String((e as { name?: unknown }).name) === 'AbortError'
+      e &&
+      typeof e === 'object' &&
+      'name' in e &&
+      String((e as { name?: unknown }).name) === 'AbortError'
         ? 'timeout'
         : e && typeof e === 'object' && 'message' in e
           ? String((e as { message?: unknown }).message)
@@ -51,4 +55,3 @@ export async function GET() {
     clearTimeout(timeout);
   }
 }
-

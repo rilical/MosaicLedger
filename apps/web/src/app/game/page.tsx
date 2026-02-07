@@ -5,4 +5,3 @@ export default function GameRoute(): never {
   // Keep /game as the canonical route for navigation + demos.
   redirect('/game.html');
 }
-

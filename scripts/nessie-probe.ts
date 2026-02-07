@@ -34,10 +34,7 @@ function loadDotEnvFile(filePath: string): void {
     let val = t.slice(idx + 1).trim();
     if (!key) continue;
     if (process.env[key] !== undefined) continue;
-    if (
-      (val.startsWith('"') && val.endsWith('"')) ||
-      (val.startsWith("'") && val.endsWith("'"))
-    ) {
+    if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
       val = val.slice(1, -1);
     }
     process.env[key] = val;
@@ -101,9 +98,7 @@ async function main(): Promise<void> {
 
   const customers = await fetchJson<NessieCustomer[]>(withKey(`${base}/customers`, key));
   const customerId =
-    (process.env.NESSIE_CUSTOMER_ID?.trim() || null) ??
-    readId(customers[0]) ??
-    null;
+    (process.env.NESSIE_CUSTOMER_ID?.trim() || null) ?? readId(customers[0]) ?? null;
 
   console.log(`Nessie base: ${base}`);
   console.log(`Customers: ${Array.isArray(customers) ? customers.length : 0}`);
@@ -115,10 +110,7 @@ async function main(): Promise<void> {
   const accounts = await fetchJson<NessieAccount[]>(
     withKey(`${base}/customers/${encodeURIComponent(customerId)}/accounts`, key),
   );
-  const accountId =
-    (process.env.NESSIE_ACCOUNT_ID?.trim() || null) ??
-    readId(accounts[0]) ??
-    null;
+  const accountId = (process.env.NESSIE_ACCOUNT_ID?.trim() || null) ?? readId(accounts[0]) ?? null;
 
   console.log(`Customer: ${customerId}`);
   console.log(`Accounts: ${Array.isArray(accounts) ? accounts.length : 0}`);
@@ -132,10 +124,13 @@ async function main(): Promise<void> {
   );
   const mapped = (Array.isArray(purchases) ? purchases : [])
     .map((p) =>
-      nessiePurchaseToNormalized(p as unknown as import('@mosaicledger/connectors').NessiePurchase, {
-        source: 'nessie',
-        accountId,
-      }),
+      nessiePurchaseToNormalized(
+        p as unknown as import('@mosaicledger/connectors').NessiePurchase,
+        {
+          source: 'nessie',
+          accountId,
+        },
+      ),
     )
     .filter(Boolean);
 

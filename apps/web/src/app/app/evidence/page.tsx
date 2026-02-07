@@ -95,13 +95,20 @@ export default function EvidencePage() {
               check pings the configured server’s <code>/health</code>.
             </div>
             <div className="buttonRow" style={{ marginTop: 12, alignItems: 'center' }}>
-              <Button variant="primary" onClick={() => void checkMcp()} disabled={mcpStatus.state === 'loading'}>
+              <Button
+                variant="primary"
+                onClick={() => void checkMcp()}
+                disabled={mcpStatus.state === 'loading'}
+              >
                 Check MCP Health
               </Button>
               {mcpBadge}
             </div>
             {mcpStatus.state === 'done' ? (
-              <pre className="small" style={{ marginTop: 12, whiteSpace: 'pre-wrap', opacity: 0.9 }}>
+              <pre
+                className="small"
+                style={{ marginTop: 12, whiteSpace: 'pre-wrap', opacity: 0.9 }}
+              >
                 {JSON.stringify(mcpStatus.resp, null, 2)}
               </pre>
             ) : mcpStatus.state === 'error' ? (
@@ -135,4 +142,3 @@ export default function EvidencePage() {
     </div>
   );
 }
-

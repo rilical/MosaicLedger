@@ -51,4 +51,3 @@ This is a pragmatic checklist to ensure we actually demonstrate the sponsor inte
 7. `/app/ops` -> generate Ops memo (AI optional).
 8. (Optional) `/app` -> connect Nessie -> Mosaic source=nessie.
 9. `/game` -> show under-15KB proof + dashboard button.
-

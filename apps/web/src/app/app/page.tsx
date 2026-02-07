@@ -148,7 +148,9 @@ export default function ConnectPage() {
                   >
                     Start Demo
                   </Button>
-                  <Button onClick={() => router.push('/app/export?privacy=1')}>Export Poster</Button>
+                  <Button onClick={() => router.push('/app/export?privacy=1')}>
+                    Export Poster
+                  </Button>
                 </div>
               </div>
 
@@ -190,7 +192,9 @@ export default function ConnectPage() {
                 <div className="choiceHeader">
                   <div>
                     <div className="choiceTitle">Capital One Nessie</div>
-                    <div className="small">Sponsor connector. Pulls purchases into the same engine.</div>
+                    <div className="small">
+                      Sponsor connector. Pulls purchases into the same engine.
+                    </div>
                   </div>
                   <Badge tone={canUseNessie ? 'neutral' : 'warn'}>
                     {canUseNessie ? 'Ready' : 'Needs setup'}
