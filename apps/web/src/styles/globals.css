@@ -499,6 +499,41 @@ a {
   gap: 16px;
 }
 
+.choiceGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 980px) {
+  .choiceGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.choiceCard {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: var(--shadow-soft);
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+
+.choiceHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.choiceTitle {
+  font-family: 'Fraunces', 'Times New Roman', serif;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+}
+
 .pageTitle {
   margin: 0;
   font-size: 24px;
@@ -612,6 +647,50 @@ a {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--border);
   padding: 10px;
+  position: relative;
+}
+
+.mosaicHud {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  left: 12px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.mosaicHudCard {
+  pointer-events: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(8px);
+}
+
+.mosaicSwatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
+.mosaicHudTitle {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.88);
+  font-weight: 650;
+}
+
+.mosaicHudValue {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.75);
+  font-variant-numeric: tabular-nums;
 }
 
 .mosaicCanvas {

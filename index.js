@@ -1,3 +1,5 @@
+/* global console, process */
+
 // Root entrypoint for hosted MCP deployments (e.g. Dedalus/Daedalus).
 // Keeps the build system simple: `npm start` / `pnpm start` runs this file.
 
@@ -8,4 +10,3 @@
   console.error(err);
   process.exit(1);
 });
-

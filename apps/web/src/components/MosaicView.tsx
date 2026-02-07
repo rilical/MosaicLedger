@@ -5,10 +5,11 @@ import type { TreemapTile } from '@mosaicledger/mosaic';
 
 export function MosaicView(props: {
   tiles: TreemapTile[];
+  totalSpend?: number;
   selectedId?: string;
   onTileClick?: (tile: TreemapTile) => void;
 }) {
-  const { tiles, selectedId, onTileClick } = props;
+  const { tiles, totalSpend, selectedId, onTileClick } = props;
   const [hover, setHover] = React.useState<TreemapTile | null>(null);
   const [isTransitioning, setIsTransitioning] = React.useState(false);
 
@@ -37,17 +38,38 @@ export function MosaicView(props: {
   };
 
   // Only show label if it fits inside the box (avoid overflow)
-  const labelFitsInTile = (tile: TreemapTile): boolean => {
+  const fitLabel = (tile: TreemapTile): string | null => {
     const fs = calculateFontSize(tile);
     const availW = tile.w - PADDING * 2;
     const availH = tile.h - PADDING * 2;
-    const estimatedWidth = tile.label.length * fs * CHAR_WIDTH_RATIO;
+    const maxChars = Math.floor(availW / (fs * CHAR_WIDTH_RATIO));
     const lineHeight = fs * 1.2;
-    return estimatedWidth <= availW && lineHeight <= availH;
+    if (availW <= 24 || availH <= lineHeight) return null;
+    if (maxChars <= 4) return null;
+    if (tile.label.length <= maxChars) return tile.label;
+    return tile.label.slice(0, Math.max(0, maxChars - 1)).trimEnd() + '…';
   };
+
+  const hoverPct =
+    hover && totalSpend && totalSpend > 0 ? Math.min(1, Math.max(0, hover.value / totalSpend)) : 0;
 
   return (
     <div className="mosaicFrame">
+      <div className="mosaicHud" aria-hidden>
+        <div className="mosaicHudCard">
+          <div className="mosaicSwatch" style={{ background: hover ? hover.color : undefined }} />
+          <div style={{ display: 'grid', gap: 2 }}>
+            <div className="mosaicHudTitle">{hover ? hover.label : 'Hover a tile'}</div>
+            <div className="mosaicHudValue">
+              {hover
+                ? `$${hover.value.toFixed(2)}${totalSpend ? ` · ${(hoverPct * 100).toFixed(1)}%` : ''}`
+                : totalSpend
+                  ? `Total: $${totalSpend.toFixed(2)}`
+                  : 'Click a tile to drill down'}
+            </div>
+          </div>
+        </div>
+      </div>
       <svg viewBox="0 0 1000 650" className="mosaicCanvas" role="img">
         <defs>
           <filter id="glass-shadow" x="-20%" y="-20%" width="140%" height="140%">
@@ -101,7 +123,7 @@ export function MosaicView(props: {
                 transition: 'transform 180ms ease, opacity 180ms ease',
               }}
             />
-            {t.w > 80 && t.h > 30 && labelFitsInTile(t) ? (
+            {t.w > 80 && t.h > 30 && fitLabel(t) ? (
               <text
                 x={t.x + 12}
                 y={t.y + calculateFontSize(t) + 8}
@@ -113,21 +135,12 @@ export function MosaicView(props: {
                   transition: 'font-size 180ms ease',
                 }}
               >
-                {t.label}
+                {fitLabel(t)}
               </text>
             ) : null}
           </g>
         ))}
       </svg>
-      <div className="small" style={{ marginTop: 10 }}>
-        {hover ? (
-          <div>
-            <strong>{hover.label}</strong> · ${hover.value.toFixed(2)}
-          </div>
-        ) : (
-          <div>Hover a tile to see details.</div>
-        )}
-      </div>
     </div>
   );
 }

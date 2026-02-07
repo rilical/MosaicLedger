@@ -14,7 +14,7 @@ Keep it honest: only claim what the app can do in the current branch/commit.
 **Env vars**
 
 - `NESSIE_API_KEY` (required for live Nessie)
-- `NESSIE_BASE_URL` (optional; common hosts: `http://api.reimaginebanking.com` and `https://api.nessieisreal.com`)
+- `NESSIE_BASE_URL` (optional; common host: `http://api.nessieisreal.com`)
 - `NESSIE_CUSTOMER_ID` (optional; recommended for GET-only keys)
 - `NESSIE_ACCOUNT_ID` (optional; recommended for GET-only keys)
 

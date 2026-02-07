@@ -30,7 +30,7 @@ function formatAnnual(r: RecurringCharge): number {
 }
 
 export function RecurringPanel({ recurring }: { recurring: RecurringCharge[] }) {
-  const { choices, setChoice } = useSubscriptionChoices();
+  const { choices, setChoice, clearChoice } = useSubscriptionChoices();
 
   if (recurring.length === 0) {
     return <div className="small">No recurring charges detected yet.</div>;
@@ -40,6 +40,11 @@ export function RecurringPanel({ recurring }: { recurring: RecurringCharge[] }) 
     <div className="recurringList">
       {recurring.map((r) => (
         <div key={r.id} className="recurringItem">
+          {(() => {
+            const choice = choices[r.merchant];
+            const is = (c: typeof choice) => choice === c;
+            return (
+              <>
           <div className="recurringHeader">
             <div>
               <div className="recurringTitle">{r.merchant}</div>
@@ -49,6 +54,11 @@ export function RecurringPanel({ recurring }: { recurring: RecurringCharge[] }) 
               <div className="small" style={{ opacity: 0.9 }}>
                 ~${formatMonthlyEquivalent(r).toFixed(2)}/mo · ${formatAnnual(r).toFixed(2)}/yr
               </div>
+              {choice ? (
+                <div className="small" style={{ marginTop: 6 }}>
+                  Choice: <b>{choice.toUpperCase()}</b>
+                </div>
+              ) : null}
             </div>
             <div className="money">${r.expectedAmount.toFixed(2)}</div>
           </div>
@@ -59,26 +69,42 @@ export function RecurringPanel({ recurring }: { recurring: RecurringCharge[] }) 
           >
             <button
               type="button"
-              className="btn recurringBtn recurringBtnKeep"
+              className={`btn recurringBtn recurringBtnKeep${is('keep') ? ' on' : ''}`}
               onClick={() => setChoice(r.merchant, 'keep')}
+              aria-pressed={is('keep')}
             >
               Keep
             </button>
             <button
               type="button"
-              className="btn recurringBtn recurringBtnCancel"
+              className={`btn recurringBtn recurringBtnCancel${is('cancel') ? ' on' : ''}`}
               onClick={() => setChoice(r.merchant, 'cancel')}
+              aria-pressed={is('cancel')}
             >
               Cancel
             </button>
             <button
               type="button"
-              className="btn recurringBtn recurringBtnDowngrade"
+              className={`btn recurringBtn recurringBtnDowngrade${is('downgrade') ? ' on' : ''}`}
               onClick={() => setChoice(r.merchant, 'downgrade')}
+              aria-pressed={is('downgrade')}
             >
               Downgrade
             </button>
+            {choice ? (
+              <button
+                type="button"
+                className="btn recurringBtn"
+                onClick={() => clearChoice(r.merchant)}
+                title="Clear choice"
+              >
+                Clear
+              </button>
+            ) : null}
           </div>
+              </>
+            );
+          })()}
         </div>
       ))}
     </div>

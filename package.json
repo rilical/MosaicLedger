@@ -21,6 +21,7 @@
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "mcp:dev": "pnpm -C packages/mcp-server dev:http",
+    "nessie:probe": "tsx scripts/nessie-probe.ts",
     "check-demo": "pnpm -r --filter @mosaicledger/core --filter @mosaicledger/banking --filter @mosaicledger/mosaic build && tsx scripts/check-demo.ts",
     "check-secrets": "tsx scripts/check-secrets.ts",
     "check:supabase-schema": "tsx scripts/check-supabase-schema.ts",

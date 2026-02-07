@@ -192,6 +192,7 @@ export default function MosaicPage() {
             ) : (
               <MosaicView
                 tiles={tiles}
+                totalSpend={spend}
                 selectedId={
                   level === 'category'
                     ? (selectedCategory ?? undefined)
