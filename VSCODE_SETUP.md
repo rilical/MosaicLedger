@@ -6,9 +6,11 @@ This guide will help you set up and run the MosaicLedger website in Visual Studi
 
 Before you begin, make sure you have the following installed on your system:
 
-1. **Node.js** (v18 or later) - [Download here](https://nodejs.org/)
+1. **Node.js** (v20 or later) - [Download here](https://nodejs.org/)
 2. **pnpm** - After installing Node.js, enable it with: `corepack enable`
 3. **Visual Studio Code** - [Download here](https://code.visualstudio.com/)
+
+> **Note:** The minimum required Node.js version is 20. You can check your version with `node --version`.
 
 ## Step 1: Clone and Open the Repository
 
@@ -54,7 +56,11 @@ corepack enable
 pnpm install
 ```
 
-This will install all required dependencies for the project.
+This will:
+1. Install all required dependencies for the project
+2. Automatically build all packages (via a postinstall script)
+
+> **Note:** If `corepack enable` doesn't make pnpm available, try `corepack prepare pnpm@10.0.0 --activate` to explicitly activate the version specified in package.json.
 
 ## Step 4: Start the Development Server
 
@@ -155,18 +161,36 @@ The workspace is configured to auto-format files when you save (`Ctrl+S`). This 
 
 ### Port 3000 is already in use
 
-If you see "Port 3000 is already in use", either:
+If you see "Port 3000 is already in use", you have several options:
 
-1. Stop the other process using port 3000
-2. Or use a different port: `PORT=3001 pnpm dev`
+1. **Stop the other process** using port 3000:
+   - On Linux/Mac: `lsof -ti:3000 | xargs kill`
+   - On Windows: `netstat -ano | findstr :3000` then `taskkill /PID <PID> /F`
+2. **Use a different port**:
+   ```bash
+   PORT=3001 pnpm dev
+   ```
+   Then access the app at `http://localhost:3001`
 
 ### pnpm command not found
 
-Run `corepack enable` to activate pnpm.
+If `pnpm` is not available after running `corepack enable`:
+
+1. First, ensure you're using Node.js v20 or later: `node --version`
+2. Try explicitly activating pnpm:
+   ```bash
+   corepack prepare pnpm@10.0.0 --activate
+   ```
+3. Restart your terminal or VSCode
+4. Verify pnpm is now available: `pnpm --version` (should show `10.0.0`)
 
 ### Module not found errors
 
-Run `pnpm install` again to ensure all dependencies are installed.
+If you encounter module/import errors:
+
+1. Run `pnpm install` again to ensure all dependencies are installed
+2. The postinstall script should automatically build packages - verify by checking for `dist/` folders in `packages/*/`
+3. If needed, manually rebuild: `pnpm build`
 
 ### TypeScript errors
 
@@ -183,14 +207,21 @@ The debug configurations include `serverReadyAction` to auto-open Chrome. If it 
 
 ## Environment Variables (Optional)
 
-For advanced features, you can create a `.env.local` file in `apps/web/`:
+**The demo works perfectly without any environment variables!** The app defaults to demo mode with sample data.
+
+For advanced features (live bank connections, authentication, etc.), you can create a `.env.local` file in `apps/web/`:
 
 ```bash
 # Copy the example file
 cp apps/web/.env.example apps/web/.env.local
 ```
 
-Then edit `.env.local` with your API keys. The app works without any keys in Demo Mode.
+Then edit `.env.local` with your API keys if needed. See the [.env.example](./apps/web/.env.example) file for all available options.
+
+**Key settings:**
+- `NEXT_PUBLIC_DEMO_MODE=1` - Demo mode (default, no API keys needed)
+- `NEXT_PUBLIC_PLAID_ENABLED=0` - Plaid bank connections (requires API keys)
+- `NEXT_PUBLIC_SUPABASE_URL` - Authentication/database (optional)
 
 ## Additional Resources
 
@@ -202,17 +233,21 @@ Then edit `.env.local` with your API keys. The app works without any keys in Dem
 
 ## Quick Reference
 
-| Command           | Description               |
-| ----------------- | ------------------------- |
-| `pnpm dev`        | Start development server  |
-| `pnpm build`      | Build for production      |
-| `pnpm lint`       | Run ESLint                |
-| `pnpm format`     | Format code with Prettier |
-| `pnpm check-demo` | Verify demo functionality |
-| `Ctrl+Shift+P`    | Command Palette           |
-| `Ctrl+``          | Toggle Terminal           |
-| `Ctrl+Shift+D`    | Debug Panel               |
-| `F5`              | Start Debugging           |
+| Command             | Description                       |
+| ------------------- | --------------------------------- |
+| `corepack enable`   | Enable pnpm package manager       |
+| `pnpm install`      | Install dependencies + build pkgs |
+| `pnpm dev`          | Start development server          |
+| `pnpm build`        | Build packages for production     |
+| `pnpm lint`         | Run ESLint                        |
+| `pnpm typecheck`    | Run TypeScript type checking      |
+| `pnpm test`         | Run all tests                     |
+| `pnpm format`       | Format code with Prettier         |
+| `pnpm check-demo`   | Verify demo functionality         |
+| `Ctrl+Shift+P`      | Command Palette (VSCode)          |
+| `Ctrl+``            | Toggle Terminal (VSCode)          |
+| `Ctrl+Shift+D`      | Debug Panel (VSCode)              |
+| `F5`                | Start Debugging (VSCode)          |
 
 ---
 
