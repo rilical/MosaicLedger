@@ -12,6 +12,7 @@
 
 ## Local checks
 
+- Prerequisites: Node.js v20+ ([download](https://nodejs.org/))
 - Install: `corepack enable && pnpm install`
 - Dev: `pnpm dev`
 - Lint: `pnpm lint`

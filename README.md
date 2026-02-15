@@ -6,9 +6,20 @@ MosaicLedger is a visual-first budget planner that turns transactions into an ex
 
 ## Quickstart
 
-- `corepack enable`
-- `pnpm install`
-- `pnpm dev`
+**Prerequisites:** Node.js v20 or later ([download](https://nodejs.org/))
+
+```bash
+# Enable pnpm via corepack (built into Node.js)
+corepack enable
+
+# Install dependencies (automatically builds packages via postinstall)
+pnpm install
+
+# Start the development server
+pnpm dev
+```
+
+The app will be available at `http://localhost:3000`.
 
 **Using VSCode?** See the [VSCode Setup Guide](./VSCODE_SETUP.md) for a complete walkthrough with debugging, tasks, and recommended extensions.
 
